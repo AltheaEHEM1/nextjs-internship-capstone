@@ -37,9 +37,9 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Deployment target'
+        description: "Deployment target"
         required: true
-        default: 'preview'
+        default: "preview"
         type: choice
         options:
           - preview
@@ -57,7 +57,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
