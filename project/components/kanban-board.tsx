@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
 // TODO: Task 5.1 - Design responsive Kanban board layout
 // TODO: Task 5.2 - Implement drag-and-drop functionality with dnd-kit
@@ -118,35 +118,38 @@ const initialColumns = [
       },
     ],
   },
-]
+];
 
 export function KanbanBoard({ projectId }: { projectId: string }) {
-  const [columns, setColumns] = useState(initialColumns)
+  const [columns, setColumns] = useState(initialColumns);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+        return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300";
       case "medium":
-        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300";
       case "low":
-        return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+        return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
       default:
-        return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+        return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
     }
-  }
+  };
 
   return (
-    <div className="bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 p-6">
+    <div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500">
       <div className="text-center text-payne's_gray-500 dark:text-french_gray-400">
-        <h3 className="text-lg font-semibold mb-2">TODO: Implement Kanban Board</h3>
-        <p className="text-sm mb-4">Project ID: {projectId}</p>
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded border border-yellow-200 dark:border-yellow-800">
+        <h3 className="mb-2 text-lg font-semibold">
+          TODO: Implement Kanban Board
+        </h3>
+        <p className="mb-4 text-sm">Project ID: {projectId}</p>
+        <div className="rounded border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
           <p className="text-sm text-yellow-800 dark:text-yellow-200">
-            📋 This will be the main interactive Kanban board with drag-and-drop functionality
+            📋 This will be the main interactive Kanban board with drag-and-drop
+            functionality
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

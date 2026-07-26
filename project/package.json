@@ -19,7 +19,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format:check": "prettier --check .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
@@ -38,9 +40,17 @@
     "autoprefixer": "^10.0.1",
     "eslint": "^9",
     "eslint-config-next": "^16.0.0",
+    "eslint-config-prettier": "^10.1.8",
     "postcss": "^8.5",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^3.3.0",
     "typescript": "^5.1"
+  },
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ]
   },
   "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
 }
