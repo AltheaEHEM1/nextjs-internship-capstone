@@ -1,16 +1,33 @@
+//modified
+
 import type React from "react";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
 // TODO: Task 2.1 - Set up Clerk authentication service
 // import { ClerkProvider } from "@clerk/nextjs"
-import { ThemeProvider } from "@/components/theme-provider";
+//import { ThemeProvider } from "@/components/theme-provider";
 
-const inter = Inter({ subsets: ["latin"] });
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "Project Management Tool",
-  description: "Team collaboration and project management platform",
+  title: "Projectnify",
+  description: "A Project Management Tool forTeam collaboration and project management platform",
   generator: "v0.dev",
 };
 
@@ -23,8 +40,10 @@ export default function RootLayout({
     // TODO: Task 2.1 - Wrap with ClerkProvider once Clerk is set up
     // <ClerkProvider>
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider>{children}</ThemeProvider>
+      <body
+        className={`${poppins.className} ${geistSans.variable} ${geistMono.variable}`}
+      >
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
     // </ClerkProvider>

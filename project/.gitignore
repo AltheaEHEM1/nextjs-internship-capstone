@@ -3,6 +3,10 @@
 # dependencies
 /node_modules
 
+# pnpm
+/.pnpm-store/
+.pnpm-store/
+
 # next.js
 /.next/
 /out/

@@ -1,0 +1,21 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Local package-manager cache
+.pnpm-store/
+
+# Environment secrets at root level
+.env
+.env.local
+.env*.local

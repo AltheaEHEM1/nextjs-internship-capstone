@@ -1,48 +1,11 @@
+//modified
+
 import Link from "next/link";
 import { ArrowRight, CheckCircle, Users, Kanban } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-platinum-900 to-platinum-800 dark:from-outer_space-500 dark:to-payne's_gray-500">
-      {/* Header */}
-      <header className="border-b border-french_gray-300 bg-white/80 backdrop-blur-sm dark:border-payne's_gray-400 dark:bg-outer_space-500/80">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="text-2xl font-bold text-blue_munsell-500">
-              ProjectFlow
-            </div>
-            <div className="flex items-center space-x-4">
-              <ThemeToggle />
-              <Link
-                href="/dashboard"
-                className="text-outer_space-500 hover:text-blue_munsell-500 dark:text-platinum-500"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/projects"
-                className="text-outer_space-500 hover:text-blue_munsell-500 dark:text-platinum-500"
-              >
-                Projects
-              </Link>
-              <Link
-                href="/sign-in"
-                className="text-outer_space-500 hover:text-blue_munsell-500 dark:text-platinum-500"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/sign-up"
-                className="rounded-lg bg-blue_munsell-500 px-4 py-2 text-white hover:bg-blue_munsell-600"
-              >
-                Get Started
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="container mx-auto text-center">
