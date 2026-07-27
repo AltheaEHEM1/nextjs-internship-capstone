@@ -1,17 +1,14 @@
 import { UserPlus, Mail, MoreHorizontal } from "lucide-react";
+import { PageHeader } from "@/components/page-header/PageHeader";
 
 export default function TeamPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-outer_space-500 dark:text-platinum-500">
-            Team
-          </h1>
-          <p className="mt-2 text-payne's_gray-500 dark:text-french_gray-500">
-            Manage team members and permissions
-          </p>
-        </div>
+         <PageHeader
+          title="Team"
+          description="Manage team members and permissions"
+        />
         <button className="inline-flex items-center rounded-lg bg-blue_munsell-500 px-4 py-2 text-white transition-colors hover:bg-blue_munsell-600">
           <UserPlus size={20} className="mr-2" />
           Invite Member

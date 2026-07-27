@@ -29,6 +29,11 @@ export const metadata: Metadata = {
   title: "Projectnify",
   description: "A Project Management Tool forTeam collaboration and project management platform",
   generator: "v0.dev",
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "300x300" }],
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({

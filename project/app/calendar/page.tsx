@@ -1,17 +1,14 @@
 import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { PageHeader } from "@/components/page-header/PageHeader";
 
 export default function CalendarPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-outer_space-500 dark:text-platinum-500">
-            Calendar
-          </h1>
-          <p className="mt-2 text-payne's_gray-500 dark:text-french_gray-500">
-            View project deadlines and team schedules
-          </p>
-        </div>
+        <PageHeader
+          title="Calendar"
+          description="View project deadlines and team schedules"
+        />
         <button className="inline-flex items-center rounded-lg bg-blue_munsell-500 px-4 py-2 text-white transition-colors hover:bg-blue_munsell-600">
           <Plus size={20} className="mr-2" />
           Add Event
