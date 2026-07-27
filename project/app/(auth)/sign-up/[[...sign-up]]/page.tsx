@@ -1,9 +1,10 @@
 // TODO: Task 2.3 - Create sign-in and sign-up pages
+import BaseAuth from "@/components/layout/BaseAuth";
+
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-platinum-900 px-4 dark:bg-outer_space-600">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
+    <BaseAuth>
+       <div className="mb-8 text-center">
           <h1 className="mb-2 text-3xl font-bold text-outer_space-500 dark:text-platinum-500">
             Create Account
           </h1>
@@ -25,8 +26,7 @@ export default function SignUpPage() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </BaseAuth>
   );
 }
 

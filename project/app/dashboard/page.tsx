@@ -1,18 +1,14 @@
 import { TrendingUp, Users, CheckCircle, Clock, Plus } from "lucide-react";
+import { PageHeader } from "@/components/page-header/PageHeader";
 
 export default function DashboardPage() {
   return (
 
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-outer_space-500 dark:text-platinum-500">
-            Dashboard
-          </h1>
-          <p className="mt-2 text-payne's_gray-500 dark:text-french_gray-500">
-            Welcome back! Here's an overview of your projects and tasks.
-          </p>
-        </div>
-
+    <div className="space-y-6">
+      <PageHeader
+				title="Dashboard"
+				description="Welcome back! Here's an overview of your projects and tasks."
+			/>
         {/* Implementation Status Banner */}
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
           <div className="flex items-start">

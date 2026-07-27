@@ -21,17 +21,11 @@ export default function HomePage() {
 
           <div className="mb-12 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
-              href="/dashboard"
+              href="/sign-up"
               className="inline-flex items-center rounded-lg bg-blue_munsell-500 px-8 py-4 text-lg font-semibold text-white hover:bg-blue_munsell-600"
             >
               Start Managing Projects
               <ArrowRight className="ml-2" size={20} />
-            </Link>
-            <Link
-              href="/projects"
-              className="inline-flex items-center rounded-lg border-2 border-blue_munsell-500 px-8 py-4 text-lg font-semibold text-blue_munsell-500 hover:bg-blue_munsell-50 dark:hover:bg-blue_munsell-900"
-            >
-              View Projects
             </Link>
           </div>
 

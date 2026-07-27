@@ -24,7 +24,7 @@ export function Breadcrumbs() {
         <li>
           <Link
             href="/dashboard"
-            className="font-medium text-outer_space-500 hover:text-blue_munsell-500 dark:text-platinum-500"
+            className="font-medium hover:text-outer_space-500 text-blue_munsell-500 dark:text-platinum-500"
           >
             Dashboard
           </Link>

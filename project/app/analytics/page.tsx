@@ -1,17 +1,13 @@
 import { BarChart3, TrendingUp, Users, Clock } from "lucide-react";
+import { PageHeader } from "@/components/page-header/PageHeader";
 
 export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-outer_space-500 dark:text-platinum-500">
-          Analytics
-        </h1>
-        <p className="mt-2 text-payne's_gray-500 dark:text-french_gray-500">
-          Track project performance and team productivity
-        </p>
-      </div>
-
+      <PageHeader
+        title="Analytics"
+        description="Track project performance and team productivity"
+      />
       {/* Implementation Tasks Banner */}
       <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
         <h3 className="mb-2 text-sm font-medium text-yellow-800 dark:text-yellow-200">
