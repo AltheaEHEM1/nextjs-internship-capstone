@@ -7,6 +7,7 @@ export function ProjectHeader({ projectId }: { projectId: string }) {
         <div className="flex-1">
           <div className="mb-2 flex items-center space-x-3">
             <div className="h-3 w-3 rounded-full bg-blue_munsell-500" />
+            <h1>PROJECT HEADER</h1>
             <h1 className="text-2xl font-bold text-outer_space-500 dark:text-platinum-500">
               Website Redesign
             </h1>

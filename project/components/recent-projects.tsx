@@ -35,6 +35,7 @@ export function RecentProjects() {
   return (
     <div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500">
       <div className="mb-6 flex items-center justify-between">
+        <h1>recent project</h1>
         <h3 className="text-lg font-semibold text-outer_space-500 dark:text-platinum-500">
           Recent Projects
         </h3>

@@ -27,7 +27,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Projectnify",
-  description: "A Project Management Tool forTeam collaboration and project management platform",
+  description:
+    "A Project Management Tool forTeam collaboration and project management platform",
   generator: "v0.dev",
   icons: {
     icon: [{ url: "/icon.png", type: "image/png", sizes: "300x300" }],

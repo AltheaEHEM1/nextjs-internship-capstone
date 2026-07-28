@@ -40,6 +40,7 @@ Features to implement:
 export function TaskCard() {
   return (
     <div className="rounded-lg border border-french_gray-300 bg-white p-4 dark:border-payne's_gray-400 dark:bg-outer_space-300">
+      <h1>Task Card</h1>
       <p className="text-center text-sm text-payne's_gray-500 dark:text-french_gray-400">
         TODO: Implement TaskCard component
       </p>

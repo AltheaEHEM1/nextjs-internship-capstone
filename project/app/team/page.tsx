@@ -5,7 +5,7 @@ export default function TeamPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-         <PageHeader
+        <PageHeader
           title="Team"
           description="Manage team members and permissions"
         />
