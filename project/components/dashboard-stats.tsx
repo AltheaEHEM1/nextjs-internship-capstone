@@ -34,6 +34,7 @@ const stats = [
 export function DashboardStats() {
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <h1>dashboard stats</h1>
       {stats.map((stat) => (
         <div
           key={stat.name}

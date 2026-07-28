@@ -139,6 +139,7 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
   return (
     <div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500">
       <div className="text-center text-payne's_gray-500 dark:text-french_gray-400">
+        <h1>kanban board</h1>
         <h3 className="mb-2 text-lg font-semibold">
           TODO: Implement Kanban Board
         </h3>

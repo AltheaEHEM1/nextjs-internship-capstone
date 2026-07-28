@@ -67,6 +67,7 @@ const projects = [
 export function ProjectGrid() {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <h1>Project Grid</h1>
       {projects.map((project) => (
         <div
           key={project.id}

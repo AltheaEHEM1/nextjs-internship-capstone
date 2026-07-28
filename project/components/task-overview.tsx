@@ -34,6 +34,7 @@ const taskStats = [
 export function TaskOverview() {
   return (
     <div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500">
+      <h1>task-overview</h1>
       <h3 className="mb-6 text-lg font-semibold text-outer_space-500 dark:text-platinum-500">
         Task Overview
       </h3>

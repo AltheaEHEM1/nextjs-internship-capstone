@@ -44,6 +44,7 @@ export function Features() {
     <section id="features" className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="container mx-auto">
         <div className="mb-16 text-center">
+          <h1>features</h1>
           <h2 className="mb-4 text-4xl font-bold text-outer_space-500 dark:text-platinum-500">
             Everything You Need to Succeed
           </h2>
