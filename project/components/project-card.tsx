@@ -35,12 +35,12 @@ Features to implement:
 */
 
 export function ProjectCard() {
-  return (
-    <div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500">
-      <h1>project card</h1>
-      <p className="text-center text-payne's_gray-500 dark:text-french_gray-400">
-        TODO: Implement ProjectCard component
-      </p>
-    </div>
-  );
+	return (
+		<div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500">
+			<h1>project card</h1>
+			<p className="text-center text-payne's_gray-500 dark:text-french_gray-400">
+				TODO: Implement ProjectCard component
+			</p>
+		</div>
+	);
 }
