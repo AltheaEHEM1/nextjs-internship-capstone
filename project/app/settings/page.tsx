@@ -22,35 +22,30 @@ export default function SettingsPage() {
         </ul>
       </div>
 
-      {/* Settings Sections */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Settings Navigation */}
-        <div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500">
-          <h3 className="mb-4 text-lg font-semibold text-outer_space-500 dark:text-platinum-500">
-            Settings
-          </h3>
-          <nav className="space-y-2">
-            {[
-              { name: "Profile", icon: User, active: true },
-              { name: "Notifications", icon: Bell, active: false },
-              { name: "Security", icon: Shield, active: false },
-              { name: "Appearance", icon: Palette, active: false },
-            ].map((item) => (
-              <button
-                key={item.name}
-                className={`flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  item.active
-                    ? "bg-blue_munsell-100 text-blue_munsell-700 dark:bg-blue_munsell-900 dark:text-blue_munsell-300"
-                    : "text-outer_space-500 hover:bg-platinum-500 dark:text-platinum-500 dark:hover:bg-payne's_gray-400"
-                }`}
-              >
-                <item.icon className="mr-3" size={16} />
-                {item.name}
-              </button>
-            ))}
-          </nav>
-        </div>
+      {/* Settings Navigation */}
+        <nav className="-mb-px flex space-x-6">
+          {[
+            { name: "Profile", icon: User, active: true },
+            { name: "Notifications", icon: Bell, active: false },
+            { name: "Security", icon: Shield, active: false },
+            { name: "Appearance", icon: Palette, active: false },
+          ].map((item) => (
+            <button
+              key={item.name}
+              className={`flex items-center border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
+                item.active
+                  ? "border-blue_munsell-600 text-blue_munsell-700 dark:border-blue_munsell-400 dark:text-blue_munsell-300"
+                  : "border-transparent text-outer_space-500 hover:border-french_gray-400 hover:text-outer_space-700 dark:text-platinum-500 dark:hover:border-payne's_gray-300 dark:hover:text-platinum-300"
+              }`}
+            >
+              <item.icon className="mr-2" size={16} />
+              {item.name}
+            </button>
+          ))}
+        </nav>
 
+
+        
         {/* Settings Content */}
         <div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500 lg:col-span-2">
           <h3 className="mb-6 text-lg font-semibold text-outer_space-500 dark:text-platinum-500">
@@ -102,7 +97,8 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
-      </div>
+
+
     </div>
   );
 }

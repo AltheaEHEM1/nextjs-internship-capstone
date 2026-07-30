@@ -24,7 +24,7 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 
   const [isMobile, setIsMobile] = React.useState(false);
   React.useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 1024);
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -203,7 +203,7 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
           />
           <aside
             className={cn(
-              "z-45 fixed inset-y-0 left-0 w-full max-w-[85vw] border-r border-slate-200 bg-white shadow-2xl transition-transform duration-300",
+              "fixed inset-y-0 left-0 z-50 w-full max-w-[85vw] border-r border-slate-200 bg-white shadow-2xl transition-transform duration-300",
               opened ? "translate-x-0" : "-translate-x-full",
             )}
           >

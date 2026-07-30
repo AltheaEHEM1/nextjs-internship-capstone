@@ -12,7 +12,7 @@ export default function BaseAdmin({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex overflow-hidden">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar opened={sidebarOpen} close={() => setSidebarOpen(false)} />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">

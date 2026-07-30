@@ -29,7 +29,7 @@ export default function SidebarHeader({
   };
 
   return (
-    <header className="shadow-xs sticky top-0 z-30 flex flex-wrap items-center justify-between gap-x-3 gap-y-3 px-4 py-2 border-b border-slate-200 bg-white text-slate-700 transition-colors duration-200 sm:gap-x-6 sm:px-6 lg:px-8">
+    <header className="shadow-xs sticky top-0 z-30 flex flex-shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-3 border-b border-slate-200 bg-white px-4 py-2 text-slate-700 transition-colors duration-200 sm:gap-x-6 sm:px-6 lg:px-8">
       {/* Mobile Menu Trigger & Breadcrumbs */}
       <div className="flex items-center gap-x-4">
         <button
