@@ -1,4 +1,5 @@
 import { Filter, Plus, Search } from "lucide-react";
+import Link from "next/link";
 // import { DashboardLayout } from "@/components/dashboard-layout";
 import { PageHeader } from "@/components/page-header/PageHeader";
 
@@ -56,9 +57,10 @@ export default function ProjectsPage() {
 			{/* Projects Grid Placeholder */}
 			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 				{[1, 2, 3, 4, 5, 6].map((i) => (
-					<div
+					<Link
 						key={i}
-						className="rounded-lg border border-french_gray-300 bg-white p-6 transition-shadow hover:shadow-lg dark:border-payne's_gray-400 dark:bg-outer_space-500"
+						href={`/projects/pages`}
+						className="group rounded-lg border border-french_gray-300 bg-white p-6 transition-shadow hover:shadow-lg dark:border-payne's_gray-400 dark:bg-outer_space-500"
 					>
 						<div className="mb-4 flex items-start justify-between">
 							<div className="h-3 w-3 rounded-full bg-blue_munsell-500"></div>
@@ -87,7 +89,7 @@ export default function ProjectsPage() {
 								style={{ width: `${Math.floor(Math.random() * 80) + 20}%` }}
 							></div>
 						</div>
-					</div>
+					</Link>
 				))}
 			</div>
 
