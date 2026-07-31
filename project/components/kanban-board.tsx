@@ -38,119 +38,119 @@ State management:
 */
 
 const initialColumns = [
-  {
-    id: "todo",
-    title: "To Do",
-    tasks: [
-      {
-        id: "1",
-        title: "Design homepage mockup",
-        description: "Create initial design concepts",
-        priority: "high",
-        assignee: "John Doe",
-      },
-      {
-        id: "2",
-        title: "Research competitors",
-        description: "Analyze competitor websites",
-        priority: "medium",
-        assignee: "Jane Smith",
-      },
-      {
-        id: "3",
-        title: "Define user personas",
-        description: "Create detailed user personas",
-        priority: "low",
-        assignee: "Mike Johnson",
-      },
-    ],
-  },
-  {
-    id: "in-progress",
-    title: "In Progress",
-    tasks: [
-      {
-        id: "4",
-        title: "Develop navigation component",
-        description: "Build responsive navigation",
-        priority: "high",
-        assignee: "Sarah Wilson",
-      },
-      {
-        id: "5",
-        title: "Content strategy",
-        description: "Plan content structure",
-        priority: "medium",
-        assignee: "Tom Brown",
-      },
-    ],
-  },
-  {
-    id: "review",
-    title: "Review",
-    tasks: [
-      {
-        id: "6",
-        title: "Logo design options",
-        description: "Present logo variations",
-        priority: "high",
-        assignee: "Lisa Davis",
-      },
-    ],
-  },
-  {
-    id: "done",
-    title: "Done",
-    tasks: [
-      {
-        id: "7",
-        title: "Project kickoff meeting",
-        description: "Initial team meeting completed",
-        priority: "medium",
-        assignee: "John Doe",
-      },
-      {
-        id: "8",
-        title: "Requirements gathering",
-        description: "Collected all requirements",
-        priority: "high",
-        assignee: "Jane Smith",
-      },
-    ],
-  },
+	{
+		id: "todo",
+		title: "To Do",
+		tasks: [
+			{
+				id: "1",
+				title: "Design homepage mockup",
+				description: "Create initial design concepts",
+				priority: "high",
+				assignee: "John Doe",
+			},
+			{
+				id: "2",
+				title: "Research competitors",
+				description: "Analyze competitor websites",
+				priority: "medium",
+				assignee: "Jane Smith",
+			},
+			{
+				id: "3",
+				title: "Define user personas",
+				description: "Create detailed user personas",
+				priority: "low",
+				assignee: "Mike Johnson",
+			},
+		],
+	},
+	{
+		id: "in-progress",
+		title: "In Progress",
+		tasks: [
+			{
+				id: "4",
+				title: "Develop navigation component",
+				description: "Build responsive navigation",
+				priority: "high",
+				assignee: "Sarah Wilson",
+			},
+			{
+				id: "5",
+				title: "Content strategy",
+				description: "Plan content structure",
+				priority: "medium",
+				assignee: "Tom Brown",
+			},
+		],
+	},
+	{
+		id: "review",
+		title: "Review",
+		tasks: [
+			{
+				id: "6",
+				title: "Logo design options",
+				description: "Present logo variations",
+				priority: "high",
+				assignee: "Lisa Davis",
+			},
+		],
+	},
+	{
+		id: "done",
+		title: "Done",
+		tasks: [
+			{
+				id: "7",
+				title: "Project kickoff meeting",
+				description: "Initial team meeting completed",
+				priority: "medium",
+				assignee: "John Doe",
+			},
+			{
+				id: "8",
+				title: "Requirements gathering",
+				description: "Collected all requirements",
+				priority: "high",
+				assignee: "Jane Smith",
+			},
+		],
+	},
 ];
 
 export function KanbanBoard({ projectId }: { projectId: string }) {
-  const [columns, setColumns] = useState(initialColumns);
+	const [columns, setColumns] = useState(initialColumns);
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300";
-      case "medium":
-        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300";
-      case "low":
-        return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
-      default:
-        return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
-    }
-  };
+	const getPriorityColor = (priority: string) => {
+		switch (priority) {
+			case "high":
+				return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300";
+			case "medium":
+				return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300";
+			case "low":
+				return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
+			default:
+				return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+		}
+	};
 
-  return (
-    <div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500">
-      <div className="text-center text-payne's_gray-500 dark:text-french_gray-400">
-        <h1>kanban board</h1>
-        <h3 className="mb-2 text-lg font-semibold">
-          TODO: Implement Kanban Board
-        </h3>
-        <p className="mb-4 text-sm">Project ID: {projectId}</p>
-        <div className="rounded border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
-          <p className="text-sm text-yellow-800 dark:text-yellow-200">
-            📋 This will be the main interactive Kanban board with drag-and-drop
-            functionality
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+	return (
+		<div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500">
+			<div className="text-center text-payne's_gray-500 dark:text-french_gray-400">
+				<h1>kanban board</h1>
+				<h3 className="mb-2 text-lg font-semibold">
+					TODO: Implement Kanban Board
+				</h3>
+				<p className="mb-4 text-sm">Project ID: {projectId}</p>
+				<div className="rounded border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+					<p className="text-sm text-yellow-800 dark:text-yellow-200">
+						📋 This will be the main interactive Kanban board with drag-and-drop
+						functionality
+					</p>
+				</div>
+			</div>
+		</div>
+	);
 }
