@@ -1,25 +1,23 @@
 import type { IconType } from "react-icons";
 import {
-	FaBars,
 	FaBell,
-	FaCalendar,
-	FaChartBar,
 	FaCog,
 	FaFolderOpen,
 	FaHome,
-	FaSearch,
-	FaTimes,
+	FaLock,
+	FaPaintBrush,
+	FaUser,
 	FaUsers,
 } from "react-icons/fa";
 
 export interface NavItem {
-	link: string;
+	link?: string;
 	label: string;
 	description: string;
 	icon: IconType;
-	roles: string[];
 	current?: boolean;
 	links?: NavItem[];
+	roles?: string[];
 }
 
 export const NAV_CONFIG: NavItem[] = [
@@ -28,7 +26,6 @@ export const NAV_CONFIG: NavItem[] = [
 		label: "Dashboard",
 		description: "View your dashboard",
 		icon: FaHome,
-		roles: ["Admin"],
 		current: true,
 	},
 	{
@@ -36,39 +33,60 @@ export const NAV_CONFIG: NavItem[] = [
 		label: "Projects",
 		description: "Manage your projects",
 		icon: FaFolderOpen,
-		roles: ["Admin"],
 		current: false,
 	},
 	{
 		link: "team",
-		label: "Team",
+		label: "Teams",
 		description: "Manage your team",
 		icon: FaUsers,
-		roles: ["Admin"],
 		current: false,
-	},
-	{
-		link: "analytics",
-		label: "Analytics",
-		description: "View your analytics",
-		icon: FaChartBar,
-		roles: ["Admin"],
-		current: false,
-	},
-	{
-		link: "calendar",
-		label: "Calendar",
-		description: "View your calendar",
-		icon: FaCalendar,
-		roles: ["Admin"],
-		current: false,
+		links: [
+			{
+				link: "team",
+				label: "People",
+				description: "View all people",
+				icon: FaUsers,
+			},
+			{
+				link: "team/your-teams",
+				label: "Your Teams",
+				description: "View your specific teams",
+				icon: FaFolderOpen,
+			},
+		],
 	},
 	{
 		link: "settings",
 		label: "Settings",
 		description: "Manage your settings",
 		icon: FaCog,
-		roles: ["Admin"],
 		current: false,
+		links: [
+			{
+				link: "settings",
+				label: "Profile",
+				description: "Manage your profile",
+				icon: FaUser,
+			},
+			{
+				link: "settings/notifications",
+				label: "Notifications",
+				description: "Manage notification preferences",
+				icon: FaBell,
+			},
+			{
+				link: "settings/security",
+				label: "Security",
+				description: "Manage security settings",
+				icon: FaLock,
+			},
+			{
+				link: "settings/appearance",
+				label: "Appearance",
+				description: "Manage appearance theme",
+				icon: FaPaintBrush,
+			},
+		],
 	},
 ];
