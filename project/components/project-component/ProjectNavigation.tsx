@@ -23,6 +23,8 @@ export default function ProjectNavigation({
 	const id = projectId ?? params?.id;
 	const pathname = usePathname() ?? "";
 
+	if (pathname?.includes("/project-settings")) return null;
+
 	const navItems = [
 		{ label: "Summary", icon: User, slug: "summary" },
 		{ label: "List", icon: ListTodo, slug: "list" },

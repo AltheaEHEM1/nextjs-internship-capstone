@@ -2,6 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { NavItem } from "./SidebarNavigationConfig";
 
@@ -26,6 +27,7 @@ export function SidebarLink({
 }: SidebarLinkProps) {
 	const Icon = item.icon;
 	const active = isActive(item.link || "");
+	const router = useRouter();
 
 	const baseButtonClasses = cn(
 		"relative flex items-center w-full rounded-xl px-3 py-2.5 transition-all duration-200 group text-sm font-medium font-['Poppins',sans-serif]",
@@ -36,7 +38,12 @@ export function SidebarLink({
 			<div className="w-full">
 				<button
 					type="button"
-					onClick={onToggle}
+					onClick={() => {
+						onToggle();
+						if (item.link) {
+							router.push(`/${item.link}`);
+						}
+					}}
 					className={cn(
 						baseButtonClasses,
 						active || opened
@@ -79,45 +86,57 @@ export function SidebarLink({
 					</div>
 				</button>
 
-				{opened && !isNarrow && (
-					<div className="ml-3 mt-1.5 flex flex-col gap-1 border-l border-slate-200 pl-4 dark:border-slate-800">
-						{item.links
-							.filter((sub) => !sub.roles || (role && sub.roles.includes(role)))
-							.map((sub) => {
-								const SubIcon = sub.icon;
-								const isSubActive = isActive(sub.link || "");
-								return (
-									<Link
-										key={sub.link}
-										href={`/${sub.link}`}
-										onClick={onClose}
-										className={cn(
-											"group relative flex w-full items-center justify-between rounded-lg px-3 py-2 font-['Poppins',sans-serif] text-xs font-medium transition-all duration-200",
-											isSubActive
-												? "dark:bg-cyan-500/15 bg-cyan-500/10 font-semibold text-cyan-700 dark:text-cyan-300"
-												: "text-slate-500 hover:bg-slate-100/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/30 dark:hover:text-white",
-										)}
-									>
-										<div className="flex items-center gap-2.5">
-											<SubIcon
-												size={15}
-												className={cn(
-													"transition-colors",
-													isSubActive
-														? "text-cyan-600 dark:text-cyan-400"
-														: "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300",
-												)}
-											/>
-											<span className="tracking-tight">{sub.label}</span>
-										</div>
-										{isSubActive && (
-											<span className="h-1.5 w-1.5 rounded-full bg-cyan-500 shadow-sm shadow-cyan-500/50" />
-										)}
-									</Link>
-								);
-							})}
+				{/* Smooth Accordion Submenu Container */}
+				<div
+					className={cn(
+						"grid transition-all duration-300 ease-in-out",
+						opened && !isNarrow
+							? "grid-rows-[1fr] opacity-100 mt-1.5 overflow-visible"
+							: "grid-rows-[0fr] opacity-0 overflow-hidden",
+					)}
+				>
+					<div className="overflow-hidden">
+						<div className="ml-3 flex flex-col gap-1 border-l border-cyan-500/20 pl-4 dark:border-cyan-500/30">
+							{item.links
+								.filter(
+									(sub) => !sub.roles || (role && sub.roles.includes(role)),
+								)
+								.map((sub) => {
+									const SubIcon = sub.icon;
+									const isSubActive = isActive(sub.link || "");
+									return (
+										<Link
+											key={sub.link}
+											href={`/${sub.link}`}
+											onClick={onClose}
+											className={cn(
+												"group relative flex w-full items-center justify-between rounded-lg px-3 py-2 font-['Poppins',sans-serif] text-xs font-medium transition-all duration-200",
+												isSubActive
+													? "dark:bg-cyan-500/15 bg-cyan-500/10 font-semibold text-cyan-700 dark:text-cyan-300"
+													: "text-slate-500 hover:bg-slate-100/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/30 dark:hover:text-white",
+											)}
+										>
+											<div className="flex items-center gap-2.5">
+												<SubIcon
+													size={15}
+													className={cn(
+														"transition-colors",
+														isSubActive
+															? "text-cyan-600 dark:text-cyan-400"
+															: "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300",
+													)}
+												/>
+												<span className="tracking-tight">{sub.label}</span>
+											</div>
+											{isSubActive && (
+												<span className="h-1.5 w-1.5 rounded-full bg-cyan-500 shadow-sm shadow-cyan-500/50" />
+											)}
+										</Link>
+									);
+								})}
+						</div>
 					</div>
-				)}
+				</div>
 			</div>
 		);
 	}
@@ -139,7 +158,6 @@ export function SidebarLink({
 					isNarrow ? "justify-center" : "justify-start gap-3",
 				)}
 			>
-				{/* Active Indicator Left Pill */}
 				{active && !isNarrow && (
 					<span className="absolute -left-3.5 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-cyan-500 shadow-sm shadow-cyan-500/50" />
 				)}

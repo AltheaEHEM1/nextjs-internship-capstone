@@ -8,7 +8,6 @@ import {
 	PlusCircle,
 	Users,
 } from "lucide-react";
-import React from "react";
 
 export default function Summary() {
 	// Mock data for recent activities

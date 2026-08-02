@@ -2,7 +2,7 @@
 
 import { Menu, Moon, Search, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import { useState } from "react";
 import { Breadcrumbs } from "@/components/bread-crumbs/BreadCrumbs";
 import NotificationDropdown from "@/components/notification-dropdown/NotificationDropdown";
 import ChipDropdown from "@/components/sidebar/ChipDropDown";
@@ -19,6 +19,8 @@ export default function SidebarHeader({
 }: SidebarHeaderProps) {
 	const { theme, setTheme } = useTheme();
 	const router = useRouter();
+	const [isSearchOpen, setIsSearchOpen] = useState(false);
+	const [searchQuery, setSearchQuery] = useState("");
 
 	const handleLogout = () => {
 		if (onLogout) {
@@ -42,23 +44,32 @@ export default function SidebarHeader({
 				<Breadcrumbs />
 			</div>
 
-			{/* Search Bar */}
-			<div className="flex min-w-0 flex-1 items-center">
-				<div className="relative w-full min-w-0">
-					<Search
-						className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-						size={16}
-					/>
-					<input
-						type="text"
-						placeholder="Search projects, tasks..."
-						className="w-full rounded-xl border border-slate-200 bg-slate-50/60 py-2 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition-all duration-200 focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
-					/>
-				</div>
-			</div>
-
 			{/* Right Section: Actions & Profile */}
 			<div className="flex items-center gap-x-2 sm:gap-x-3">
+				<div className="relative flex items-center">
+					<div
+						className={`overflow-hidden transition-all duration-300 ease-in-out ${
+							isSearchOpen ? "w-64 opacity-100 mr-2" : "w-0 opacity-0"
+						}`}
+					>
+						<input
+							type="text"
+							placeholder="Search tasks..."
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className="w-full rounded-lg border border-french_gray-300 bg-white px-3.5 py-2 text-sm text-outer_space-700 shadow-2xs focus:border-blue_munsell-500 focus:outline-none dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-200"
+						/>
+					</div>
+
+					<button
+						type="button"
+						onClick={() => setIsSearchOpen(!isSearchOpen)}
+						className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-french_gray-300 bg-white text-outer_space-700 shadow-2xs transition-colors hover:bg-french_gray-50 dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-200 dark:hover:bg-payne's_gray-400"
+						aria-label="Toggle search"
+					>
+						<Search size={18} />
+					</button>
+				</div>
 				{/* Notifications Component */}
 				<NotificationDropdown />
 

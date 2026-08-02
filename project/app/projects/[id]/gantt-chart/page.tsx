@@ -1,7 +1,7 @@
 "use client";
 
 import { Gantt, type Task, ViewMode } from "gantt-task-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import "gantt-task-react/dist/index.css";
 
 export default function GanttChart() {
@@ -72,6 +72,7 @@ export default function GanttChart() {
 				{/* View Mode Buttons */}
 				<div className="flex items-center gap-1.5 rounded-lg border border-french_gray-200 bg-white p-1 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
 					<button
+						type="button"
 						onClick={() => setViewMode(ViewMode.Day)}
 						className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
 							viewMode === ViewMode.Day
@@ -82,6 +83,7 @@ export default function GanttChart() {
 						Day
 					</button>
 					<button
+						type="button"
 						onClick={() => setViewMode(ViewMode.Week)}
 						className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
 							viewMode === ViewMode.Week
@@ -92,6 +94,7 @@ export default function GanttChart() {
 						Week
 					</button>
 					<button
+						type="button"
 						onClick={() => setViewMode(ViewMode.Month)}
 						className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
 							viewMode === ViewMode.Month

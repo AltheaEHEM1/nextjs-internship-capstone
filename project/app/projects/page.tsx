@@ -1,9 +1,60 @@
+"use client";
+
 import { Filter, Plus, Search } from "lucide-react";
 import Link from "next/link";
-// import { DashboardLayout } from "@/components/dashboard-layout";
+import { useState } from "react";
+import CreateProject1, {
+	type AccessRole,
+} from "@/components/modals/project/CreateProject1Modal";
+import CreateProject2, {
+	type WorkflowType,
+} from "@/components/modals/project/CreateProject2Modal";
 import { PageHeader } from "@/components/page-header/PageHeader";
 
 export default function ProjectsPage() {
+	const [modalStep, setModalStep] = useState<"closed" | "step1" | "step2">(
+		"closed",
+	);
+
+	const [projectName, setProjectName] = useState("");
+	const [description, setDescription] = useState("");
+	const [access, setAccess] = useState<AccessRole>("administrator");
+	const [team, setTeam] = useState("");
+
+	const handleClose = () => {
+		setModalStep("closed");
+	};
+
+	const handleNext = () => {
+		setModalStep("step2");
+	};
+
+	const handleBack = () => {
+		setModalStep("step1");
+	};
+
+	const handleCreateFinal = (workflowData: {
+		workflow: WorkflowType;
+		views: string[];
+		statuses: any;
+	}) => {
+		const completeProjectData = {
+			name: projectName,
+			description,
+			access,
+			...workflowData,
+		};
+
+		console.log("Submitting Project Data:", completeProjectData);
+		// TODO: Call your API to save the project here
+
+		// Close modal and reset form
+		setModalStep("closed");
+		setProjectName("");
+		setDescription("");
+		setAccess("administrator");
+	};
+
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -13,11 +64,35 @@ export default function ProjectsPage() {
 				/>
 				<button
 					type="button"
-					className="inline-flex items-center rounded-lg bg-blue_munsell-500 px-4 py-2 text-white transition-colors hover:bg-blue_munsell-600"
+					onClick={() => setModalStep("step1")}
+					className="inline-flex items-center rounded-lg bg-[#1e9b65] px-4 py-2 text-white transition-colors hover:opacity-90"
 				>
 					<Plus size={20} className="mr-2" />
 					New Project
 				</button>
+
+				{/* Modal Step 1 */}
+				<CreateProject1
+					opened={modalStep === "step1"}
+					onClose={handleClose}
+					projectName={projectName}
+					setProjectName={setProjectName}
+					description={description}
+					setDescription={setDescription}
+					access={access}
+					setAccess={setAccess}
+					team={team}
+					setTeam={setTeam}
+					onNext={handleNext}
+				/>
+
+				{/* Modal Step 2 */}
+				<CreateProject2
+					opened={modalStep === "step2"}
+					onClose={handleClose}
+					onBack={handleBack}
+					onCreate={handleCreateFinal}
+				/>
 			</div>
 
 			{/* Implementation Tasks Banner */}
@@ -48,7 +123,10 @@ export default function ProjectsPage() {
 						className="w-full rounded-lg border border-french_gray-300 bg-white py-2 pl-10 pr-4 text-outer_space-500 placeholder-payne's_gray-500 focus:outline-none focus:ring-2 focus:ring-blue_munsell-500 dark:border-payne's_gray-400 dark:bg-outer_space-500 dark:text-platinum-500 dark:placeholder-french_gray-400"
 					/>
 				</div>
-				<button className="inline-flex items-center rounded-lg border border-french_gray-300 px-4 py-2 text-outer_space-500 transition-colors hover:bg-platinum-500 dark:border-payne's_gray-400 dark:text-platinum-500 dark:hover:bg-payne's_gray-400">
+				<button
+					type="button"
+					className="inline-flex items-center rounded-lg border border-french_gray-300 px-4 py-2 text-outer_space-500 transition-colors hover:bg-platinum-500 dark:border-payne's_gray-400 dark:text-platinum-500 dark:hover:bg-payne's_gray-400"
+				>
 					<Filter size={16} className="mr-2" />
 					Filter
 				</button>

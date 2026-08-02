@@ -1,6 +1,6 @@
 import { MoreHorizontal } from "lucide-react";
 
-export default async function Board() {
+export default async function BoardPage() {
 	const kanbanColumns = ["To Do", "In Progress", "Review", "Done"];
 
 	return (
@@ -17,7 +17,10 @@ export default async function Board() {
 										{Math.floor(Math.random() * 4) + 1}
 									</span>
 								</h3>
-								<button className="rounded-lg p-1 text-outer_space-400 hover:bg-french_gray-200 dark:text-platinum-400 dark:hover:bg-payne's_gray-400">
+								<button
+									type="button"
+									className="rounded-lg p-1 text-outer_space-400 hover:bg-french_gray-200 dark:text-platinum-400 dark:hover:bg-payne's_gray-400"
+								>
 									<MoreHorizontal size={16} />
 								</button>
 							</div>
@@ -49,7 +52,10 @@ export default async function Board() {
 							))}
 
 							{/* Add Task Button */}
-							<button className="w-full rounded-lg border-2 border-dashed border-french_gray-300 py-2.5 text-sm font-medium text-outer_space-500 transition-colors hover:border-blue_munsell-500 hover:bg-blue_munsell-50/50 hover:text-blue_munsell-600 dark:border-payne's_gray-500 dark:text-platinum-400 dark:hover:bg-blue_munsell-950/20 dark:hover:text-blue_munsell-400">
+							<button
+								type="button"
+								className="w-full rounded-lg border-2 border-dashed border-french_gray-300 py-2.5 text-sm font-medium text-outer_space-500 transition-colors hover:border-blue_munsell-500 hover:bg-blue_munsell-50/50 hover:text-blue_munsell-600 dark:border-payne's_gray-500 dark:text-platinum-400 dark:hover:bg-blue_munsell-950/20 dark:hover:text-blue_munsell-400"
+							>
 								+ Add task
 							</button>
 						</div>

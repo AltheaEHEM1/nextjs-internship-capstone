@@ -9,16 +9,15 @@ import {
 	Users,
 } from "lucide-react";
 import Link from "next/link";
-import { CreateProjectButton } from "@/components/create-project-button";
-import { DashboardStats } from "@/components/dashboard-stats";
-import { Features } from "@/components/features";
-import { KanbanBoard } from "@/components/kanban-board";
-import { ProjectCard } from "@/components/project-card";
-import { ProjectGrid } from "@/components/project-grid";
-import { ProjectHeader } from "@/components/project-header";
-import { RecentProjects } from "@/components/recent-projects";
-import { TaskCard } from "@/components/task-card";
-import { TaskOverview } from "@/components/task-overview";
+// import { DashboardStats } from "@/components/dashboard-stats";
+// import { Features } from "@/components/features";
+// import { KanbanBoard } from "@/components/kanban-board";
+// import { ProjectCard } from "@/components/project-card";
+// import { ProjectGrid } from "@/components/project-grid";
+// import { ProjectHeader } from "@/components/project-header";
+// import { RecentProjects } from "@/components/recent-projects";
+// import { TaskCard } from "@/components/task-card";
+// import { TaskOverview } from "@/components/task-overview";
 
 export default function HomePage() {
 	return (
@@ -172,9 +171,8 @@ export default function HomePage() {
 				</div>
 			</section>
 
-			<section className="px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
+			{/* <section className="px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
 				<div className="container mx-auto flex flex-col items-center gap-6">
-					<CreateProjectButton />
 					<DashboardStats />
 				</div>
 			</section>
@@ -200,7 +198,7 @@ export default function HomePage() {
 						</div>
 					</div>
 				</div>
-			</section>
+			</section> */}
 
 			{/* Navigation Demo Section */}
 			<section className="bg-white/50 px-4 py-12 sm:py-16 dark:bg-outer_space-400/50 sm:px-6 lg:px-8">
@@ -265,7 +263,7 @@ export default function HomePage() {
 				</div>
 			</section>
 
-			<Features />
+			{/* <Features /> */}
 
 			{/* Task Implementation Status */}
 			<section className="px-4 py-12 sm:py-16 sm:px-6 lg:px-8">

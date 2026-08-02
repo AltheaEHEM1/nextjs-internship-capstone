@@ -28,7 +28,10 @@ export default function LayoutWrapper({
 	const isAuthPath = authPaths.some((path) => pathname?.startsWith(path));
 
 	const disableAdminPadding =
-		!!pathname && pathname.startsWith("/projects/") && pathname !== "/projects";
+		!!pathname &&
+		pathname.startsWith("/projects/") &&
+		pathname !== "/projects" &&
+		!pathname.startsWith("/projects/project-settings");
 
 	if (isAuthPath) {
 		return <BaseAuth>{children}</BaseAuth>;

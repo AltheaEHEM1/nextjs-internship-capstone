@@ -119,6 +119,7 @@ export function Pricing() {
 		<section
 			ref={containerRef}
 			onMouseMove={handleMouseMove}
+			aria-label="Pricing spotlight container"
 			className="relative px-4 py-12 sm:py-24 sm:px-8 lg:px-12 overflow-hidden bg-slate-950 font-sans text-slate-100 selection:bg-teal-500 selection:text-white border-t border-slate-800/80"
 		>
 			{/* Interactive Cursor Spotlight Glow */}
