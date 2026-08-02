@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import AddMemberModal from "@/components/modals/team/AddMemberModal";
 import AddTeamModal from "@/components/modals/team/AddTeamModal";
@@ -16,8 +17,8 @@ type Person = {
 };
 type Team = { id: string; name: string; membersCount: number; icon: string };
 
-export default function TeamPage() {
-	const [activeTab, _setActiveTab] = useState<"people" | "teams">("people");
+export default function Team() {
+	const [activeTab, setActiveTab] = useState<"people" | "teams">("teams");
 
 	// Modal states
 	const [isAddPeopleOpen, setIsAddPeopleOpen] = useState(false);
@@ -46,7 +47,7 @@ export default function TeamPage() {
 		},
 	];
 
-	const _teams: Team[] = [
+	const teams: Team[] = [
 		{
 			id: "frontend-core",
 			name: "Frontend Core Team",
@@ -87,12 +88,37 @@ export default function TeamPage() {
 				</button>
 			</div>
 
+			<div className="flex gap-2">
+				<button
+					type="button"
+					onClick={() => setActiveTab("people")}
+					className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+						activeTab === "people"
+							? "bg-blue_munsell-500 text-white"
+							: "bg-white text-outer_space-600 hover:bg-platinum-100 dark:bg-outer_space-500 dark:text-platinum-300"
+					}`}
+				>
+					People
+				</button>
+				<button
+					type="button"
+					onClick={() => setActiveTab("teams")}
+					className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+						activeTab === "teams"
+							? "bg-blue_munsell-500 text-white"
+							: "bg-white text-outer_space-600 hover:bg-platinum-100 dark:bg-outer_space-500 dark:text-platinum-300"
+					}`}
+				>
+					Your Teams
+				</button>
+			</div>
+
 			{activeTab === "people" && (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{people.map((person) => (
 						<div
 							key={person.id}
-							className="rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500 flex items-center justify-between"
+							className="rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500"
 						>
 							<div className="flex items-center gap-3">
 								<div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue_munsell-500 font-bold text-white text-sm">
@@ -105,12 +131,31 @@ export default function TeamPage() {
 									<p className="text-xs text-outer_space-400 dark:text-platinum-400">
 										{person.email}
 									</p>
-									<span className="inline-block mt-1 rounded bg-platinum-100 px-1.5 py-0.5 text-[10px] text-outer_space-600 dark:bg-payne's_gray-500 dark:text-platinum-300">
-										{person.role}
-									</span>
 								</div>
 							</div>
 						</div>
+					))}
+				</div>
+			)}
+
+			{activeTab === "teams" && (
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+					{teams.map((team) => (
+						<Link key={team.id} href={`/team/${team.id}`}>
+							<div className="rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500 hover:border-blue_munsell-400 transition-all cursor-pointer">
+								<div className="flex items-center gap-3">
+									<span className="text-2xl">{team.icon}</span>
+									<div>
+										<h4 className="font-semibold text-outer_space-800 dark:text-platinum-100 text-sm">
+											{team.name}
+										</h4>
+										<p className="text-xs text-outer_space-400 dark:text-platinum-400">
+											{team.membersCount} active members
+										</p>
+									</div>
+								</div>
+							</div>
+						</Link>
 					))}
 				</div>
 			)}
