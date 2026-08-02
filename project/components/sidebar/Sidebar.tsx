@@ -18,7 +18,9 @@ interface SidebarProps {
 export default function Sidebar({ opened, close, role }: SidebarProps) {
 	const [collapsed, setCollapsed] = useState(false);
 	const [isHovered, setIsHovered] = useState(false);
-	const [openedItems, setOpenedItems] = useState<Record<string, boolean>>({});
+
+	// Changed to track a single open dropdown string label instead of a boolean map
+	const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
 	const pathname = usePathname();
 
@@ -43,13 +45,14 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 		};
 	}, [isMobile, opened]);
 
+	// Accordion Toggle: clicking an already open tab closes it, otherwise it switches open to the new one
 	const toggleItem = (label: string) => {
-		setOpenedItems((prev) => ({ ...prev, [label]: !prev[label] }));
+		setOpenDropdown((prev) => (prev === label ? null : label));
 	};
 
 	const NavItems = useMemo(() => {
 		if (!role) return NAV_CONFIG;
-		return NAV_CONFIG.filter((item) => item.roles.includes(role));
+		return NAV_CONFIG;
 	}, [role]);
 
 	const isActive = (path: string) => {
@@ -67,10 +70,30 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 		return normalizedPath === targetPath;
 	};
 
+	// Auto-open parent nav when the current pathname matches a sub-route and clear it otherwise
+	React.useEffect(() => {
+		const normalize = (p: string) => {
+			if (!p) return "";
+			const s = p.replace(/\/$/, "");
+			return s.startsWith("/") ? s : `/${s}`;
+		};
+
+		const current = normalize(pathname || "");
+		const parent = NAV_CONFIG.find((item) => {
+			if (!item.links) return false;
+			return item.links.some((sub) => {
+				const subPath = normalize(sub.link || "");
+				return current === subPath || current.startsWith(`${subPath}/`);
+			});
+		});
+
+		setOpenDropdown(parent ? parent.label : null);
+	}, [pathname]);
+
 	const NavContent = (
 		<div
 			className={cn(
-				"flex h-full flex-col bg-white text-slate-800",
+				"flex h-full flex-col bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors",
 				isNarrow ? "p-2" : "p-3",
 			)}
 		>
@@ -113,7 +136,7 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 						<button
 							type="button"
 							onClick={close}
-							className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+							className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white"
 						>
 							<X size={18} />
 						</button>
@@ -122,7 +145,7 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 							<button
 								type="button"
 								onClick={() => setCollapsed(!collapsed)}
-								className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+								className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white"
 							>
 								{collapsed ? (
 									<ChevronRight size={18} />
@@ -135,7 +158,7 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 				</div>
 			</div>
 
-			<div className="my-1 w-full border-t border-slate-200" />
+			<div className="my-1 w-full border-t border-slate-200 dark:border-slate-800" />
 
 			<div
 				className={cn(
@@ -150,17 +173,17 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 							item={item}
 							isActive={isActive}
 							isNarrow={isNarrow}
-							role={role}
-							opened={openedItems[item.label]}
+							opened={openDropdown === item.label}
 							onToggle={() => toggleItem(item.label)}
 							onClose={close}
+							role={role}
 						/>
 					))}
 				</div>
 			</div>
 
-			<div className="mt-auto border-t border-slate-200 p-2">
-				<div className="flex items-center justify-center text-xs font-medium text-slate-600 opacity-70">
+			<div className="mt-auto border-t border-slate-200 dark:border-slate-800 p-2">
+				<div className="flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-400 opacity-70">
 					{!isNarrow ? (
 						<div className="flex flex-col items-center text-center">
 							© Projectnify
@@ -180,11 +203,11 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 					onMouseEnter={() => setIsHovered(true)}
 					onMouseLeave={() => setIsHovered(false)}
 					className={cn(
-						"sticky top-0 z-30 h-screen border-r border-slate-200 transition-all duration-300",
+						"sticky top-0 z-30 h-screen border-r border-slate-200 dark:border-slate-800 transition-all duration-300",
 						isNarrow ? "w-20" : "w-64",
 					)}
 				>
-					<div className="h-full overflow-hidden bg-white shadow-sm">
+					<div className="h-full overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
 						{NavContent}
 					</div>
 				</aside>
@@ -203,7 +226,7 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 					/>
 					<aside
 						className={cn(
-							"fixed inset-y-0 left-0 z-50 w-full max-w-[85vw] border-r border-slate-200 bg-white shadow-2xl transition-transform duration-300",
+							"fixed inset-y-0 left-0 z-50 w-full max-w-[85vw] border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-300",
 							opened ? "translate-x-0" : "-translate-x-full",
 						)}
 					>
