@@ -9,7 +9,7 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 
 // 1. Updated Task Type matching all requested fields
 type Task = {
@@ -222,7 +222,10 @@ const columns = [
 		header: "",
 		cell: () => (
 			<div className="text-right">
-				<button className="rounded-lg p-1.5 text-outer_space-400 hover:bg-french_gray-200 dark:text-platinum-400 dark:hover:bg-payne's_gray-400 transition-colors">
+				<button
+					type="button"
+					className="rounded-lg p-1.5 text-outer_space-400 hover:bg-french_gray-200 dark:text-platinum-400 dark:hover:bg-payne's_gray-400 transition-colors"
+				>
 					<MoreHorizontal size={16} />
 				</button>
 			</div>
