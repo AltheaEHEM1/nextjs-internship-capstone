@@ -2,7 +2,6 @@
 
 import {
 	Activity,
-	ArrowUpRight,
 	CheckCircle2,
 	Clock,
 	Layers,
@@ -11,7 +10,6 @@ import {
 	Sparkles,
 	Zap,
 } from "lucide-react";
-import React from "react";
 
 export function Features() {
 	return (
