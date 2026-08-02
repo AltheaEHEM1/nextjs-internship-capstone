@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function BaseAuth({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
-	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const [_sidebarOpen, _setSidebarOpen] = useState(false);
 
 	return (
 		<main className="relative flex min-h-screen flex-1 flex-col overflow-hidden bg-white text-slate-900">
