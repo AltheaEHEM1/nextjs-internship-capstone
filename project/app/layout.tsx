@@ -4,10 +4,11 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import type React from "react";
 import "./globals.css";
-import LayoutWrapper from "@/components/layout/LayoutWrapper";
 
 // TODO: Task 2.1 - Set up Clerk authentication service
-// import { ClerkProvider } from "@clerk/nextjs"
+import { ClerkProvider } from "@clerk/nextjs";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
+
 //import { ThemeProvider } from "@/components/theme-provider";
 
 const poppins = Poppins({
@@ -44,15 +45,14 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		// TODO: Task 2.1 - Wrap with ClerkProvider once Clerk is set up
-		// <ClerkProvider>
-		<html lang="en" suppressHydrationWarning>
-			<body
-				className={`${poppins.className} ${geistSans.variable} ${geistMono.variable}`}
-			>
-				<LayoutWrapper>{children}</LayoutWrapper>
-			</body>
-		</html>
-		// </ClerkProvider>
+		<ClerkProvider>
+			<html lang="en" suppressHydrationWarning>
+				<body
+					className={`${poppins.className} ${geistSans.variable} ${geistMono.variable}`}
+				>
+					<LayoutWrapper>{children}</LayoutWrapper>
+				</body>
+			</html>
+		</ClerkProvider>
 	);
 }

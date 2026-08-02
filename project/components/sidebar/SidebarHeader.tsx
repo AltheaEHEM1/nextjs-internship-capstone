@@ -4,9 +4,8 @@ import { Menu, Moon, Search, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Breadcrumbs } from "@/components/bread-crumbs/BreadCrumbs";
-import NotificationDropdown from "@/components/notification-dropdown/NotificationDropdown";
-import ChipDropdown from "@/components/sidebar/ChipDropDown";
 import { useTheme } from "@/components/theme-color/ThemeProvider";
+import { UserButton } from "@clerk/nextjs";
 
 interface SidebarHeaderProps {
 	onMenuClick: () => void;
@@ -70,8 +69,6 @@ export default function SidebarHeader({
 						<Search size={18} />
 					</button>
 				</div>
-				{/* Notifications Component */}
-				<NotificationDropdown />
 
 				{/* Theme Toggle Button */}
 				<button
@@ -82,25 +79,8 @@ export default function SidebarHeader({
 					{theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
 				</button>
 
-				{/* Divider */}
-				<div className="mx-1 h-6 w-[1px] bg-slate-200" />
-
-				{/* User Avatar / Dropdown */}
-				<div className="flex items-center gap-x-3 pl-1">
-					<ChipDropdown
-						onLogout={handleLogout}
-						onProfileClick={() => router.push("/settings")}
-						onSettingsClick={() => router.push("/settings")}
-						noBackground
-						hideLabelsOnMobile
-						disableIcon
-					>
-						<div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-sm font-bold text-white shadow-sm shadow-cyan-500/20 transition-transform hover:scale-105">
-							U
-						</div>
-					</ChipDropdown>
-				</div>
+				<UserButton />
 			</div>
 		</header>
-	);
+	)
 }

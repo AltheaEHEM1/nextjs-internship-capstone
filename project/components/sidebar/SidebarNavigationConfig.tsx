@@ -1,6 +1,5 @@
 import type { IconType } from "react-icons";
 import {
-	FaBell,
 	FaCog,
 	FaFolderOpen,
 	FaHome,
@@ -57,36 +56,10 @@ export const NAV_CONFIG: NavItem[] = [
 		],
 	},
 	{
-		link: "settings",
-		label: "Settings",
-		description: "Manage your settings",
+		link: "notification",
+		label: "Notifications",
+		description: "Manage notification preferences",
 		icon: FaCog,
 		current: false,
-		links: [
-			{
-				link: "settings",
-				label: "Profile",
-				description: "Manage your profile",
-				icon: FaUser,
-			},
-			{
-				link: "settings/notifications",
-				label: "Notifications",
-				description: "Manage notification preferences",
-				icon: FaBell,
-			},
-			{
-				link: "settings/security",
-				label: "Security",
-				description: "Manage security settings",
-				icon: FaLock,
-			},
-			{
-				link: "settings/appearance",
-				label: "Appearance",
-				description: "Manage appearance theme",
-				icon: FaPaintBrush,
-			},
-		],
 	},
 ];

@@ -20,7 +20,7 @@ export default function LayoutWrapper({
 		"/team",
 		"/analytics",
 		"/calendar",
-		"/settings",
+		"/notification",
 	];
 	const authPaths = ["/sign-in", "/sign-up"];
 

@@ -8,7 +8,7 @@ export default function BaseAuth({
 	const [_sidebarOpen, _setSidebarOpen] = useState(false);
 
 	return (
-		<main className="relative flex min-h-screen flex-1 flex-col overflow-hidden bg-white text-slate-900">
+		<main className="relative flex h-screen w-screen items-center justify-center overflow-hidden bg-white text-slate-900">
 			{/* Rich ambient background glows matching your logo palette with enhanced depth */}
 			<div className="pointer-events-none absolute -left-20 -top-32 h-[500px] w-[500px] rounded-full bg-[#14F195]/20 blur-[120px]" />
 			<div className="bg-[#00D2FF]/15 pointer-events-none absolute right-[-10%] top-10 h-[600px] w-[600px] rounded-full blur-[140px]" />
@@ -19,7 +19,9 @@ export default function BaseAuth({
 			<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] opacity-40 [background-size:24px_24px]" />
 
 			{/* Content container */}
-			<div className="relative z-10 flex flex-1 flex-col">{children}</div>
+			<div className="relative z-10 flex items-center justify-center p-6">
+				{children}
+			</div>
 		</main>
 	);
 }

@@ -1,6 +1,15 @@
 "use client";
 
-import {Award, Check, Edit, Mail, Shield, Trash2, User,X,} from "lucide-react";
+import {
+	Award,
+	Check,
+	Edit,
+	Mail,
+	Shield,
+	Trash2,
+	User,
+	X,
+} from "lucide-react";
 import { useState } from "react";
 import type { AccessRole, TeamMember } from "./page";
 
