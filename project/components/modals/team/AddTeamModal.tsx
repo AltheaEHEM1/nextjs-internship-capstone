@@ -18,7 +18,7 @@ export default function AddTeamModal({ opened, onClose }: AddTeamProps) {
 	const [accessibility, setAccessibility] = useState("member");
 
 	const handleCreate = () => {
-		// Handle saving logic here 
+		// Handle saving logic here
 		console.log({
 			teamName,
 			teamIcon,
