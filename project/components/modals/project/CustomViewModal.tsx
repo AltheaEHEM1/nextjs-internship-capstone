@@ -1,0 +1,102 @@
+"use client";
+
+import BaseModal from "@/components/layout/BaseModal";
+
+interface CustomViewProps {
+	opened: boolean;
+	onClose: () => void;
+	selectedViews: string[];
+	onChangeViews: (views: string[]) => void;
+}
+
+const ALL_POSSIBLE_VIEWS = [
+	{ name: "List", required: true },
+	{ name: "Board", required: false },
+	{ name: "Calendar", required: false },
+	{ name: "Map", required: false },
+	{ name: "Activity", required: false },
+	{ name: "Team", required: false },
+	{ name: "Gantt", required: false },
+	{ name: "Mind Map", required: false },
+	{ name: "Table", required: false },
+	{ name: "Timeline", required: false },
+	{ name: "Workload", required: false },
+];
+
+export default function CustomView({
+	opened,
+	onClose,
+	selectedViews,
+	onChangeViews,
+}: CustomViewProps) {
+	const toggleView = (viewName: string) => {
+		if (viewName === "List") return;
+		if (selectedViews.includes(viewName)) {
+			onChangeViews(selectedViews.filter((v) => v !== viewName));
+		} else {
+			onChangeViews([...selectedViews, viewName]);
+		}
+	};
+
+	return (
+		<BaseModal
+			opened={opened}
+			onClose={onClose}
+			width={500}
+			title="Default settings for views"
+			footer={
+				<button
+					type="button"
+					onClick={onClose}
+					className="w-full rounded-lg bg-[#1e9b65] py-2 text-sm font-medium text-white shadow hover:opacity-95 transition"
+				>
+					Done
+				</button>
+			}
+		>
+			<div className="space-y-4">
+				<p className="text-xs text-gray-400">
+					Set up views that appear automatically in every Space, Folder, or List
+					— and can't be removed.
+				</p>
+				<div className="space-y-2">
+					{ALL_POSSIBLE_VIEWS.map(({ name, required }) => {
+						const active = selectedViews.includes(name) || required;
+						return (
+							<div
+								key={name}
+								className="flex items-center justify-between rounded-lg border border-gray-250 bg-gray-200 px-4 py-3"
+							>
+								<span className="text-sm font-medium text-gray">
+									{name}{" "}
+									{required && (
+										<span className="text-xs text-gray-500">— Required</span>
+									)}
+								</span>
+								<div className="flex items-center gap-3">
+									{required && (
+										<span className="text-xs text-gray-400">Default</span>
+									)}
+									<label
+										htmlFor={`view-${name}`}
+										className="relative inline-flex cursor-pointer items-center"
+									>
+										<input
+											type="checkbox"
+											id={`view-${name}`}
+											checked={active}
+											disabled={required}
+											onChange={() => toggleView(name)}
+											className="peer sr-only"
+										/>
+										<div className="peer h-5 w-9 rounded-full bg-gray-700 after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-[#1e9b65] peer-checked:after:translate-x-full peer-focus:outline-none"></div>
+									</label>
+								</div>
+							</div>
+						);
+					})}
+				</div>
+			</div>
+		</BaseModal>
+	);
+}
