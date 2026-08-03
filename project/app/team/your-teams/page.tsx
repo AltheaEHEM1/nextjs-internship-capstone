@@ -4,7 +4,10 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import AddMemberModal from "@/components/modals/team/AddMemberModal";
-import AddTeamModal from "@/components/modals/team/AddTeamModal";
+import AddTeamModal1 from "@/components/modals/team/AddTeamModal1";
+import AddTeamModal2, {
+	type TeamMemberAssignment,
+} from "@/components/modals/team/AddTeamModal2";
 import { PageHeader } from "@/components/page-header/PageHeader";
 
 // Types
@@ -22,12 +25,22 @@ export default function Team() {
 
 	// Modal states
 	const [isAddPeopleOpen, setIsAddPeopleOpen] = useState(false);
-	const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
 
-	// Form states
-	const [_personInput, _setPersonInput] = useState("");
-	const [_personNotes, _setPersonNotes] = useState("");
-	const [_teamName, _setTeamName] = useState("");
+	// Step tracker: 0 = closed, 1 = Step 1 modal, 2 = Step 2 modal
+	const [teamStep, setTeamStep] = useState<0 | 1 | 2>(0);
+
+	// Shared Team Form State combining both steps
+	const [teamData, setTeamData] = useState<{
+		teamName: string;
+		teamIcon: string;
+		coverUrl: string;
+		members: TeamMemberAssignment[];
+	}>({
+		teamName: "",
+		teamIcon: "💻",
+		coverUrl: "",
+		members: [],
+	});
 
 	// Mock Data
 	const people: Person[] = [
@@ -66,7 +79,7 @@ export default function Team() {
 		if (activeTab === "people") {
 			setIsAddPeopleOpen(true);
 		} else {
-			setIsCreateTeamOpen(true);
+			setTeamStep(1);
 		}
 	};
 
@@ -85,31 +98,6 @@ export default function Team() {
 				>
 					<Plus size={18} />
 					{activeTab === "people" ? "Add People" : "Create Team"}
-				</button>
-			</div>
-
-			<div className="flex gap-2">
-				<button
-					type="button"
-					onClick={() => setActiveTab("people")}
-					className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-						activeTab === "people"
-							? "bg-blue_munsell-500 text-white"
-							: "bg-white text-outer_space-600 hover:bg-platinum-100 dark:bg-outer_space-500 dark:text-platinum-300"
-					}`}
-				>
-					People
-				</button>
-				<button
-					type="button"
-					onClick={() => setActiveTab("teams")}
-					className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-						activeTab === "teams"
-							? "bg-blue_munsell-500 text-white"
-							: "bg-white text-outer_space-600 hover:bg-platinum-100 dark:bg-outer_space-500 dark:text-platinum-300"
-					}`}
-				>
-					Your Teams
 				</button>
 			</div>
 
@@ -164,9 +152,29 @@ export default function Team() {
 				opened={isAddPeopleOpen}
 				onClose={() => setIsAddPeopleOpen(false)}
 			/>
-			<AddTeamModal
-				opened={isCreateTeamOpen}
-				onClose={() => setIsCreateTeamOpen(false)}
+
+			{/* Step 1 Modal */}
+			<AddTeamModal1
+				opened={teamStep === 1}
+				onClose={() => setTeamStep(0)}
+				onNext={(step1Data) => {
+					setTeamData((prev) => ({ ...prev, ...step1Data }));
+					setTeamStep(2);
+				}}
+				initialData={teamData}
+			/>
+
+			{/* Step 2 Modal */}
+			<AddTeamModal2
+				opened={teamStep === 2}
+				onClose={() => setTeamStep(0)}
+				onBack={() => setTeamStep(1)}
+				onSubmit={(step2Data) => {
+					const finalPayload = { ...teamData, ...step2Data };
+					console.log("Creating final team payload:", finalPayload);
+					setTeamStep(0);
+				}}
+				initialData={teamData}
 			/>
 		</div>
 	);

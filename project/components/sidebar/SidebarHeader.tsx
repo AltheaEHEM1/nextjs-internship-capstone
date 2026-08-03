@@ -1,11 +1,11 @@
 "use client";
 
+import { UserButton } from "@clerk/nextjs";
 import { Menu, Moon, Search, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Breadcrumbs } from "@/components/bread-crumbs/BreadCrumbs";
 import { useTheme } from "@/components/theme-color/ThemeProvider";
-import { UserButton } from "@clerk/nextjs";
 
 interface SidebarHeaderProps {
 	onMenuClick: () => void;
@@ -82,5 +82,5 @@ export default function SidebarHeader({
 				<UserButton />
 			</div>
 		</header>
-	)
+	);
 }

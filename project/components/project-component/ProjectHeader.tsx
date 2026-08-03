@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import CreateTaskModal from "@/components/modals/task/CreateTask";
+import CreateTaskModal from "@/components/modals/task/CreateTaskModal";
 
 export interface ProjectHeaderProps {
 	title: string;
