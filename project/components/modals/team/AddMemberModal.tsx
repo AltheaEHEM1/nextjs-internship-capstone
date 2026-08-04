@@ -17,7 +17,7 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 			title={
 				<div className="flex items-center gap-2">
 					<UserPlus size={22} style={{ color: "#1e9b65" }} />
-					<span>Add People to Organization</span>
+					<span>Add People</span>
 				</div>
 			}
 			footer={

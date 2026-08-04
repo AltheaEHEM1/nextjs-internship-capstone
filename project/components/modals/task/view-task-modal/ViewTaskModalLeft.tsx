@@ -10,12 +10,6 @@ import {
     X 
 } from "lucide-react";
 
-interface Subtask {
-    id: string;
-    title: string;
-    completed: boolean;
-}
-
 interface ViewTaskLeftProps {
     taskData: {
         title: string;
@@ -35,11 +29,6 @@ export default function ViewTaskModalLeft({
     const [description, setDescription] = useState(taskData.description);
     const [isEditingDesc, setIsEditingDesc] = useState(false);
 
-    // Subtasks State
-    const [subtasks, setSubtasks] = useState<Subtask[]>([]);
-    const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
-    const [showSubtaskInput, setShowSubtaskInput] = useState(false);
-
     // Activity Tab State
     const [activeTab, setActiveTab] = useState<"comments" | "history">("comments");
     const [comments, setComments] = useState<string[]>([]);
@@ -56,20 +45,6 @@ export default function ViewTaskModalLeft({
         setIsEditingDesc(false);
         if (description !== taskData.description && onUpdateTask) {
             onUpdateTask({ description });
-        }
-    };
-
-    const handleAddSubtask = () => {
-        if (!newSubtaskTitle.trim()) return;
-        const updatedSubtasks = [
-            ...subtasks,
-            { id: Date.now().toString(), title: newSubtaskTitle, completed: false },
-        ];
-        setSubtasks(updatedSubtasks);
-        setNewSubtaskTitle("");
-        setShowSubtaskInput(false);
-        if (onUpdateTask) {
-            onUpdateTask({ subtasks: updatedSubtasks });
         }
     };
 
@@ -126,82 +101,6 @@ export default function ViewTaskModalLeft({
                             {description || "Add a more detailed description..."}
                         </div>
                     )}
-                </div>
-
-                {/* Subtasks Section */}
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Subtasks ({subtasks.length})
-                        </label>
-                        {!showSubtaskInput && (
-                            <button
-                                type="button"
-                                onClick={() => setShowSubtaskInput(true)}
-                                className="inline-flex items-center gap-1 text-xs font-medium text-[#1e9b65] hover:underline"
-                            >
-                                <Plus size={14} /> Add Subtask
-                            </button>
-                        )}
-                    </div>
-
-                    {showSubtaskInput && (
-                        <div className="flex gap-2 items-center">
-                            <input
-                                type="text"
-                                placeholder="What needs to be done?"
-                                value={newSubtaskTitle}
-                                onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                                className="flex-1 text-sm rounded-lg border border-gray-300 p-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                                autoFocus
-                            />
-                            <button
-                                type="button"
-                                onClick={handleAddSubtask}
-                                className="rounded-lg bg-[#1e9b65] px-3 py-2 text-xs font-medium text-white hover:opacity-90"
-                            >
-                                Add
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setShowSubtaskInput(false)}
-                                className="rounded-lg border border-gray-300 px-2 py-2 text-gray-500 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300"
-                            >
-                                <X size={14} />
-                            </button>
-                        </div>
-                    )}
-
-                    <div className="space-y-2">
-                        {subtasks.map((sub) => (
-                            <div key={sub.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800/60 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
-                                <label className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={sub.completed}
-                                        onChange={() => {
-                                            const updated = subtasks.map(s => s.id === sub.id ? { ...s, completed: !s.completed } : s);
-                                            setSubtasks(updated);
-                                            onUpdateTask?.({ subtasks: updated });
-                                        }}
-                                        className="rounded border-gray-300 text-[#1e9b65] focus:ring-[#1e9b65]"
-                                    />
-                                    <span className={sub.completed ? "line-through text-gray-400" : ""}>{sub.title}</span>
-                                </label>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const updated = subtasks.filter(s => s.id !== sub.id);
-                                        setSubtasks(updated);
-                                        onUpdateTask?.({ subtasks: updated });
-                                    }}
-                                    className="text-red-400 hover:text-red-600"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
                 </div>
 
                 {/* Activity Tab Section */}

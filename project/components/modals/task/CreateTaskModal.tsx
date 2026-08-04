@@ -134,7 +134,7 @@ export default function CreateTaskModal({
 							<option value="Story">Story</option>
 							<option value="Bug">Bug</option>
 							<option value="Task">Task</option>
-							<option value="Sub-task">Sub-task</option>
+							<option value="Request">Request</option>
 						</select>
 					</div>
 				</div>
