@@ -1,135 +1,226 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import ViewTaskModal from "@/components/modals/task/view-task-modal/ViewTaskModal";
-
-interface Task {
-	workType: string;
-	title: string;
-	description: string;
-	status: string;
-	assignee: string;
-	priority: "low" | "medium" | "high";
-	dueDate: string;
-	label: string;
-	startDate: string;
-	reporter: string;
-}
+import {
+    DndContext,
+    DragStartEvent,
+    DragEndEvent,
+    DragOverEvent,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragOverlay,
+} from "@dnd-kit/core";
+import { SortableContext, arrayMove, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import { createPortal } from "react-dom";
+import { ColumnContainer } from "@/components/board/ColumnContainer";
+import { TaskCard, Task } from "@/components/board/TaskCard";
 
 export default function BoardPage() {
-	const kanbanColumns = ["To Do", "In Progress", "Review", "Done"];
+    const [kanbanColumns, setKanbanColumns] = useState<string[]>(["To Do", "In Progress", "Done"]);
 
-	// State to handle modal visibility and selected task data
-	const [isViewTaskOpen, setIsViewTaskOpen] = useState(false);
-	const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    const [isViewTaskOpen, setIsViewTaskOpen] = useState(false);
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-	// Mock data for demonstration purposes
-	const [tasks, setTasks] = useState<Task[]>([
-		{
-			workType: "Feature",
-			title: "Design System Update #1",
-			description:
-				"Refactor color tokens and component documentation for the layout migration.",
-			status: "To Do",
-			assignee: "U",
-			priority: "medium",
-			dueDate: "2026-06-15",
-			label: "Frontend",
-			startDate: "2026-06-01",
-			reporter: "Admin",
+    const [activeColumn, setActiveColumn] = useState<string | null>(null);
+    const [activeTask, setActiveTask] = useState<Task | null>(null);
+
+    const [tasks, setTasks] = useState<Task[]>([
+        {
+            id: "task-1",
+            workType: "Feature",
+            title: "Design System Update #1",
+            description: "Refactor color tokens and component documentation for the layout migration.",
+            status: "To Do",
+            assignee: "U",
+            priority: "medium",
+            dueDate: "2026-06-15",
+            label: "Frontend",
+            startDate: "2026-06-01",
+            reporter: "Admin",
 		},
-		// Add more mock tasks here if needed
-	]);
+		{
+            id: "task-2",
+            workType: "Feature",
+            title: "Design System Update #1",
+            description: "Refactor color tokens and component documentation for the layout migration.",
+            status: "To Do",
+            assignee: "U",
+            priority: "medium",
+            dueDate: "2026-06-15",
+            label: "Frontend",
+            startDate: "2026-06-01",
+            reporter: "Admin",
+		},
+		{
+            id: "task-3",
+            workType: "Feature",
+            title: "Design System Update #1",
+            description: "Refactor color tokens and component documentation for the layout migration.",
+            status: "To Do",
+            assignee: "U",
+            priority: "medium",
+            dueDate: "2026-06-15",
+            label: "Frontend",
+            startDate: "2026-06-01",
+            reporter: "Admin",
+		},
+		{
+            id: "task-4",
+            workType: "Feature",
+            title: "Design System Update #1",
+            description: "Refactor color tokens and component documentation for the layout migration.",
+            status: "To Do",
+            assignee: "U",
+            priority: "medium",
+            dueDate: "2026-06-15",
+            label: "Frontend",
+            startDate: "2026-06-01",
+            reporter: "Admin",
+        },
+    ]);
 
-	const handleOpenTask = (task: Task) => {
-		setSelectedTask(task);
-		setIsViewTaskOpen(true);
-	};
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5,
+            },
+        })
+    );
 
-	const handleUpdateTask = (updatedFields: Record<string, any>) => {
-		if (!selectedTask) return;
+    const handleOpenTask = (task: Task) => {
+        setSelectedTask(task);
+        setIsViewTaskOpen(true);
+    };
 
-		// Update local task list logic here
-		setTasks((prev) =>
-			prev.map((t) =>
-				t.title === selectedTask.title ? { ...t, ...updatedFields } : t,
-			),
-		);
+    const handleUpdateTask = (updatedFields: Record<string, any>) => {
+        if (!selectedTask) return;
+        setTasks((prev) =>
+            prev.map((t) => (t.id === selectedTask.id ? { ...t, ...updatedFields } : t))
+        );
+        setSelectedTask((prev) => (prev ? { ...prev, ...updatedFields } : null));
+    };
 
-		// Optionally update selected task in-place to keep modal synced
-		setSelectedTask((prev) => (prev ? { ...prev, ...updatedFields } : null));
-	};
+    function onDragStart(event: DragStartEvent) {
+        const { active } = event;
+        const data = active.data.current;
 
-	return (
-		<div className="flex gap-6 overflow-x-auto py-6">
-			{kanbanColumns.map((columnTitle) => (
-				<div key={columnTitle} className="w-72 flex-shrink-0 sm:w-80">
-					<div className="rounded-xl border border-french_gray-200 bg-platinum-100 dark:border-payne's_gray-600 dark:bg-outer_space-500">
-						{/* Column Header */}
-						<div className="border-b border-french_gray-200 p-4 dark:border-payne's_gray-600">
-							<div className="flex items-center justify-between">
-								<h3 className="flex items-center font-semibold text-outer_space-700 dark:text-platinum-200">
-									{columnTitle}
-									<span className="ml-2 rounded-full bg-french_gray-200 px-2.5 py-0.5 text-xs text-outer_space-600 dark:bg-payne's_gray-500 dark:text-platinum-300">
-										{tasks.filter((t) => t.status === columnTitle).length || 3}
-									</span>
-								</h3>
-								<button
-									type="button"
-									className="rounded-lg p-1 text-outer_space-400 hover:bg-french_gray-200 dark:text-platinum-400 dark:hover:bg-payne's_gray-400"
-								>
-									<MoreHorizontal size={16} />
-								</button>
-							</div>
-						</div>
+        if (data?.type === "Column") {
+            setActiveColumn(active.id as string);
+            return;
+        }
 
-						{/* Task Cards Container */}
-						<div className="min-h-[350px] space-y-3 p-4">
-							{tasks.map((taskData, taskIndex) => (
-								<div
-									key={taskIndex}
-									onClick={() => handleOpenTask(taskData)}
-									className="group cursor-pointer rounded-lg border border-french_gray-200 bg-white p-4 shadow-xs transition-all hover:border-blue_munsell-400 hover:shadow-md dark:border-payne's_gray-600 dark:bg-outer_space-400 dark:hover:border-blue_munsell-500"
-								>
-									<h4 className="mb-1 text-sm font-semibold text-outer_space-700 dark:text-platinum-200">
-										{taskData.title}
-									</h4>
-									<p className="mb-3 line-clamp-2 text-xs text-outer_space-400 dark:text-platinum-400">
-										{taskData.description}
-									</p>
-									<div className="flex items-center justify-between pt-2">
-										<span className="rounded-md bg-blue_munsell-50 px-2 py-0.5 text-xs font-medium text-blue_munsell-700 dark:bg-blue_munsell-950 dark:text-blue_munsell-300 capitalize">
-											{taskData.priority}
-										</span>
-										<div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue_munsell-500 text-xs font-semibold text-white shadow-xs">
-											{taskData.assignee}
-										</div>
-									</div>
-								</div>
-							))}
+        if (data?.type === "Task") {
+            setActiveTask(data.task);
+            return;
+        }
+    }
 
-							{/* Add Task Button */}
-							<button
-								type="button"
-								className="w-full rounded-lg border-2 border-dashed border-french_gray-300 py-2.5 text-sm font-medium text-outer_space-500 transition-colors hover:border-blue_munsell-500 hover:bg-blue_munsell-50/50 hover:text-blue_munsell-600 dark:border-payne's_gray-500 dark:text-platinum-400 dark:hover:bg-blue_munsell-950/20 dark:hover:text-blue_munsell-400"
-							>
-								+ Add task
-							</button>
-						</div>
-					</div>
-				</div>
-			))}
+    function onDragOver(event: DragOverEvent) {
+        const { active, over } = event;
+        if (!over) return;
 
-			{/* Render Modal Component */}
-			{selectedTask && (
-				<ViewTaskModal
-					opened={isViewTaskOpen}
-					onClose={() => setIsViewTaskOpen(false)}
-					taskData={selectedTask}
-					onUpdateTask={handleUpdateTask}
-				/>
-			)}
-		</div>
-	);
+        const activeId = active.id;
+        const overId = over.id;
+
+        if (activeId === overId) return;
+
+        const isActiveATask = active.data.current?.type === "Task";
+        const isOverATask = over.data.current?.type === "Task";
+
+        if (!isActiveATask) return;
+
+        if (isActiveATask && isOverATask) {
+            setTasks((tasks) => {
+                const activeIndex = tasks.findIndex((t) => t.id === activeId);
+                const overIndex = tasks.findIndex((t) => t.id === overId);
+
+                if (tasks[activeIndex].status !== tasks[overIndex].status) {
+                    tasks[activeIndex].status = tasks[overIndex].status;
+                }
+
+                return arrayMove(tasks, activeIndex, overIndex);
+            });
+        }
+
+        const isOverAColumn = kanbanColumns.includes(overId as string);
+        if (isActiveATask && isOverAColumn) {
+            setTasks((tasks) => {
+                const activeIndex = tasks.findIndex((t) => t.id === activeId);
+                tasks[activeIndex].status = overId as string;
+                return arrayMove(tasks, activeIndex, activeIndex);
+            });
+        }
+    }
+
+    function onDragEnd(event: DragEndEvent) {
+        setActiveColumn(null);
+        setActiveTask(null);
+
+        const { active, over } = event;
+        if (!over) return;
+
+        const activeId = active.id;
+        const overId = over.id;
+
+        if (activeId === overId) return;
+
+        const isActiveAColumn = active.data.current?.type === "Column";
+        if (isActiveAColumn) {
+            setKanbanColumns((columns) => {
+                const activeIndex = columns.indexOf(activeId as string);
+                const overIndex = columns.indexOf(overId as string);
+                return arrayMove(columns, activeIndex, overIndex);
+            });
+        }
+    }
+
+    return (
+        <div className="flex gap-6 overflow-x-auto px-4 py-6">
+            <DndContext
+                sensors={sensors}
+                onDragStart={onDragStart}
+                onDragOver={onDragOver}
+                onDragEnd={onDragEnd}
+            >
+                <div className="flex gap-6">
+                    <SortableContext items={kanbanColumns} strategy={horizontalListSortingStrategy}>
+                        {kanbanColumns.map((columnTitle) => (
+                            <ColumnContainer
+                                key={columnTitle}
+                                columnTitle={columnTitle}
+                                tasks={tasks.filter((t) => t.status === columnTitle)}
+                                onOpenTask={handleOpenTask}
+                            />
+                        ))}
+                    </SortableContext>
+                </div>
+
+                {typeof window !== "undefined" &&
+                    createPortal(
+                        <DragOverlay>
+                            {activeColumn && (
+                                <div className="h-[400px] w-72 rounded-xl border border-french_gray-200 bg-platinum-100 p-4 opacity-80 shadow-lg sm:w-80 dark:border-payne's_gray-600 dark:bg-outer_space-500">
+                                    <h3 className="font-semibold">{activeColumn}</h3>
+                                </div>
+                            )}
+                            {activeTask && (
+                                <TaskCard taskData={activeTask} onClick={() => {}} isOverlay />
+                            )}
+                        </DragOverlay>,
+                        document.body
+                    )}
+            </DndContext>
+
+            {selectedTask && (
+                <ViewTaskModal
+                    opened={isViewTaskOpen}
+                    onClose={() => setIsViewTaskOpen(false)}
+                    taskData={selectedTask}
+                    onUpdateTask={handleUpdateTask}
+                />
+            )}
+        </div>
+    );
 }
