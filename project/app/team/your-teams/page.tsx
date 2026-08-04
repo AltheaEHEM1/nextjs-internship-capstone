@@ -21,7 +21,7 @@ type Person = {
 type Team = { id: string; name: string; membersCount: number; icon: string };
 
 export default function Team() {
-	const [activeTab, setActiveTab] = useState<"people" | "teams">("teams");
+	const [activeTab, _setActiveTab] = useState<"people" | "teams">("teams");
 
 	// Modal states
 	const [isAddPeopleOpen, setIsAddPeopleOpen] = useState(false);
