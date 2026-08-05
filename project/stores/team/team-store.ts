@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { Person, Team, TeamFormState } from '@/hooks/team/useTeam';
+import type { TeamMemberAssignment } from '@/stores/team/custom-add-team-member-store';
 
 export interface TeamState {
   activeTab: 'people' | 'teams';
@@ -26,7 +27,7 @@ export interface TeamState {
   closeTeamModal: () => void;
   handleTeamStep1Next: (data: { teamName: string; teamIcon: string; coverUrl: string }) => void;
   handleTeamStep2Back: () => void;
-  handleTeamStep2Submit: (data: { members: any[] }) => void;
+  handleTeamStep2Submit: (members: TeamMemberAssignment[]) => void;
 }
 
 export const useTeamStore = create<TeamState>()(
@@ -121,9 +122,9 @@ export const useTeamStore = create<TeamState>()(
           setTeamStep(2);
         },
         handleTeamStep2Back: () => set({ teamStep: 1 }),
-        handleTeamStep2Submit: (data) => {
+        handleTeamStep2Submit: (members) => {
           const { teamData, setTeamStep } = get();
-          const finalPayload = { ...teamData, ...data };
+          const finalPayload = { ...teamData, members };
           console.log('Creating final team payload:', finalPayload);
           setTeamStep(0);
         },

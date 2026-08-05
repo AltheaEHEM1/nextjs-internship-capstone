@@ -105,7 +105,7 @@ export default function Team() {
 				onClose={closeTeamModal}
 				onBack={handleTeamStep2Back}
 				onSubmit={handleTeamStep2Submit}
-				initialData={teamData}
+				initialData={{}}
 			/>
 		</div>
 	);
