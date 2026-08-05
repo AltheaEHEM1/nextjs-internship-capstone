@@ -9,24 +9,18 @@ import {
 	UserPlus,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import AddTeamMemberModal from "@/components/modals/team/AddTeamMemberModal";
+import { useTeamStore } from "@/stores/team/team-store";
 
 export default function SpecificTeam() {
-	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
-
-	// Mock team info
-	const team = {
-		name: "Frontend Core Team",
-		icon: "💻",
-		coverUrl:
-			"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop",
-		members: [
-			{ id: "1", name: "Alex Mercer", role: "Lead Frontend", avatar: "A" },
-			{ id: "2", name: "Sarah Jenkins", role: "UI Designer", avatar: "S" },
-		],
-	};
+	const {
+		team,
+		isMenuOpen,
+		isAddMemberOpen,
+		toggleMenu,
+		openAddMemberModal,
+		closeAddMemberModal,
+	} = useTeamStore();
 
 	return (
 		<div className="space-y-6 pb-12">
@@ -42,7 +36,6 @@ export default function SpecificTeam() {
 
 			{/* Cover Picture & Info Header */}
 			<div className="relative rounded-2xl border border-french_gray-200 bg-white shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-				{/* Note: Removed overflow-hidden from here so the dropdown can escape the container bounds */}
 				<div
 					className="h-40 w-full bg-cover bg-center rounded-t-2xl overflow-hidden"
 					style={{ backgroundImage: `url(${team.coverUrl})` }}
@@ -67,7 +60,7 @@ export default function SpecificTeam() {
 					<div className="flex items-center gap-2">
 						<button
 							type="button"
-							onClick={() => setIsAddMemberOpen(true)}
+							onClick={openAddMemberModal}
 							className="inline-flex items-center gap-1.5 rounded-xl bg-blue_munsell-500 px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue_munsell-600 transition-colors"
 						>
 							<UserPlus size={15} />
@@ -77,31 +70,26 @@ export default function SpecificTeam() {
 						<div className="relative">
 							<button
 								type="button"
-								onClick={() => setIsMenuOpen(!isMenuOpen)}
+								onClick={toggleMenu}
 								className="rounded-xl border border-french_gray-200 p-2 text-outer_space-500 hover:bg-platinum-100 dark:border-payne's_gray-600 dark:text-platinum-300 dark:hover:bg-outer_space-400 transition-colors"
 							>
 								<MoreHorizontal size={18} />
 							</button>
 
+							{/* Dropdown Menu */}
 							{isMenuOpen && (
-								<div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-french_gray-200 bg-white py-1 shadow-xl dark:border-payne's_gray-600 dark:bg-outer_space-400 z-50">
+								<div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1 z-10">
 									<button
 										type="button"
-										className="flex w-full items-center gap-2 px-4 py-2 text-xs text-outer_space-700 hover:bg-platinum-100 dark:text-platinum-200 dark:hover:bg-outer_space-500"
+										className="flex w-full items-center gap-2 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
 									>
-										<LogOut size={14} /> Leave Team
-									</button>
-									<button
-										type="button"
-										className="flex w-full items-center gap-2 px-4 py-2 text-xs text-outer_space-700 hover:bg-platinum-100 dark:text-platinum-200 dark:hover:bg-outer_space-500"
-									>
-										<Archive size={14} /> Archive Team
+										Edit Team
 									</button>
 									<button
 										type="button"
 										className="flex w-full items-center gap-2 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
 									>
-										<Trash2 size={14} /> Delete Team
+										Delete Team
 									</button>
 								</div>
 							)}
@@ -141,7 +129,7 @@ export default function SpecificTeam() {
 
 			<AddTeamMemberModal
 				opened={isAddMemberOpen}
-				onClose={() => setIsAddMemberOpen(false)}
+				onClose={closeAddMemberModal}
 			/>
 		</div>
 	);

@@ -2,8 +2,11 @@
 
 import { Tldraw } from "tldraw";
 import "tldraw/tldraw.css";
+import { useWhiteboardStore } from "@/stores/project/whiteboard-store";
 
 export default function WhiteBoard() {
+	const persistenceKey = useWhiteboardStore(state => state.persistenceKey);
+
 	return (
 		<div className="space-y-4 pb-12">
 			{/* Header Info */}
@@ -21,7 +24,7 @@ export default function WhiteBoard() {
 
 			{/* Whiteboard Container */}
 			<div className="relative h-[700px] w-full z-10 overflow-hidden rounded-xl border border-french_gray-200 shadow-xs dark:border-payne's_gray-600">
-				<Tldraw persistenceKey="project-srg-whiteboard" />
+				<Tldraw persistenceKey={persistenceKey} />
 			</div>
 		</div>
 	);

@@ -1,244 +1,182 @@
 "use client";
 
 import {
-	createColumnHelper,
+	type ColumnDef,
+	type HeaderGroup,
+	type Header,
+	type Row,
+	type Cell,
 	flexRender,
 	getCoreRowModel,
 	getSortedRowModel,
-	type SortingState,
 	useReactTable,
+	type SortingState,
 } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useState } from "react";
 
-// 1. Updated Task Type matching all requested fields
-type Task = {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Task {
 	id: string;
 	title: string;
-	description: string;
-	subtasksCount: string;
-	status: "To Do" | "In Progress" | "Review" | "Done";
-	detailsAssignee: string;
-	priority: "Low" | "Medium" | "High" | "Urgent";
-	parent: string;
+	status: "Todo" | "In Progress" | "In Review" | "Done";
+	priority: "Low" | "Medium" | "High" | "Critical";
+	assignee: string;
 	dueDate: string;
-	startDate: string;
-	reporter: string;
-	dateOfCreation: string;
-	updatedDate: string;
-	storyPoint: number;
-};
+	estimate: string;
+}
 
-// 2. Mock data for the table
-const data: Task[] = [
+// ─── Static Data ──────────────────────────────────────────────────────────────
+
+const TASKS: Task[] = [
 	{
-		id: "TASK-101",
-		title: "Design System Color Tokens Refactor",
-		description: "Update core Tailwind tokens to match dark mode themes.",
-		subtasksCount: "2/4",
-		status: "In Progress",
-		detailsAssignee: "Alex Mercer",
-		priority: "High",
-		parent: "Website Redesign",
-		dueDate: "Aug 15, 2026",
-		startDate: "Aug 01, 2026",
-		reporter: "Yuan Exequiel",
-		dateOfCreation: "Jul 30, 2026",
-		updatedDate: "Aug 02, 2026",
-		storyPoint: 5,
-	},
-	{
-		id: "TASK-102",
-		title: "Implement Role-Based Access Control (RBAC)",
-		description: "Restrict page routes based on user credentials.",
-		subtasksCount: "0/3",
-		status: "To Do",
-		detailsAssignee: "Yuan Exequiel",
-		priority: "Urgent",
-		parent: "Inventory System",
-		dueDate: "Aug 18, 2026",
-		startDate: "Aug 05, 2026",
-		reporter: "Sarah Jenkins",
-		dateOfCreation: "Aug 01, 2026",
-		updatedDate: "Aug 01, 2026",
-		storyPoint: 8,
-	},
-	{
-		id: "TASK-103",
-		title: "Setup Docker container for SRG website",
-		description: "Configure multi-stage builds for deployment.",
-		subtasksCount: "3/3",
+		id: "TASK-001",
+		title: "Design system tokens",
 		status: "Done",
-		detailsAssignee: "Sarah Jenkins",
+		priority: "High",
+		assignee: "Alice",
+		dueDate: "Aug 5",
+		estimate: "3h",
+	},
+	{
+		id: "TASK-002",
+		title: "Build kanban board",
+		status: "In Progress",
+		priority: "Critical",
+		assignee: "Bob",
+		dueDate: "Aug 10",
+		estimate: "8h",
+	},
+	{
+		id: "TASK-003",
+		title: "Implement auth flow",
+		status: "In Review",
+		priority: "High",
+		assignee: "Carol",
+		dueDate: "Aug 12",
+		estimate: "5h",
+	},
+	{
+		id: "TASK-004",
+		title: "Write unit tests",
+		status: "Todo",
 		priority: "Medium",
-		parent: "SRG Site",
-		dueDate: "Aug 02, 2026",
-		startDate: "Jul 25, 2026",
-		reporter: "Yuan Exequiel",
-		dateOfCreation: "Jul 24, 2026",
-		updatedDate: "Aug 02, 2026",
-		storyPoint: 3,
+		assignee: "Dave",
+		dueDate: "Aug 20",
+		estimate: "4h",
+	},
+	{
+		id: "TASK-005",
+		title: "API rate limiting",
+		status: "Todo",
+		priority: "Low",
+		assignee: "Eve",
+		dueDate: "Aug 25",
+		estimate: "2h",
 	},
 ];
 
-const columnHelper = createColumnHelper<Task>();
+const STATUS_COLORS: Record<Task["status"], string> = {
+	Todo: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
+	"In Progress": "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+	"In Review": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+	Done: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+};
 
-// 3. Define columns configuration mapped to your fields
-const columns = [
-	columnHelper.accessor("title", {
-		header: "Title & Description",
-		cell: (info) => (
-			<div>
-				<div className="font-semibold text-outer_space-800 dark:text-platinum-100">
-					{info.getValue()}
-				</div>
-				<div className="text-xs text-outer_space-400 dark:text-platinum-400 line-clamp-1">
-					{info.row.original.description}
-				</div>
-				<div className="text-[10px] text-blue_munsell-600 dark:text-blue_munsell-400 mt-0.5">
-					{info.row.original.id}
-				</div>
-			</div>
+const PRIORITY_COLORS: Record<Task["priority"], string> = {
+	Low: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+	Medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
+	High: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+	Critical: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+};
+
+// ─── Column Definitions ───────────────────────────────────────────────────────
+
+const COLUMNS: ColumnDef<Task>[] = [
+	{
+		accessorKey: "id",
+		header: "ID",
+		cell: ({ getValue }) => (
+			<span className="font-mono text-xs text-outer_space-400 dark:text-platinum-400">
+				{getValue<string>()}
+			</span>
 		),
-	}),
-	columnHelper.accessor("status", {
+	},
+	{
+		accessorKey: "title",
+		header: "Title",
+		cell: ({ getValue }) => (
+			<span className="font-medium text-outer_space-700 dark:text-platinum-200">
+				{getValue<string>()}
+			</span>
+		),
+	},
+	{
+		accessorKey: "status",
 		header: "Status",
-		cell: (info) => {
-			const status = info.getValue();
-			let badgeClass = "bg-amber-500/10 text-amber-600 border-amber-500/20";
-			if (status === "Done")
-				badgeClass =
-					"bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400";
-			if (status === "In Progress")
-				badgeClass =
-					"bg-blue_munsell-500/10 text-blue_munsell-600 border-blue_munsell-500/20 dark:text-blue_munsell-400";
-			if (status === "Review")
-				badgeClass =
-					"bg-purple-500/10 text-purple-600 border-purple-500/20 dark:text-purple-400";
-
+		cell: ({ getValue }) => {
+			const status = getValue<Task["status"]>();
 			return (
 				<span
-					className={`inline-flex items-center rounded-md px-2.5 py-1 text-[11px] font-medium border uppercase tracking-wider ${badgeClass}`}
+					className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}
 				>
 					{status}
 				</span>
 			);
 		},
-	}),
-	columnHelper.accessor("priority", {
+	},
+	{
+		accessorKey: "priority",
 		header: "Priority",
-		cell: (info) => {
-			const priority = info.getValue();
-			let colorClass = "text-outer_space-400 dark:text-platinum-400";
-			if (priority === "Urgent")
-				colorClass = "text-rose-600 dark:text-rose-400 font-semibold";
-			if (priority === "High")
-				colorClass = "text-amber-600 dark:text-amber-400 font-medium";
-			if (priority === "Medium")
-				colorClass = "text-blue_munsell-600 dark:text-blue_munsell-400";
-
-			return <span className={`text-xs ${colorClass}`}>{priority}</span>;
-		},
-	}),
-	columnHelper.accessor("subtasksCount", {
-		header: "Subtasks",
-		cell: (info) => (
-			<span className="text-xs font-medium text-outer_space-600 dark:text-platinum-300">
-				{info.getValue()}
-			</span>
-		),
-	}),
-	columnHelper.accessor("detailsAssignee", {
-		header: "Assignee",
-		cell: (info) => (
-			<div className="flex items-center gap-2">
-				<div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue_munsell-500 text-[10px] font-semibold text-white">
-					{info.getValue().charAt(0)}
-				</div>
-				<span className="text-xs font-medium text-outer_space-700 dark:text-platinum-200">
-					{info.getValue()}
-				</span>
-			</div>
-		),
-	}),
-	columnHelper.accessor("reporter", {
-		header: "Reporter",
-		cell: (info) => (
-			<span className="text-xs text-outer_space-500 dark:text-platinum-400">
-				{info.getValue()}
-			</span>
-		),
-	}),
-	columnHelper.accessor("parent", {
-		header: "Parent",
-		cell: (info) => (
-			<span className="rounded bg-platinum-200/60 px-1.5 py-0.5 text-xs text-outer_space-600 dark:bg-payne's_gray-500 dark:text-platinum-300">
-				{info.getValue()}
-			</span>
-		),
-	}),
-	columnHelper.accessor("startDate", {
-		header: "Start Date",
-		cell: (info) => (
-			<span className="text-xs text-outer_space-500 dark:text-platinum-400">
-				{info.getValue()}
-			</span>
-		),
-	}),
-	columnHelper.accessor("dueDate", {
-		header: "Due Date",
-		cell: (info) => (
-			<span className="text-xs text-outer_space-500 dark:text-platinum-400">
-				{info.getValue()}
-			</span>
-		),
-	}),
-	columnHelper.accessor("storyPoint", {
-		header: "Story Points",
-		cell: (info) => (
-			<span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue_munsell-50 text-xs font-bold text-blue_munsell-700 dark:bg-blue_munsell-950 dark:text-blue_munsell-300">
-				{info.getValue()}
-			</span>
-		),
-	}),
-	columnHelper.accessor("dateOfCreation", {
-		header: "Created",
-		cell: (info) => (
-			<span className="text-[11px] text-outer_space-400 dark:text-platinum-400">
-				{info.getValue()}
-			</span>
-		),
-	}),
-	columnHelper.accessor("updatedDate", {
-		header: "Updated",
-		cell: (info) => (
-			<span className="text-[11px] text-outer_space-400 dark:text-platinum-400">
-				{info.getValue()}
-			</span>
-		),
-	}),
-	columnHelper.display({
-		id: "actions",
-		header: "",
-		cell: () => (
-			<div className="text-right">
-				<button
-					type="button"
-					className="rounded-lg p-1.5 text-outer_space-400 hover:bg-french_gray-200 dark:text-platinum-400 dark:hover:bg-payne's_gray-400 transition-colors"
+		cell: ({ getValue }) => {
+			const priority = getValue<Task["priority"]>();
+			return (
+				<span
+					className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${PRIORITY_COLORS[priority]}`}
 				>
-					<MoreHorizontal size={16} />
-				</button>
-			</div>
+					{priority}
+				</span>
+			);
+		},
+	},
+	{
+		accessorKey: "assignee",
+		header: "Assignee",
+		cell: ({ getValue }) => (
+			<span className="text-outer_space-600 dark:text-platinum-300">
+				{getValue<string>()}
+			</span>
 		),
-	}),
+	},
+	{
+		accessorKey: "dueDate",
+		header: "Due Date",
+		cell: ({ getValue }) => (
+			<span className="text-outer_space-500 dark:text-platinum-400">
+				{getValue<string>()}
+			</span>
+		),
+	},
+	{
+		accessorKey: "estimate",
+		header: "Estimate",
+		cell: ({ getValue }) => (
+			<span className="font-mono text-xs text-outer_space-400 dark:text-platinum-400">
+				{getValue<string>()}
+			</span>
+		),
+	},
 ];
+
+// ─── Page Component ───────────────────────────────────────────────────────────
 
 export default function List() {
 	const [sorting, setSorting] = useState<SortingState>([]);
 
-	const table = useReactTable({
-		data,
-		columns,
+	const table = useReactTable<Task>({
+		data: TASKS,
+		columns: COLUMNS,
 		state: { sorting },
 		onSortingChange: setSorting,
 		getCoreRowModel: getCoreRowModel(),
@@ -262,9 +200,9 @@ export default function List() {
 			<div className="overflow-x-auto rounded-xl border border-french_gray-200 bg-white shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
 				<table className="w-full text-left text-sm whitespace-nowrap">
 					<thead className="border-b border-french_gray-200 bg-platinum-100/60 dark:border-payne's_gray-600 dark:bg-outer_space-400/50">
-						{table.getHeaderGroups().map((headerGroup) => (
+						{table.getHeaderGroups().map((headerGroup: HeaderGroup<Task>) => (
 							<tr key={headerGroup.id}>
-								{headerGroup.headers.map((header) => (
+								{headerGroup.headers.map((header: Header<Task, unknown>) => (
 									<th
 										key={header.id}
 										className="px-4 py-3.5 text-xs uppercase tracking-wider text-outer_space-500 dark:text-platinum-300"
@@ -282,23 +220,25 @@ export default function List() {
 													header.column.columnDef.header,
 													header.getContext(),
 												)}
-												{{
-													asc: (
-														<ArrowUp
-															size={13}
-															className="text-blue_munsell-500"
-														/>
-													),
-													desc: (
-														<ArrowDown
-															size={13}
-															className="text-blue_munsell-500"
-														/>
-													),
-												}[header.column.getIsSorted() as string] ??
+												{
+													{
+														asc: (
+															<ArrowUp
+																size={13}
+																className="text-blue_munsell-500"
+															/>
+														),
+														desc: (
+															<ArrowDown
+																size={13}
+																className="text-blue_munsell-500"
+															/>
+														),
+													}[header.column.getIsSorted() as string] ??
 													(header.column.getCanSort() ? (
 														<ArrowUpDown size={13} className="opacity-30" />
-													) : null)}
+													) : null)
+												}
 											</div>
 										)}
 									</th>
@@ -308,12 +248,12 @@ export default function List() {
 					</thead>
 
 					<tbody className="divide-y divide-french_gray-100 dark:divide-payne's_gray-600/60">
-						{table.getRowModel().rows.map((row) => (
+						{table.getRowModel().rows.map((row: Row<Task>) => (
 							<tr
 								key={row.id}
 								className="transition-colors hover:bg-platinum-50/50 dark:hover:bg-outer_space-400/30"
 							>
-								{row.getVisibleCells().map((cell) => (
+								{row.getVisibleCells().map((cell: Cell<Task, unknown>) => (
 									<td key={cell.id} className="px-4 py-3.5">
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}
 									</td>

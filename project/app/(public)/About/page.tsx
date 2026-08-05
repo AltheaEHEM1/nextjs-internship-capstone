@@ -1,76 +1,12 @@
 "use client";
 
-import {
-	ChevronRight,
-	Compass,
-	ShieldAlert,
-	Sparkles,
-	Target,
-	Zap,
-} from "lucide-react";
+import { ChevronRight, Sparkles } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useAbout } from "@/hooks/public/useAbout";
 
-export function About() {
-	const [activeTab, setActiveTab] = useState(0);
-
-	const features = [
-		{
-			id: "story",
-			title: "Brand Story",
-			quote:
-				"Projectnify is built for modern teams who want a clean, collaborative workspace...",
-			tag: "Origins",
-			icon: Compass,
-			gradient: "from-teal-500 via-cyan-500 to-blue-500",
-			accentBg: "bg-cyan-50 border-cyan-200 text-cyan-600",
-			glowColor: "bg-cyan-400/20",
-		},
-		{
-			id: "mission",
-			title: "Our Mission",
-			quote:
-				"Make project management effortless with powerful visual tools, intuitive workflows, and real-time collaboration.",
-			tag: "Purpose",
-			icon: Target,
-			gradient: "from-blue-600 via-indigo-500 to-purple-500",
-			accentBg: "bg-indigo-50 border-indigo-200 text-indigo-600",
-			glowColor: "bg-indigo-400/20",
-		},
-		{
-			id: "problems",
-			title: "Problems We Solve",
-			quote:
-				"Eliminate scattered tasks, unclear priorities, and friction-filled team communication.",
-			tag: "Solution",
-			icon: ShieldAlert,
-			gradient: "from-violet-600 via-purple-500 to-fuchsia-500",
-			accentBg: "bg-purple-50 border-purple-200 text-purple-600",
-			glowColor: "bg-purple-400/20",
-		},
-		{
-			id: "value",
-			title: "Our Value",
-			quote:
-				"Fast setup, flexible boards, and a polished interface that makes work feel truly effortless.",
-			tag: "Advantage",
-			icon: Zap,
-			gradient: "from-emerald-500 via-teal-500 to-cyan-500",
-			accentBg: "bg-emerald-50 border-emerald-200 text-emerald-600",
-			glowColor: "bg-emerald-400/20",
-		},
-	];
-
-	// Auto-rotate tabs every 6 seconds
-	useEffect(() => {
-		const timer = setInterval(() => {
-			setActiveTab((prev) => (prev + 1) % features.length);
-		}, 6000);
-		return () => clearInterval(timer);
-	}, [features.length]);
-
-	const activeFeature = features[activeTab];
-	const ActiveIcon = activeFeature.icon;
+export default function AboutPage() {
+	const { features, activeTab, setActiveTab, activeFeature, ActiveIcon } =
+		useAbout();
 
 	return (
 		<section className="relative px-4 sm:px-8 lg:px-12 py-12 sm:py-20 bg-slate-50 text-slate-900 font-sans overflow-hidden border-t border-slate-200/80">
@@ -128,7 +64,7 @@ export function About() {
 				<div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
 					{/* Navigation Tabs */}
 					<div className="lg:col-span-5 space-y-2.5 sm:space-y-3">
-						{features.map((item, index) => {
+						{features.map((item: any, index: number) => {
 							const Icon = item.icon;
 							const isActive = activeTab === index;
 							return (
@@ -136,19 +72,17 @@ export function About() {
 									type="button"
 									key={item.id}
 									onClick={() => setActiveTab(index)}
-									className={`w-full text-left p-3.5 sm:p-5 rounded-2xl transition-all duration-300 border flex items-center justify-between group ${
-										isActive
+									className={`w-full text-left p-3.5 sm:p-5 rounded-2xl transition-all duration-300 border flex items-center justify-between group ${isActive
 											? "bg-white border-slate-300 shadow-xl shadow-slate-200/60 scale-[1.01] sm:scale-[1.02]"
 											: "bg-white/50 hover:bg-white/80 border-transparent hover:border-slate-200"
-									}`}
+										}`}
 								>
 									<div className="flex items-center gap-3 sm:gap-4 min-w-0">
 										<div
-											className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
-												isActive
+											className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 ${isActive
 													? item.accentBg
 													: "bg-slate-100 text-slate-500 group-hover:bg-slate-200"
-											}`}
+												}`}
 										>
 											<Icon className="w-4 h-4 sm:w-5 sm:h-5" />
 										</div>
@@ -165,11 +99,10 @@ export function About() {
 									</div>
 
 									<ChevronRight
-										className={`w-4 h-4 transition-all shrink-0 ${
-											isActive
+										className={`w-4 h-4 transition-all shrink-0 ${isActive
 												? "text-slate-800 translate-x-1"
 												: "text-slate-400 opacity-0 group-hover:opacity-100"
-										}`}
+											}`}
 									/>
 								</button>
 							);
@@ -202,16 +135,15 @@ export function About() {
 
 								{/* Progress bar indicator */}
 								<div className="pt-4 sm:pt-6 border-t border-slate-100 flex items-center gap-2">
-									{features.map((_, idx) => (
+									{features.map((_: any, idx: number) => (
 										<button
 											type="button"
 											key={idx}
 											onClick={() => setActiveTab(idx)}
-											className={`h-1.5 rounded-full cursor-pointer transition-all duration-500 ${
-												idx === activeTab
+											className={`h-1.5 rounded-full cursor-pointer transition-all duration-500 ${idx === activeTab
 													? `w-8 bg-gradient-to-r ${activeFeature.gradient}`
 													: "w-3 bg-slate-200 hover:bg-slate-300"
-											}`}
+												}`}
 										/>
 									))}
 								</div>
@@ -223,5 +155,3 @@ export function About() {
 		</section>
 	);
 }
-
-export default About;

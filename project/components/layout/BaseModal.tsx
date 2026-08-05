@@ -1,7 +1,7 @@
 "use client";
 import { X } from "lucide-react";
-import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useModal } from "../../hooks/layout/useModal";
 
 interface BaseModalProps {
 	opened: boolean;
@@ -20,13 +20,7 @@ export default function BaseModal({
 	footer,
 	width = 600,
 }: BaseModalProps) {
-	useEffect(() => {
-		const handleEsc = (e: KeyboardEvent) => {
-			if (e.key === "Escape") onClose();
-		};
-		window.addEventListener("keydown", handleEsc);
-		return () => window.removeEventListener("keydown", handleEsc);
-	}, [onClose]);
+	useModal(opened, onClose);
 
 	if (!opened) return null;
 

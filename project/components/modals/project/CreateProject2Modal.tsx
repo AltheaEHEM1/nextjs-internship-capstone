@@ -6,13 +6,10 @@ import {
 	ChevronRight,
 	SlidersHorizontal,
 } from "lucide-react";
-import { useState } from "react";
 import BaseModal from "@/components/layout/BaseModal";
 import CustomStatus from "@/components/modals/project/CustomStatusModal";
 import CustomView from "@/components/modals/project/CustomViewModal";
-
-export type WorkflowType = "starter" | "project_management";
-type SubViewType = "main" | "views" | "statuses";
+import { useCreateProjectWorkflow } from "@/hooks/project/useCreateProjectWorkflow";
 
 interface CreateProject2Props {
 	opened: boolean;
@@ -27,55 +24,19 @@ export default function CreateProject2({
 	onBack,
 	onCreate,
 }: CreateProject2Props) {
-	const [workflow, setWorkflow] = useState<WorkflowType>("starter");
-	const [activeSubView, setActiveSubView] = useState<SubViewType>("main");
+	const {
+		workflow,
+		activeSubView,
+		views,
+		statuses,
+		setViews,
+		setStatuses,
+		handleWorkflowChange,
+		setActiveSubView,
+		handleFinalCreate,
+	} = useCreateProjectWorkflow();
 
-	// Views State
-	const [views, setViews] = useState<string[]>(["List", "Board"]);
-
-	// Statuses State
-	const [statuses, setStatuses] = useState({
-		notStarted: ["Not started", "To do"],
-		active: ["Active", "In progress"],
-		done: ["Done"],
-		closed: ["Closed", "Complete"],
-	});
-
-	const handleWorkflowChange = (type: WorkflowType) => {
-		setWorkflow(type);
-		if (type === "starter") {
-			setViews(["List", "Board"]);
-			setStatuses({
-				notStarted: ["Not started", "To do"],
-				active: ["Active", "In progress"],
-				done: ["Done"],
-				closed: ["Closed", "Complete"],
-			});
-		} else {
-			setViews(["List", "Board", "Calendar", "Gantt", "Team"]);
-			setStatuses({
-				notStarted: ["Not started", "To do"],
-				active: [
-					"Active",
-					"Planning",
-					"In progress",
-					"At risk",
-					"Update Required",
-					"On hold",
-				],
-				done: ["Done", "Complete"],
-				closed: ["Closed", "Cancelled"],
-			});
-		}
-	};
-
-	const handleFinalCreate = () => {
-		onCreate({
-			workflow,
-			views,
-			statuses,
-		});
-	};
+	const handleCreate = () => onCreate(handleFinalCreate());
 
 	return (
 		<BaseModal

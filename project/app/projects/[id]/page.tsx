@@ -1,67 +1,82 @@
-import { MoreHorizontal } from "lucide-react";
+"use client";
 
-export default async function BoardPage() {
-	const kanbanColumns = ["To Do", "In Progress", "Review", "Done"];
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+import {
+	horizontalListSortingStrategy,
+	SortableContext,
+} from "@dnd-kit/sortable";
+import { createPortal } from "react-dom";
+import { ColumnContainer } from "@/components/board/ColumnContainer";
+import { TaskCard } from "@/components/board/TaskCard";
+import type { Task } from "@/components/board/TaskCard";
+import ViewTaskModal from "@/components/modals/task/view-task-modal/ViewTaskModal";
+import { useProjectBoard } from "@/hooks/project/useProjectBoard";
+
+export default function BoardPage() {
+	const {
+		kanbanColumns,
+		tasks,
+		sensors,
+		activeColumn,
+		activeTask,
+		isViewTaskOpen,
+		selectedTask,
+		handleOpenTask,
+		handleUpdateTask,
+		onDragStart,
+		onDragOver,
+		onDragEnd,
+		closeViewTask,
+	} = useProjectBoard();
 
 	return (
-		<div className="flex gap-6 overflow-x-auto py-6">
-			{kanbanColumns.map((columnTitle) => (
-				<div key={columnTitle} className="w-72 flex-shrink-0 sm:w-80">
-					<div className="rounded-xl border border-french_gray-200 bg-platinum-100 dark:border-payne's_gray-600 dark:bg-outer_space-500">
-						{/* Column Header */}
-						<div className="border-b border-french_gray-200 p-4 dark:border-payne's_gray-600">
-							<div className="flex items-center justify-between">
-								<h3 className="flex items-center font-semibold text-outer_space-700 dark:text-platinum-200">
-									{columnTitle}
-									<span className="ml-2 rounded-full bg-french_gray-200 px-2.5 py-0.5 text-xs text-outer_space-600 dark:bg-payne's_gray-500 dark:text-platinum-300">
-										{Math.floor(Math.random() * 4) + 1}
-									</span>
-								</h3>
-								<button
-									type="button"
-									className="rounded-lg p-1 text-outer_space-400 hover:bg-french_gray-200 dark:text-platinum-400 dark:hover:bg-payne's_gray-400"
-								>
-									<MoreHorizontal size={16} />
-								</button>
-							</div>
-						</div>
-
-						{/* Task Cards Container */}
-						<div className="min-h-[350px] space-y-3 p-4">
-							{[1, 2, 3].map((taskIndex) => (
-								<div
-									key={taskIndex}
-									className="group cursor-pointer rounded-lg border border-french_gray-200 bg-white p-4 shadow-xs transition-all hover:border-blue_munsell-400 hover:shadow-md dark:border-payne's_gray-600 dark:bg-outer_space-400 dark:hover:border-blue_munsell-500"
-								>
-									<h4 className="mb-1 text-sm font-semibold text-outer_space-700 dark:text-platinum-200">
-										Design System Update #{taskIndex}
-									</h4>
-									<p className="mb-3 line-clamp-2 text-xs text-outer_space-400 dark:text-platinum-400">
-										Refactor color tokens and component documentation for the
-										layout migration.
-									</p>
-									<div className="flex items-center justify-between pt-2">
-										<span className="rounded-md bg-blue_munsell-50 px-2 py-0.5 text-xs font-medium text-blue_munsell-700 dark:bg-blue_munsell-950 dark:text-blue_munsell-300">
-											Medium
-										</span>
-										<div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue_munsell-500 text-xs font-semibold text-white shadow-xs">
-											U
-										</div>
-									</div>
-								</div>
-							))}
-
-							{/* Add Task Button */}
-							<button
-								type="button"
-								className="w-full rounded-lg border-2 border-dashed border-french_gray-300 py-2.5 text-sm font-medium text-outer_space-500 transition-colors hover:border-blue_munsell-500 hover:bg-blue_munsell-50/50 hover:text-blue_munsell-600 dark:border-payne's_gray-500 dark:text-platinum-400 dark:hover:bg-blue_munsell-950/20 dark:hover:text-blue_munsell-400"
-							>
-								+ Add task
-							</button>
-						</div>
-					</div>
+		<div className="flex gap-6 overflow-x-auto px-4 py-6">
+			<DndContext
+				sensors={sensors}
+				onDragStart={onDragStart}
+				onDragOver={onDragOver}
+				onDragEnd={onDragEnd}
+			>
+				<div className="flex gap-6">
+					<SortableContext
+						items={kanbanColumns}
+						strategy={horizontalListSortingStrategy}
+					>
+						{kanbanColumns.map((columnTitle: string) => (
+							<ColumnContainer
+								key={columnTitle}
+								columnTitle={columnTitle}
+								tasks={tasks.filter((t: Task) => t.status === columnTitle)}
+								onOpenTask={handleOpenTask}
+							/>
+						))}
+					</SortableContext>
 				</div>
-			))}
+
+				{typeof window !== "undefined" &&
+					createPortal(
+						<DragOverlay>
+							{activeColumn && (
+								<div className="h-[400px] w-72 rounded-xl border border-french_gray-200 bg-platinum-100 p-4 opacity-80 shadow-lg sm:w-80 dark:border-payne's_gray-600 dark:bg-outer_space-500">
+									<h3 className="font-semibold">{activeColumn}</h3>
+								</div>
+							)}
+							{activeTask && (
+								<TaskCard taskData={activeTask} onClick={() => {}} isOverlay />
+							)}
+						</DragOverlay>,
+						document.body,
+					)}
+			</DndContext>
+
+			{selectedTask && (
+				<ViewTaskModal
+					opened={isViewTaskOpen}
+					onClose={closeViewTask}
+					taskData={selectedTask}
+					onUpdateTask={handleUpdateTask}
+				/>
+			)}
 		</div>
 	);
 }

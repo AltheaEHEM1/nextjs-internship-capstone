@@ -2,12 +2,14 @@
 
 import { ArrowLeft, Check, Edit, Save, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { AddLabelModal } from "@/components/modals/task/AddLabelModal";
-import { AddPriorityModal } from "@/components/modals/task/AddPriorityModal";
+import { AddLabelModal } from "@/components/modals/project-settings/AddLabelModal";
+import { AddPriorityModal } from "@/components/modals/project-settings/AddPriorityModal";
+import { AddStatusModal } from "@/components/modals/project-settings/AddStatusModal";
 import { PageHeader } from "@/components/page-header/PageHeader";
+import { useProjectSettingsStore } from "@/stores/project/project-settings-store";
+import { useEffect } from "react";
 import MemberRole from "./MemberRole";
-import ProjectLabelPriority from "./ProjectLabelPriority";
+import ProjectLabelPriority from "./ProjectLabelPriorityStatus";
 
 export type AccessRole = "administrator" | "member" | "viewer";
 
@@ -31,6 +33,12 @@ export interface ProjectPriority {
 	level: number;
 }
 
+export interface ProjectStatus {
+	name: string;
+	description: string;
+	color: string;
+}
+
 interface ProjectSettingsPageProps {
 	initialTitle?: string;
 	initialDescription?: string;
@@ -39,6 +47,7 @@ interface ProjectSettingsPageProps {
 	initialMembers?: TeamMember[];
 	initialLabels?: ProjectLabel[];
 	initialPriorities?: ProjectPriority[];
+	initialStatuses?: ProjectStatus[];
 	onSave?: (data: {
 		title: string;
 		description: string;
@@ -47,6 +56,7 @@ interface ProjectSettingsPageProps {
 		members: TeamMember[];
 		labels: ProjectLabel[];
 		priorities: ProjectPriority[];
+		statuses: ProjectStatus[];
 	}) => void;
 	onDelete?: () => void;
 }
@@ -113,6 +123,27 @@ const DEFAULT_PRIORITIES: ProjectPriority[] = [
 	},
 ];
 
+const DEFAULT_STATUSES: ProjectStatus[] = [
+	{
+		name: "To Do",
+		color:
+			"bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800",
+		description: "Tasks that are yet to be started.",
+	},
+	{
+		name: "In Progress",
+		color:
+			"bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800",
+		description: "Tasks currently being worked on.",
+	},
+	{
+		name: "Completed",
+		color:
+			"bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800",
+		description: "Tasks that have been fully finished.",
+	},
+];
+
 export default function ProjectSettingsPage({
 	initialTitle = "PUP Inventory Management System",
 	initialDescription = "Managing inventory assets and role-based access for departments.",
@@ -121,85 +152,84 @@ export default function ProjectSettingsPage({
 	initialMembers = DEFAULT_MEMBERS,
 	initialLabels = DEFAULT_LABELS,
 	initialPriorities = DEFAULT_PRIORITIES,
+	initialStatuses = DEFAULT_STATUSES,
 	onSave,
 	onDelete,
 }: ProjectSettingsPageProps) {
-	const [title, setTitle] = useState(initialTitle);
-	const [description, setDescription] = useState(initialDescription);
-	const [team, _setTeam] = useState(initialTeam);
-	const [access, _setAccess] = useState<AccessRole>(initialAccess);
-	const [members, setMembers] = useState<TeamMember[]>(initialMembers);
-	const [labels, setLabels] = useState<ProjectLabel[]>(initialLabels);
-	const [priorities, setPriorities] =
-		useState<ProjectPriority[]>(initialPriorities);
+	// Initialise global store with props received from the page
+	useEffect(() => {
+		useProjectSettingsStore.getState().initialize({
+			title: initialTitle,
+			description: initialDescription,
+			team: initialTeam,
+			access: initialAccess,
+			members: initialMembers,
+			labels: initialLabels,
+			priorities: initialPriorities,
+			statuses: initialStatuses,
+		});
+	}, []);
 
-	// Edit states for general configuration inline toggles
-	const [isEditingGeneral, setIsEditingGeneral] = useState(false);
-	const [tempTitle, setTempTitle] = useState(title);
-	const [tempDescription, setTempDescription] = useState(description);
+	const {
+		title,
+		description,
+		team,
+		access,
+		setTitle,
+		setDescription,
+		setTeam,
+		setAccess,
+		isEditingGeneral,
+		setIsEditingGeneral,
+		tempTitle,
+		setTempTitle,
+		tempDescription,
+		setTempDescription,
+		handleSaveGeneral,
+		handleCancelGeneral,
 
-	// Modal state controllers
-	const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
-	const [isPriorityModalOpen, setIsPriorityModalOpen] = useState(false);
+		// Labels, priorities, statuses
+		labels,
+		priorities,
+		statuses,
+		isLabelModalOpen,
+		isPriorityModalOpen,
+		isStatusModalOpen,
+		setIsLabelModalOpen,
+		setIsPriorityModalOpen,
+		setIsStatusModalOpen,
+		handleAddLabel,
+		handleDeleteLabel,
+		handleAddPriority,
+		handleDeletePriority,
+		handleAddStatus,
+		handleDeleteStatus,
 
-	// Member edit states
-	const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
-	const [editMemberRole, setEditMemberRole] = useState("");
-	const [editMemberAccess, setEditMemberAccess] =
-		useState<AccessRole>("member");
+		// Members
+		members,
+		editingMemberId,
+		editMemberRole,
+		editMemberAccess,
+		setEditMemberRole,
+		setEditMemberAccess,
+		setEditingMemberId,
+		handleEditMemberStart,
+		handleEditMemberSave,
+		handleDeleteMember,
+	} = useProjectSettingsStore();
 
 	const handleSave = (e: React.FormEvent) => {
 		e.preventDefault();
-		onSave?.({ title, description, team, access, members, labels, priorities });
-	};
-
-	const handleSaveGeneral = () => {
-		setTitle(tempTitle);
-		setDescription(tempDescription);
-		setIsEditingGeneral(false);
-	};
-
-	const handleCancelGeneral = () => {
-		setTempTitle(title);
-		setTempDescription(description);
-		setIsEditingGeneral(false);
-	};
-
-	const handleEditMemberStart = (m: TeamMember) => {
-		setEditingMemberId(m.id);
-		setEditMemberRole(m.role);
-		setEditMemberAccess(m.access);
-	};
-
-	const handleEditMemberSave = (id: string) => {
-		setMembers(
-			members.map((m) =>
-				m.id === id
-					? { ...m, role: editMemberRole, access: editMemberAccess }
-					: m,
-			),
-		);
-		setEditingMemberId(null);
-	};
-
-	const handleDeleteMember = (id: string) => {
-		setMembers(members.filter((m) => m.id !== id));
-	};
-
-	const handleAddLabel = (newLabel: ProjectLabel) => {
-		setLabels([...labels, newLabel]);
-	};
-
-	const handleDeleteLabel = (index: number) => {
-		setLabels(labels.filter((_, i) => i !== index));
-	};
-
-	const handleAddPriority = (newPriority: ProjectPriority) => {
-		setPriorities([...priorities, newPriority]);
-	};
-
-	const handleDeletePriority = (index: number) => {
-		setPriorities(priorities.filter((_, i) => i !== index));
+		onSave?.({
+			title,
+			description,
+			team,
+			access,
+			members,
+			labels,
+			priorities,
+			statuses,
+		});
 	};
 
 	return (
@@ -265,6 +295,7 @@ export default function ProjectSettingsPage({
 									Project Name <span className="text-red-500">*</span>
 								</label>
 								<input
+									id="project-title"
 									type="text"
 									required
 									value={tempTitle}
@@ -325,14 +356,7 @@ export default function ProjectSettingsPage({
 					handleDeleteMember={handleDeleteMember}
 				/>
 
-				<ProjectLabelPriority
-					labels={labels}
-					priorities={priorities}
-					setIsLabelModalOpen={setIsLabelModalOpen}
-					setIsPriorityModalOpen={setIsPriorityModalOpen}
-					handleDeleteLabel={handleDeleteLabel}
-					handleDeletePriority={handleDeletePriority}
-				/>
+				<ProjectLabelPriority />
 
 				{/* Actions Footer */}
 				<div className="flex items-center justify-between pt-2">
@@ -374,6 +398,12 @@ export default function ProjectSettingsPage({
 				isOpen={isPriorityModalOpen}
 				onClose={() => setIsPriorityModalOpen(false)}
 				onSave={handleAddPriority}
+			/>
+
+			<AddStatusModal
+				isOpen={isStatusModalOpen}
+				onClose={() => setIsStatusModalOpen(false)}
+				onSave={handleAddStatus}
 			/>
 		</div>
 	);

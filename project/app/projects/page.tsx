@@ -2,58 +2,36 @@
 
 import { Filter, Plus, Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import CreateProject1, {
-	type AccessRole,
-} from "@/components/modals/project/CreateProject1Modal";
-import CreateProject2, {
-	type WorkflowType,
-} from "@/components/modals/project/CreateProject2Modal";
+import CreateProject1 from "@/components/modals/project/CreateProject1Modal";
+import CreateProject2 from "@/components/modals/project/CreateProject2Modal";
 import { PageHeader } from "@/components/page-header/PageHeader";
+import { useProject } from "@/hooks/project/useProject";
+
+function getPlaceholderStats(id: number) {
+	const daysLeft = ((id * 7 + 13) % 30) + 1;
+	const members = ((id * 3 + 5) % 8) + 2;
+	const tasks = ((id * 11 + 7) % 20) + 5;
+	const progress = ((id * 17 + 23) % 80) + 20;
+	return { daysLeft, members, tasks, progress };
+}
 
 export default function ProjectsPage() {
-	const [modalStep, setModalStep] = useState<"closed" | "step1" | "step2">(
-		"closed",
-	);
-
-	const [projectName, setProjectName] = useState("");
-	const [description, setDescription] = useState("");
-	const [access, setAccess] = useState<AccessRole>("administrator");
-	const [team, setTeam] = useState("");
-
-	const handleClose = () => {
-		setModalStep("closed");
-	};
-
-	const handleNext = () => {
-		setModalStep("step2");
-	};
-
-	const handleBack = () => {
-		setModalStep("step1");
-	};
-
-	const handleCreateFinal = (workflowData: {
-		workflow: WorkflowType;
-		views: string[];
-		statuses: any;
-	}) => {
-		const completeProjectData = {
-			name: projectName,
-			description,
-			access,
-			...workflowData,
-		};
-
-		console.log("Submitting Project Data:", completeProjectData);
-		// TODO: Call your API to save the project here
-
-		// Close modal and reset form
-		setModalStep("closed");
-		setProjectName("");
-		setDescription("");
-		setAccess("administrator");
-	};
+	const {
+		modalStep,
+		projectName,
+		setProjectName,
+		description,
+		setDescription,
+		access,
+		setAccess,
+		team,
+		setTeam,
+		handleOpen,
+		handleClose,
+		handleNext,
+		handleBack,
+		handleCreateFinal,
+	} = useProject();
 
 	return (
 		<div className="space-y-6">
@@ -64,11 +42,11 @@ export default function ProjectsPage() {
 				/>
 				<button
 					type="button"
-					onClick={() => setModalStep("step1")}
-					className="inline-flex items-center rounded-lg bg-[#1e9b65] px-4 py-2 text-white transition-colors hover:opacity-90"
+					onClick={handleOpen}
+					className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1e9b65] px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
 				>
-					<Plus size={20} className="mr-2" />
-					New Project
+					<Plus size={18} />
+					Add Project
 				</button>
 
 				{/* Modal Step 1 */}
@@ -134,41 +112,44 @@ export default function ProjectsPage() {
 
 			{/* Projects Grid Placeholder */}
 			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{[1, 2, 3, 4, 5, 6].map((i) => (
-					<Link
-						key={i}
-						href={`/projects/pages`}
-						className="group rounded-lg border border-french_gray-300 bg-white p-6 transition-shadow hover:shadow-lg dark:border-payne's_gray-400 dark:bg-outer_space-500"
-					>
-						<div className="mb-4 flex items-start justify-between">
-							<div className="h-3 w-3 rounded-full bg-blue_munsell-500"></div>
-							<div className="text-sm text-payne's_gray-500 dark:text-french_gray-400">
-								{Math.floor(Math.random() * 30) + 1} days left
+				{[1, 2, 3, 4, 5, 6].map((i) => {
+					const { daysLeft, members, tasks, progress } = getPlaceholderStats(i);
+					return (
+						<Link
+							key={i}
+							href={`/projects/pages`}
+							className="group rounded-lg border border-french_gray-300 bg-white p-6 transition-shadow hover:shadow-lg dark:border-payne's_gray-400 dark:bg-outer_space-500"
+						>
+							<div className="mb-4 flex items-start justify-between">
+								<div className="h-3 w-3 rounded-full bg-blue_munsell-500"></div>
+								<div className="text-sm text-payne's_gray-500 dark:text-french_gray-400">
+									{daysLeft} days left
+								</div>
 							</div>
-						</div>
 
-						<h3 className="mb-2 text-lg font-semibold text-outer_space-500 dark:text-platinum-500">
-							Sample Project {i}
-						</h3>
+							<h3 className="mb-2 text-lg font-semibold text-outer_space-500 dark:text-platinum-500">
+								Sample Project {i}
+							</h3>
 
-						<p className="mb-4 text-sm text-payne's_gray-500 dark:text-french_gray-400">
-							This is a placeholder project description that will be replaced
-							with actual project data.
-						</p>
+							<p className="mb-4 text-sm text-payne's_gray-500 dark:text-french_gray-400">
+								This is a placeholder project description that will be replaced
+								with actual project data.
+							</p>
 
-						<div className="mb-4 flex items-center justify-between text-sm text-payne's_gray-500 dark:text-french_gray-400">
-							<span>{Math.floor(Math.random() * 8) + 2} members</span>
-							<span>{Math.floor(Math.random() * 20) + 5} tasks</span>
-						</div>
+							<div className="mb-4 flex items-center justify-between text-sm text-payne's_gray-500 dark:text-french_gray-400">
+								<span>{members} members</span>
+								<span>{tasks} tasks</span>
+							</div>
 
-						<div className="h-2 w-full rounded-full bg-french_gray-300 dark:bg-payne's_gray-400">
-							<div
-								className="h-2 rounded-full bg-blue_munsell-500"
-								style={{ width: `${Math.floor(Math.random() * 80) + 20}%` }}
-							></div>
-						</div>
-					</Link>
-				))}
+							<div className="h-2 w-full rounded-full bg-french_gray-300 dark:bg-payne's_gray-400">
+								<div
+									className="h-2 rounded-full bg-blue_munsell-500"
+									style={{ width: `${progress}%` }}
+								></div>
+							</div>
+						</Link>
+					);
+				})}
 			</div>
 
 			{/* Component Placeholders */}

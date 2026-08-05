@@ -2,6 +2,7 @@
 
 import { FolderPlus, Users } from "lucide-react";
 import BaseModal from "@/components/layout/BaseModal";
+import { useMinDate } from "@/hooks/project/useMinDate";
 
 export type AccessRole = "administrator" | "member" | "viewer";
 
@@ -32,6 +33,7 @@ export default function CreateProject1({
 	setAccess,
 	onNext,
 }: CreateProject1Props) {
+	const minDate = useMinDate();
 	return (
 		<BaseModal
 			opened={opened}
@@ -126,41 +128,21 @@ export default function CreateProject1({
 					</select>
 				</div>
 
-				{/* Accessibility & Due Date Row */}
-				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					<div>
-						<label
-							htmlFor="access"
-							className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-						>
-							Accessibility
-						</label>
-						<select
-							id="access"
-							value={access}
-							onChange={(e) => setAccess(e.target.value as AccessRole)}
-							className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-[#1e9b65] focus:outline-none focus:ring-1 focus:ring-[#1e9b65] dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-						>
-							<option value="administrator">Administrator</option>
-							<option value="member">Member</option>
-							<option value="viewer">Viewer</option>
-						</select>
-					</div>
-
-					<div>
-						<label
-							htmlFor="dueDate"
-							className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-						>
-							Due Date
-						</label>
-						<input
-							type="date"
-							id="dueDate"
-							min={new Date().toISOString().split("T")[0]}
-							className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-[#1e9b65] focus:outline-none focus:ring-1 focus:ring-[#1e9b65] dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-						/>
-					</div>
+				{/* Due Date Row */}
+				<div>
+					<label
+						htmlFor="dueDate"
+						className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+					>
+						Due Date
+					</label>
+					<input
+						type="date"
+						id="dueDate"
+						name="dueDate"
+						min={minDate}
+						className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-[#1e9b65] focus:outline-none focus:ring-1 focus:ring-[#1e9b65] dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+					/>
 				</div>
 			</div>
 		</BaseModal>

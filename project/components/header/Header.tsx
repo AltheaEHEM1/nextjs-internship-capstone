@@ -2,22 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useHeader } from "../../hooks/header/useHeader";
 
 export function Header() {
-	const [isOpen, setIsOpen] = useState(false);
+	const { isOpen, setIsOpen, toggle, close, navLinks, pathname, isActive } =
+		useHeader();
 	const navLinkClass =
 		"text-sm text-slate-300 font-medium transition-colors hover:text-cyan-400";
-
-	const pathname = usePathname();
-
-	const navLinks = [
-		{ label: "Home", href: "/" },
-		{ label: "Features", href: "/Features" },
-		{ label: "Pricing", href: "/Pricing" },
-		{ label: "About", href: "/About" },
-	];
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
@@ -48,25 +39,18 @@ export function Header() {
 
 					{/* Navigation Links */}
 					<nav className="hidden items-center space-x-4 lg:space-x-8 md:flex">
-						{navLinks.map((link) => {
-							const isActive =
-								pathname &&
-								(link.href === "/"
-									? pathname === "/"
-									: pathname.toLowerCase().startsWith(link.href.toLowerCase()));
-
-							return (
-								<Link
-									key={link.href}
-									href={link.href}
-									className={
-										navLinkClass + (isActive ? " text-white font-semibold" : "")
-									}
-								>
-									{link.label}
-								</Link>
-							);
-						})}
+						{navLinks.map((link) => (
+							<Link
+								key={link.href}
+								href={link.href}
+								className={
+									navLinkClass +
+									(isActive(link.href) ? " text-white font-semibold" : "")
+								}
+							>
+								{link.label}
+							</Link>
+						))}
 					</nav>
 
 					{/* Action Buttons */}
@@ -90,24 +74,21 @@ export function Header() {
 						className="inline-flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-300 transition-colors hover:bg-slate-800 md:hidden shrink-0"
 						aria-expanded={isOpen}
 						aria-label="Toggle navigation menu"
-						onClick={() => setIsOpen((open) => !open)}
+						onClick={toggle}
 					>
 						<span className="sr-only">Toggle navigation</span>
 						<span className="flex h-5 w-5 flex-col justify-between">
 							<span
-								className={`block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
-									isOpen ? "translate-y-1.5 rotate-45" : ""
-								}`}
+								className={`block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${isOpen ? "translate-y-1.5 rotate-45" : ""
+									}`}
 							/>
 							<span
-								className={`block h-0.5 w-5 rounded-full bg-current transition-opacity duration-300 ${
-									isOpen ? "opacity-0" : ""
-								}`}
+								className={`block h-0.5 w-5 rounded-full bg-current transition-opacity duration-300 ${isOpen ? "opacity-0" : ""
+									}`}
 							/>
 							<span
-								className={`block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
-									isOpen ? "-translate-y-1.5 -rotate-45" : ""
-								}`}
+								className={`block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${isOpen ? "-translate-y-1.5 -rotate-45" : ""
+									}`}
 							/>
 						</span>
 					</button>
@@ -117,41 +98,33 @@ export function Header() {
 			{isOpen && (
 				<div className="md:hidden border-t border-slate-800/80 bg-slate-950/95 backdrop-blur-xl max-h-[calc(100vh-4rem)] overflow-y-auto">
 					<div className="space-y-3 px-4 py-4">
-						{navLinks.map((link) => {
-							const isActive =
-								pathname &&
-								(link.href === "/"
-									? pathname === "/"
-									: pathname.toLowerCase().startsWith(link.href.toLowerCase()));
-
-							return (
-								<Link
-									key={link.href}
-									href={link.href}
-									onClick={() => setIsOpen(false)}
-									className={
-										"block rounded-xl px-4 py-3 text-sm font-medium transition-colors " +
-										(isActive
-											? "bg-slate-800 text-white"
-											: "text-slate-300 hover:bg-slate-900 hover:text-white")
-									}
-								>
-									{link.label}
-								</Link>
-							);
-						})}
+						{navLinks.map((link) => (
+							<Link
+								key={link.href}
+								href={link.href}
+								onClick={close}
+								className={
+									"block rounded-xl px-4 py-3 text-sm font-medium transition-colors " +
+									(isActive(link.href)
+										? "bg-slate-800 text-white"
+										: "text-slate-300 hover:bg-slate-900 hover:text-white")
+								}
+							>
+								{link.label}
+							</Link>
+						))}
 
 						<div className="space-y-2 pt-2 border-t border-slate-800/60">
 							<Link
 								href="/sign-in"
-								onClick={() => setIsOpen(false)}
+								onClick={close}
 								className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-white"
 							>
 								Sign In
 							</Link>
 							<Link
 								href="/sign-up"
-								onClick={() => setIsOpen(false)}
+								onClick={close}
 								className="block rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition-all duration-300 hover:brightness-110"
 							>
 								Get Started

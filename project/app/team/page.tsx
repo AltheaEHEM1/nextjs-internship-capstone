@@ -1,73 +1,27 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { useState } from "react";
 import AddMemberModal from "@/components/modals/team/AddMemberModal";
-import AddTeamModal from "@/components/modals/team/AddTeamModal";
+import AddTeamModal1 from "@/components/modals/team/AddTeamModal1";
+import AddTeamModal2 from "@/components/modals/team/AddTeamModal2";
 import { PageHeader } from "@/components/page-header/PageHeader";
-
-// Types
-type Person = {
-	id: string;
-	name: string;
-	email: string;
-	role: string;
-	avatar: string;
-};
-type Team = { id: string; name: string; membersCount: number; icon: string };
+import { useTeamManagement } from "@/hooks/team/useTeam";
 
 export default function TeamPage() {
-	const [activeTab, _setActiveTab] = useState<"people" | "teams">("people");
-
-	// Modal states
-	const [isAddPeopleOpen, setIsAddPeopleOpen] = useState(false);
-	const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
-
-	// Form states
-	const [_personInput, _setPersonInput] = useState("");
-	const [_personNotes, _setPersonNotes] = useState("");
-	const [_teamName, _setTeamName] = useState("");
-
-	// Mock Data
-	const people: Person[] = [
-		{
-			id: "1",
-			name: "Alex Mercer",
-			email: "alex@srg.tech",
-			role: "Frontend Developer",
-			avatar: "A",
-		},
-		{
-			id: "2",
-			name: "Sarah Jenkins",
-			email: "sarah@srg.tech",
-			role: "UI/UX Designer",
-			avatar: "S",
-		},
-	];
-
-	const _teams: Team[] = [
-		{
-			id: "frontend-core",
-			name: "Frontend Core Team",
-			membersCount: 4,
-			icon: "💻",
-		},
-		{
-			id: "backend-infra",
-			name: "Backend & DevOps",
-			membersCount: 3,
-			icon: "⚡",
-		},
-	];
-
-	const handleMainAction = () => {
-		if (activeTab === "people") {
-			setIsAddPeopleOpen(true);
-		} else {
-			setIsCreateTeamOpen(true);
-		}
-	};
+	const {
+		activeTab,
+		people,
+		teams,
+		isAddPeopleOpen,
+		teamStep,
+		teamData,
+		handleMainAction,
+		closeAddPeopleModal,
+		closeTeamModal,
+		handleTeamStep1Next,
+		handleTeamStep2Back,
+		handleTeamStep2Submit,
+	} = useTeamManagement("people");
 
 	return (
 		<div className="space-y-6 pb-12">
@@ -87,6 +41,7 @@ export default function TeamPage() {
 				</button>
 			</div>
 
+			{/* Tab Content: People */}
 			{activeTab === "people" && (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{people.map((person) => (
@@ -115,13 +70,45 @@ export default function TeamPage() {
 				</div>
 			)}
 
-			<AddMemberModal
-				opened={isAddPeopleOpen}
-				onClose={() => setIsAddPeopleOpen(false)}
+			{/* Tab Content: Teams */}
+			{activeTab === "teams" && (
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+					{teams.map((team) => (
+						<div
+							key={team.id}
+							className="rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500 flex items-center justify-between"
+						>
+							<div className="flex items-center gap-3">
+								<div className="flex h-10 w-10 items-center justify-center rounded-full bg-platinum-100 text-lg dark:bg-payne's_gray-500">
+									{team.icon}
+								</div>
+								<div>
+									<h4 className="font-semibold text-outer_space-800 dark:text-platinum-100 text-sm">
+										{team.name}
+									</h4>
+									<p className="text-xs text-outer_space-400 dark:text-platinum-400 mt-0.5">
+										{team.membersCount} members
+									</p>
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+
+			<AddMemberModal opened={isAddPeopleOpen} onClose={closeAddPeopleModal} />
+			<AddTeamModal1
+				opened={teamStep === 1}
+				onClose={closeTeamModal}
+				onNext={handleTeamStep1Next}
+				initialData={teamData}
 			/>
-			<AddTeamModal
-				opened={isCreateTeamOpen}
-				onClose={() => setIsCreateTeamOpen(false)}
+			<AddTeamModal2
+				opened={teamStep === 2}
+				onClose={closeTeamModal}
+				onBack={handleTeamStep2Back}
+				onSubmit={handleTeamStep2Submit}
+				initialData={teamData}
 			/>
 		</div>
 	);

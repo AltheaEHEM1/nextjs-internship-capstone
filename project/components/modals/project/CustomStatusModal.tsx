@@ -7,8 +7,9 @@ import {
 	Plus,
 	Trash2,
 } from "lucide-react";
-import { useState } from "react";
 import BaseModal from "@/components/layout/BaseModal";
+import { useEffect } from "react";
+import { useCustomStatusStore } from "../../../stores/custom-status-store";
 
 interface CustomStatusProps {
 	opened: boolean;
@@ -28,29 +29,13 @@ export default function CustomStatus({
 	status,
 	onChangeStatus,
 }: CustomStatusProps) {
-	const [inputs, setInputs] = useState({
-		notStarted: "",
-		active: "",
-		done: "",
-		closed: "",
-	});
+	// Initialize the store with props when component mounts/updates
+	useEffect(() => {
+	  useCustomStatusStore.getState().initialize(status, onChangeStatus);
+	}, [status, onChangeStatus]);
 
-	const _handleAdd = (category: keyof typeof status) => {
-		const val = inputs[category].trim();
-		if (!val) return;
-		onChangeStatus({
-			...status,
-			[category]: [...status[category], val],
-		});
-		setInputs({ ...inputs, [category]: "" });
-	};
+	const { inputs, setInputs, handleAdd, handleRemove, addPrompted } = useCustomStatusStore();
 
-	const handleRemove = (category: keyof typeof status, index: number) => {
-		onChangeStatus({
-			...status,
-			[category]: status[category].filter((_, i: number) => i !== index),
-		});
-	};
 
 	const categories = [
 		{ key: "notStarted", label: "Not started" },
@@ -84,12 +69,7 @@ export default function CustomStatus({
 							</span>
 							<button
 								type="button"
-								onClick={() => {
-									const val = prompt(`Add new status for ${label}:`);
-									if (val) {
-										onChangeStatus({ ...status, [key]: [...status[key], val] });
-									}
-								}}
+								onClick={() => addPrompted(key, label)}
 								className="text-gray-100 hover:text-white"
 							>
 								<Plus size={16} />
@@ -128,12 +108,7 @@ export default function CustomStatus({
 
 							<button
 								type="button"
-								onClick={() => {
-									const val = prompt(`Add status to ${label}:`);
-									if (val) {
-										onChangeStatus({ ...status, [key]: [...status[key], val] });
-									}
-								}}
+								onClick={() => addPrompted(key, label)}
 								className="w-full rounded-lg border border-dashed border-gray-700 bg-transparent py-2 text-center text-xs text-gray-400 hover:border-gray-500 hover:text-gray-200 transition"
 							>
 								+ Add status

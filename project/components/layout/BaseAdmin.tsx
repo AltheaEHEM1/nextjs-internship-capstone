@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { useState } from "react";
+import { useBaseAdmin } from "../../hooks/layout/useBaseAdmin";
 import Sidebar from "../sidebar/Sidebar";
 import Header from "../sidebar/SidebarHeader";
 
@@ -8,14 +8,14 @@ export default function BaseAdmin({
 	children,
 	disableMainPadding = false,
 }: Readonly<{ children: React.ReactNode; disableMainPadding?: boolean }>) {
-	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const { sidebarOpen, open, close } = useBaseAdmin(false);
 
 	return (
 		<div className="flex h-screen overflow-hidden">
-			<Sidebar opened={sidebarOpen} close={() => setSidebarOpen(false)} />
+			<Sidebar opened={sidebarOpen} close={close} />
 
 			<div className="flex min-h-0 min-w-0 flex-1 flex-col">
-				<Header onMenuClick={() => setSidebarOpen(true)} />
+				<Header onMenuClick={open} />
 				<main
 					className={
 						"flex min-h-0 flex-1 flex-col overflow-y-auto" +

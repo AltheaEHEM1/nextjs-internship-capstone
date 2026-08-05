@@ -9,79 +9,63 @@ import {
 	Users,
 } from "lucide-react";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface ProgressItem {
+	label: string;
+	count: number;
+	percentage: number;
+	color: string;
+}
+
+interface TeamMember {
+	name: string;
+	tasks: number;
+	load: string;
+}
+
+interface ActivityItem {
+	id: string;
+	title: string;
+	author: string;
+	time: string;
+}
+
+// ─── Static Data ──────────────────────────────────────────────────────────────
+
+const STATUS_OVERVIEW: ProgressItem[] = [
+	{ label: "Done", count: 14, percentage: 45, color: "bg-emerald-500" },
+	{ label: "In Progress", count: 9, percentage: 29, color: "bg-blue-500" },
+	{ label: "In Review", count: 4, percentage: 13, color: "bg-amber-500" },
+	{ label: "Todo", count: 4, percentage: 13, color: "bg-slate-400" },
+];
+
+const WORK_TYPES: ProgressItem[] = [
+	{ label: "Feature", count: 12, percentage: 40, color: "bg-indigo-500" },
+	{ label: "Bug Fix", count: 8, percentage: 27, color: "bg-red-500" },
+	{ label: "Improvement", count: 6, percentage: 20, color: "bg-purple-500" },
+	{ label: "Chore", count: 4, percentage: 13, color: "bg-slate-400" },
+];
+
+const TEAM_WORKLOAD: TeamMember[] = [
+	{ name: "Alice", tasks: 7, load: "High" },
+	{ name: "Bob", tasks: 5, load: "Medium" },
+	{ name: "Carol", tasks: 4, load: "Medium" },
+	{ name: "Dave", tasks: 2, load: "Low" },
+	{ name: "Eve", tasks: 1, load: "Low" },
+];
+
+const RECENT_ACTIVITIES: ActivityItem[] = [
+	{ id: "a1", title: "Completed task: Design system tokens", author: "Alice", time: "2 min ago" },
+	{ id: "a2", title: "Moved 'API Integration' to In Review", author: "Bob", time: "14 min ago" },
+	{ id: "a3", title: "Added comment on 'Auth flow' task", author: "Carol", time: "1 hr ago" },
+	{ id: "a4", title: "Created task: Write unit tests", author: "Dave", time: "3 hrs ago" },
+	{ id: "a5", title: "Updated sprint deadline to Aug 20", author: "Alice", time: "Yesterday" },
+];
+
+// ─── Page Component ───────────────────────────────────────────────────────────
+
 export default function Summary() {
-	// Mock data for recent activities
-	const recentActivities = [
-		{
-			id: 1,
-			time: "10 mins ago",
-			author: "Alex Mercer",
-			title: "Refactored global layout component structure",
-		},
-		{
-			id: 2,
-			time: "45 mins ago",
-			author: "Sarah Jenkins",
-			title: "Updated database schema for user roles",
-		},
-		{
-			id: 3,
-			time: "2 hours ago",
-			author: "Yuan Exequiel",
-			title: "Fixed sticky header backdrop blur spacing issue",
-		},
-		{
-			id: 4,
-			time: "5 hours ago",
-			author: "David Vance",
-			title: "Integrated Tailwind CSS color tokens for dark mode",
-		},
-		{
-			id: 5,
-			time: "Yesterday",
-			author: "Elena Rostova",
-			title: "Created project navigation tabs with dynamic routing",
-		},
-	];
-
-	// Mock data for status breakdown bars
-	const statusOverview = [
-		{ label: "To Do", count: 12, percentage: 30, color: "bg-amber-500" },
-		{
-			label: "In Progress",
-			count: 18,
-			percentage: 45,
-			color: "bg-blue_munsell-500",
-		},
-		{ label: "Review", count: 5, percentage: 12, color: "bg-purple-500" },
-		{ label: "Done", count: 35, percentage: 88, color: "bg-emerald-500" },
-	];
-
-	// Mock data for types of work
-	const workTypes = [
-		{
-			label: "Features & Enhancements",
-			count: 24,
-			percentage: 60,
-			color: "bg-blue_munsell-500",
-		},
-		{ label: "Bug Fixes", count: 10, percentage: 25, color: "bg-rose-500" },
-		{
-			label: "Documentation & Design",
-			count: 6,
-			percentage: 15,
-			color: "bg-amber-500",
-		},
-	];
-
-	// Mock data for team workload
-	const teamWorkload = [
-		{ name: "Yuan Exequiel", tasks: 8, load: "75%" },
-		{ name: "Sarah Jenkins", tasks: 6, load: "60%" },
-		{ name: "Alex Mercer", tasks: 5, load: "50%" },
-		{ name: "Elena Rostova", tasks: 3, load: "30%" },
-	];
-
 	return (
 		<div className="space-y-6 pb-12">
 			{/* 1. Project Information Banner */}
@@ -195,7 +179,7 @@ export default function Summary() {
 				</div>
 			</div>
 
-			{/* 3. Analytics & Breakdown Section (Graphs / Visual Cards) */}
+			{/* 3. Analytics & Breakdown Section */}
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 				{/* Status Overview */}
 				<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
@@ -206,7 +190,7 @@ export default function Summary() {
 						</h3>
 					</div>
 					<div className="space-y-4">
-						{statusOverview.map((item) => (
+						{STATUS_OVERVIEW.map((item: ProgressItem) => (
 							<div key={item.label}>
 								<div className="flex justify-between text-xs font-medium mb-1 text-outer_space-600 dark:text-platinum-300">
 									<span>{item.label}</span>
@@ -231,7 +215,7 @@ export default function Summary() {
 						</h3>
 					</div>
 					<div className="space-y-4">
-						{workTypes.map((item) => (
+						{WORK_TYPES.map((item: ProgressItem) => (
 							<div key={item.label}>
 								<div className="flex justify-between text-xs font-medium mb-1 text-outer_space-600 dark:text-platinum-300">
 									<span>{item.label}</span>
@@ -256,7 +240,7 @@ export default function Summary() {
 						</h3>
 					</div>
 					<div className="space-y-3">
-						{teamWorkload.map((member) => (
+						{TEAM_WORKLOAD.map((member: TeamMember) => (
 							<div
 								key={member.name}
 								className="flex items-center justify-between p-2 rounded-lg bg-platinum-100/50 dark:bg-outer_space-400/50"
@@ -283,7 +267,7 @@ export default function Summary() {
 				</div>
 			</div>
 
-			{/* 4. Recent Activity Feed (5 items) */}
+			{/* 4. Recent Activity Feed */}
 			<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
 				<div className="flex items-center justify-between mb-4">
 					<h3 className="font-semibold text-outer_space-800 dark:text-platinum-100 flex items-center gap-2">
@@ -295,7 +279,7 @@ export default function Summary() {
 					</span>
 				</div>
 				<div className="divide-y divide-french_gray-100 dark:divide-payne's_gray-400">
-					{recentActivities.map((act) => (
+					{RECENT_ACTIVITIES.map((act: ActivityItem) => (
 						<div
 							key={act.id}
 							className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 first:pt-0 last:pb-0 gap-1 sm:gap-4"
