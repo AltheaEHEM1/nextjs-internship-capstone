@@ -1,65 +1,11 @@
 "use client";
 
-import { format, getDay, parse, startOfWeek } from "date-fns";
-import { useState } from "react";
-import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
+import { Calendar as BigCalendar } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-
-const locales = {
-	"en-US": require("date-fns/locale/en-US"),
-};
-
-const localizer = dateFnsLocalizer({
-	format,
-	parse,
-	startOfWeek,
-	getDay,
-	locales,
-});
-
-type CalendarEvent = {
-	id: string;
-	title: string;
-	start: Date;
-	end: Date;
-	allDay?: boolean;
-};
+import { useCalendar } from "@/hooks/project/useCalendar";
 
 export default function Calendar() {
-	const [events, setEvents] = useState<CalendarEvent[]>([
-		{
-			id: "1",
-			title: "Design System Refactor Deadline",
-			start: new Date(2026, 7, 15, 9, 0),
-			end: new Date(2026, 7, 15, 17, 0),
-		},
-		{
-			id: "2",
-			title: "Sprint Planning & Backlog Review",
-			start: new Date(2026, 7, 18, 10, 0),
-			end: new Date(2026, 7, 18, 12, 0),
-		},
-		{
-			id: "3",
-			title: "Client Progress Presentation",
-			start: new Date(2026, 7, 22, 14, 0),
-			end: new Date(2026, 7, 22, 15, 30),
-		},
-	]);
-
-	// Handle slot selection to add an event interactively
-	const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
-		const title = window.prompt("Enter new event title:");
-		if (title) {
-			const newEvent: CalendarEvent = {
-				id: String(Date.now()),
-				title,
-				start,
-				end,
-			};
-			setEvents((prev) => [...prev, newEvent]);
-		}
-	};
+	const { events, handleSelectSlot, localizer } = useCalendar();
 
 	return (
 		<div className="space-y-4 pb-12">

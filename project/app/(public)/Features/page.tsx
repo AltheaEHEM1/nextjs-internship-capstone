@@ -10,8 +10,12 @@ import {
 	Sparkles,
 	Zap,
 } from "lucide-react";
+import { useFeatures } from "@/hooks/public/useFeatures";
 
 export function Features() {
+	const { systemHealth, coreModule, teamModule, uxModule, roadmapModule } =
+		useFeatures();
+
 	return (
 		<section className="relative py-16 sm:py-24 lg:py-28 px-4 sm:px-6 lg:px-8 bg-slate-950 text-slate-100 overflow-hidden font-sans">
 			{/* Background Radial Glow */}
@@ -37,7 +41,9 @@ export function Features() {
 						<Activity className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
 						<span className="text-xs font-medium text-slate-300">
 							System Health:{" "}
-							<strong className="text-emerald-400 font-bold">99.99%</strong>
+							<strong className="text-emerald-400 font-bold">
+								{systemHealth}
+							</strong>
 						</span>
 					</div>
 				</div>
@@ -53,55 +59,44 @@ export function Features() {
 						<div>
 							<div className="flex flex-wrap items-center justify-between gap-2 mb-6">
 								<span className="px-3 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold">
-									Module 01 • Core Engine
+									{coreModule.moduleLabel}
 								</span>
 								<span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
 									<span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-									Live & Active
+									{coreModule.statusLabel}
 								</span>
 							</div>
 
 							<h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-								Core Workflow Engine
+								{coreModule.title}
 							</h3>
 							<p className="text-slate-400 text-xs sm:text-sm max-w-xl mb-6 sm:mb-8">
-								The primary operations layer handling state persistence, project
-								lifecycles, kanban views, and assignment indexing.
+								{coreModule.description}
 							</p>
 
 							{/* Metrics */}
 							<div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 max-w-md">
-								<div className="bg-slate-950/60 border border-slate-800 p-3 sm:p-4 rounded-xl">
-									<span className="text-xs text-slate-500 block">
-										Data Latency
-									</span>
-									<span className="text-lg sm:text-xl font-bold text-white">
-										&lt; 45ms
-									</span>
-								</div>
-								<div className="bg-slate-950/60 border border-slate-800 p-3 sm:p-4 rounded-xl">
-									<span className="text-xs text-slate-500 block">
-										State Sync
-									</span>
-									<span className="text-lg sm:text-xl font-bold text-white">
-										Realtime
-									</span>
-								</div>
+								{coreModule.metrics.map((metric) => (
+									<div
+										key={metric.label}
+										className="bg-slate-950/60 border border-slate-800 p-3 sm:p-4 rounded-xl"
+									>
+										<span className="text-xs text-slate-500 block">
+											{metric.label}
+										</span>
+										<span className="text-lg sm:text-xl font-bold text-white">
+											{metric.value}
+										</span>
+									</div>
+								))}
 							</div>
 						</div>
 
 						{/* Checklist */}
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6 border-t border-slate-800/80">
-							{[
-								"User auth & protected routes",
-								"Project CRUD engine",
-								"Interactive Kanban board",
-								"Priority scoring & due dates",
-								"Activity audit history",
-								"Multi-attribute global fuzzy search",
-							].map((feat, i) => (
+							{coreModule.features.map((feat) => (
 								<div
-									key={i}
+									key={feat}
 									className="flex items-center gap-2 text-xs text-slate-300"
 								>
 									<CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
@@ -116,10 +111,10 @@ export function Features() {
 						<div>
 							<div className="flex items-center justify-between mb-6 gap-2">
 								<span className="px-3 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold">
-									Module 02
+									{teamModule.moduleLabel}
 								</span>
 								<span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-									In Development
+									{teamModule.statusLabel}
 								</span>
 							</div>
 
@@ -128,27 +123,21 @@ export function Features() {
 							</div>
 
 							<h3 className="text-lg sm:text-xl font-bold text-white mb-2">
-								Team & Workspace Controls
+								{teamModule.title}
 							</h3>
 							<p className="text-slate-400 text-xs sm:text-sm mb-6">
-								Manage enterprise permissions, team roles, and multi-tenant
-								notification pipelines.
+								{teamModule.description}
 							</p>
 						</div>
 
 						<div className="space-y-2 pt-6 border-t border-slate-800/80">
-							{[
-								"Team onboarding & invites",
-								"RBAC (Admin, Member, Viewer)",
-								"Automated workflow triggers",
-								"Real-time notifications",
-							].map((f, i) => (
+							{teamModule.features.map((feature) => (
 								<div
-									key={i}
+									key={feature}
 									className="flex items-center gap-2 text-xs text-slate-300"
 								>
 									<CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-									<span>{f}</span>
+									<span>{feature}</span>
 								</div>
 							))}
 						</div>
@@ -163,28 +152,26 @@ export function Features() {
 								</div>
 								<div>
 									<span className="text-xs text-emerald-400 font-bold block">
-										Module 03
+										{uxModule.moduleLabel}
 									</span>
 									<h3 className="text-base sm:text-lg font-bold text-white">
-										UX Layer
+										{uxModule.title}
 									</h3>
 								</div>
 							</div>
 							<span className="text-xs text-slate-400 font-mono shrink-0">
-								FCP Speed: 0.2s
+								{uxModule.metaLabel}
 							</span>
 						</div>
 
 						<p className="text-slate-400 text-xs sm:text-sm mb-6">
-							Designed to reduce friction with instantaneous transitions,
-							persistent themes, and modal workflows.
+							{uxModule.description}
 						</p>
 
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
-							<div>• Responsive layout system</div>
-							<div>• Dark/Light system sync</div>
-							<div>• Side-drawer management</div>
-							<div>• Structural deep links</div>
+							{uxModule.items.map((item) => (
+								<div key={item}>• {item}</div>
+							))}
 						</div>
 					</div>
 
@@ -197,37 +184,28 @@ export function Features() {
 								</div>
 								<div>
 									<span className="text-xs text-slate-400 font-bold block">
-										Module 04
+										{roadmapModule.moduleLabel}
 									</span>
 									<h3 className="text-base sm:text-lg font-bold text-white">
-										Advanced Engine Roadmap
+										{roadmapModule.title}
 									</h3>
 								</div>
 							</div>
 							<span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-400 shrink-0">
-								Target: Q4 2026
+								{roadmapModule.metaLabel}
 							</span>
 						</div>
 
 						<p className="text-slate-400 text-xs sm:text-sm mb-6">
-							Future architectural enhancements focusing on WebSockets, hotkey
-							execution, and optimistic UI.
+							{roadmapModule.description}
 						</p>
 
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-400">
-							<div className="flex items-center gap-2">
-								<Clock className="w-3.5 h-3.5 shrink-0" /> WebSocket multi-sync
-							</div>
-							<div className="flex items-center gap-2">
-								<Clock className="w-3.5 h-3.5 shrink-0" /> Optimistic UI
-								rendering
-							</div>
-							<div className="flex items-center gap-2">
-								<Clock className="w-3.5 h-3.5 shrink-0" /> Power-user hotkeys
-							</div>
-							<div className="flex items-center gap-2">
-								<Clock className="w-3.5 h-3.5 shrink-0" /> E2E test suite
-							</div>
+							{roadmapModule.items.map((item) => (
+								<div key={item} className="flex items-center gap-2">
+									<Clock className="w-3.5 h-3.5 shrink-0" /> {item}
+								</div>
+							))}
 						</div>
 					</div>
 				</div>

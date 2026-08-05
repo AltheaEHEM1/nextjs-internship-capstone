@@ -2,13 +2,15 @@
 
 import { ArrowLeft, Check, Edit, Save, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { AddLabelModal } from "@/components/modals/project-settings/AddLabelModal";
 import { AddPriorityModal } from "@/components/modals/project-settings/AddPriorityModal";
 import { AddStatusModal } from "@/components/modals/project-settings/AddStatusModal";
 import { PageHeader } from "@/components/page-header/PageHeader";
 import MemberRole from "./MemberRole";
 import ProjectLabelPriority from "./ProjectLabelPriorityStatus";
+import { useProjectSettingsGeneralState } from "@/hooks/project/useProjectSettingsGeneralState";
+import { useProjectSettingsMemberState } from "@/hooks/project/useProjectSettingsMemberState";
+import { useProjectSettingsLabelPriorityStatusState } from "@/hooks/project/useProjectSettingsLabelPriorityStatusState";
 
 export type AccessRole = "administrator" | "member" | "viewer";
 
@@ -152,91 +154,60 @@ export default function ProjectSettingsPage({
     onSave,
     onDelete,
 }: ProjectSettingsPageProps) {
-    const [title, setTitle] = useState(initialTitle);
-    const [description, setDescription] = useState(initialDescription);
-    const [team, _setTeam] = useState(initialTeam);
-    const [access, _setAccess] = useState<AccessRole>(initialAccess);
-    const [members, setMembers] = useState<TeamMember[]>(initialMembers);
-    const [labels, setLabels] = useState<ProjectLabel[]>(initialLabels);
-    const [priorities, setPriorities] = useState<ProjectPriority[]>(initialPriorities);
-    const [statuses, setStatuses] = useState<ProjectStatus[]>(initialStatuses);
+    const {
+        title,
+        description,
+        team,
+        access,
+        setTitle,
+        setDescription,
+        setTeam,
+        setAccess,
+        isEditingGeneral,
+        setIsEditingGeneral,
+        tempTitle,
+        setTempTitle,
+        tempDescription,
+        setTempDescription,
+        handleSaveGeneral,
+        handleCancelGeneral,
+    } = useProjectSettingsGeneralState(initialTitle, initialDescription, initialTeam, initialAccess);
 
-    // Edit states for general configuration inline toggles
-    const [isEditingGeneral, setIsEditingGeneral] = useState(false);
-    const [tempTitle, setTempTitle] = useState(title);
-    const [tempDescription, setTempDescription] = useState(description);
-
-    // Modal state controllers
-    const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
-    const [isPriorityModalOpen, setIsPriorityModalOpen] = useState(false);
-    const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+    const {
+        labels,
+        priorities,
+        statuses,
+        isLabelModalOpen,
+        isPriorityModalOpen,
+        isStatusModalOpen,
+        setIsLabelModalOpen,
+        setIsPriorityModalOpen,
+        setIsStatusModalOpen,
+        handleAddLabel,
+        handleDeleteLabel,
+        handleAddPriority,
+        handleDeletePriority,
+        handleAddStatus,
+        handleDeleteStatus,
+    } = useProjectSettingsLabelPriorityStatusState(initialLabels, initialPriorities, initialStatuses);
 
     // Member edit states
-    const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
-    const [editMemberRole, setEditMemberRole] = useState("");
-    const [editMemberAccess, setEditMemberAccess] =
-        useState<AccessRole>("member");
+    const {
+        members,
+        editingMemberId,
+        editMemberRole,
+        editMemberAccess,
+        setEditMemberRole,
+        setEditMemberAccess,
+        setEditingMemberId,
+        handleEditMemberStart,
+        handleEditMemberSave,
+        handleDeleteMember,
+    } = useProjectSettingsMemberState(initialMembers);
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
         onSave?.({ title, description, team, access, members, labels, priorities, statuses });
-    };
-
-    const handleSaveGeneral = () => {
-        setTitle(tempTitle);
-        setDescription(tempDescription);
-        setIsEditingGeneral(false);
-    };
-
-    const handleCancelGeneral = () => {
-        setTempTitle(title);
-        setTempDescription(description);
-        setIsEditingGeneral(false);
-    };
-
-    const handleEditMemberStart = (m: TeamMember) => {
-        setEditingMemberId(m.id);
-        setEditMemberRole(m.role);
-        setEditMemberAccess(m.access);
-    };
-
-    const handleEditMemberSave = (id: string) => {
-        setMembers(
-            members.map((m) =>
-                m.id === id
-                    ? { ...m, role: editMemberRole, access: editMemberAccess }
-                    : m,
-            ),
-        );
-        setEditingMemberId(null);
-    };
-
-    const handleDeleteMember = (id: string) => {
-        setMembers(members.filter((m) => m.id !== id));
-    };
-
-    const handleAddLabel = (newLabel: ProjectLabel) => {
-        setLabels([...labels, newLabel]);
-    };
-
-    const handleDeleteLabel = (index: number) => {
-        setLabels(labels.filter((_, i) => i !== index));
-    };
-
-    const handleAddPriority = (newPriority: ProjectPriority) => {
-        setPriorities([...priorities, newPriority]);
-    };
-
-    const handleDeletePriority = (index: number) => {
-        setPriorities(priorities.filter((_, i) => i !== index));
-    };
-
-    const handleAddStatus = (newStatus: ProjectStatus) => {
-        setStatuses([...statuses, newStatus]);
-    };
-
-    const handleDeleteStatus = (index: number) => {
-        setStatuses(statuses.filter((_, i) => i !== index));
     };
 
     return (

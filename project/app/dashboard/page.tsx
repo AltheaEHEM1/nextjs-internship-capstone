@@ -1,14 +1,20 @@
-import {
-	BarChart3,
-	CheckCircle,
-	Clock,
-	Plus,
-	TrendingUp,
-	Users,
-} from "lucide-react";
+"use client";
+
+import { BarChart3, Plus, TrendingUp } from "lucide-react";
 import { PageHeader } from "@/components/page-header/PageHeader";
+import { useDashboard } from "@/hooks/dashboard/useDashboard";
 
 export default function DashboardPage() {
+	const {
+		implementationTasks,
+		stats,
+		recentProjects,
+		quickActions,
+		upcomingDeadlines,
+		analyticsTasks,
+		analyticsMetrics,
+	} = useDashboard();
+
 	return (
 		<div className="space-y-6">
 			<PageHeader
@@ -29,15 +35,9 @@ export default function DashboardPage() {
 						</h3>
 						<div className="mt-2 text-sm text-blue-800 dark:text-blue-200">
 							<ul className="list-inside list-disc space-y-1">
-								<li>
-									Task 4.2: Create project listing and dashboard interface
-								</li>
-								<li>
-									Task 5.3: Set up client-side state management with Zustand
-								</li>
-								<li>
-									Task 6.6: Optimize performance and implement loading states
-								</li>
+								{implementationTasks.map((task) => (
+									<li key={task}>{task}</li>
+								))}
 							</ul>
 						</div>
 					</div>
@@ -46,27 +46,7 @@ export default function DashboardPage() {
 
 			{/* Stats Grid - Placeholder */}
 			<div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-				{[
-					{
-						name: "Active Projects",
-						value: "12",
-						icon: TrendingUp,
-						change: "+2.5%",
-					},
-					{ name: "Team Members", value: "24", icon: Users, change: "+4.1%" },
-					{
-						name: "Completed Tasks",
-						value: "156",
-						icon: CheckCircle,
-						change: "+12.3%",
-					},
-					{
-						name: "Pending Tasks",
-						value: "43",
-						icon: Clock,
-						change: "-2.1%",
-					},
-				].map((stat) => (
+				{stats.map((stat) => (
 					<div
 						key={stat.name}
 						className="overflow-hidden rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500"
@@ -105,21 +85,24 @@ export default function DashboardPage() {
 						Recent Projects
 					</h3>
 					<div className="space-y-3">
-						{[1, 2, 3].map((i) => (
+						{recentProjects.map((project) => (
 							<div
-								key={i}
+								key={project.id}
 								className="flex items-center justify-between rounded-lg bg-platinum-800 p-3 dark:bg-outer_space-400"
 							>
 								<div>
 									<div className="font-medium text-outer_space-500 dark:text-platinum-500">
-										Project {i}
+										{project.name}
 									</div>
 									<div className="text-sm text-payne's_gray-500 dark:text-french_gray-400">
-										Last updated 2 hours ago
+										{project.lastUpdated}
 									</div>
 								</div>
 								<div className="h-2 w-12 rounded-full bg-french_gray-300 dark:bg-payne's_gray-400">
-									<div className="h-2 w-8 rounded-full bg-blue_munsell-500"></div>
+									<div
+										className="h-2 rounded-full bg-blue_munsell-500"
+										style={{ width: `${project.progressPercent}%` }}
+									/>
 								</div>
 							</div>
 						))}
@@ -137,27 +120,20 @@ export default function DashboardPage() {
 						Quick Actions
 					</h3>
 					<div className="space-y-3">
-						<button
-							type="button"
-							className="flex w-full items-center justify-center rounded-lg bg-blue_munsell-500 px-4 py-3 text-white transition-colors hover:bg-blue_munsell-600"
-						>
-							<Plus size={20} className="mr-2" />
-							Create New Project
-						</button>
-						<button
-							type="button"
-							className="flex w-full items-center justify-center rounded-lg border border-french_gray-300 px-4 py-3 text-outer_space-500 transition-colors hover:bg-platinum-500 dark:border-payne's_gray-400 dark:text-platinum-500 dark:hover:bg-payne's_gray-400"
-						>
-							<Plus size={20} className="mr-2" />
-							Add Team Member
-						</button>
-						<button
-							type="button"
-							className="flex w-full items-center justify-center rounded-lg border border-french_gray-300 px-4 py-3 text-outer_space-500 transition-colors hover:bg-platinum-500 dark:border-payne's_gray-400 dark:text-platinum-500 dark:hover:bg-payne's_gray-400"
-						>
-							<Plus size={20} className="mr-2" />
-							Create Task
-						</button>
+						{quickActions.map((action) => (
+							<button
+								key={action.label}
+								type="button"
+								className={
+									action.variant === "primary"
+										? "flex w-full items-center justify-center rounded-lg bg-blue_munsell-500 px-4 py-3 text-white transition-colors hover:bg-blue_munsell-600"
+										: "flex w-full items-center justify-center rounded-lg border border-french_gray-300 px-4 py-3 text-outer_space-500 transition-colors hover:bg-platinum-500 dark:border-payne's_gray-400 dark:text-platinum-500 dark:hover:bg-payne's_gray-400"
+								}
+							>
+								<Plus size={20} className="mr-2" />
+								{action.label}
+							</button>
+						))}
 					</div>
 					<div className="mt-4 rounded border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
 						<p className="text-sm text-yellow-800 dark:text-yellow-200">
@@ -173,21 +149,9 @@ export default function DashboardPage() {
 					Upcoming Deadlines
 				</h3>
 				<div className="space-y-3">
-					{[
-						{
-							title: "Website Redesign",
-							date: "Dec 15, 2026",
-							type: "Project Deadline",
-						},
-						{ title: "Team Meeting", date: "Dec 18, 2026", type: "Meeting" },
-						{
-							title: "Mobile App Launch",
-							date: "Dec 22, 2026",
-							type: "Milestone",
-						},
-					].map((event, index) => (
+					{upcomingDeadlines.map((event) => (
 						<div
-							key={index}
+							key={event.title}
 							className="flex items-center justify-between rounded-lg bg-platinum-100 p-3 dark:bg-outer_space-400"
 						>
 							<div>
@@ -216,45 +180,17 @@ export default function DashboardPage() {
 					📊 Analytics Implementation Tasks
 				</h3>
 				<ul className="space-y-1 text-sm text-yellow-700 dark:text-yellow-300">
-					<li>• Task 6.6: Optimize performance and implement loading states</li>
-					<li>• Task 8.5: Set up performance monitoring and analytics</li>
+					{analyticsTasks.map((task) => (
+						<li key={task}>• {task}</li>
+					))}
 				</ul>
 			</div>
 
 			{/* Analytics Cards */}
 			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-				{[
-					{
-						title: "Project Velocity",
-						value: "8.5",
-						unit: "tasks/week",
-						icon: TrendingUp,
-						color: "blue",
-					},
-					{
-						title: "Team Efficiency",
-						value: "92%",
-						unit: "completion rate",
-						icon: BarChart3,
-						color: "green",
-					},
-					{
-						title: "Active Users",
-						value: "24",
-						unit: "this week",
-						icon: Users,
-						color: "purple",
-					},
-					{
-						title: "Avg. Task Time",
-						value: "2.3",
-						unit: "days",
-						icon: Clock,
-						color: "orange",
-					},
-				].map((metric, index) => (
+				{analyticsMetrics.map((metric) => (
 					<div
-						key={index}
+						key={metric.title}
 						className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500"
 					>
 						<div className="mb-4 flex items-center justify-between">

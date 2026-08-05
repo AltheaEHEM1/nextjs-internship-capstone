@@ -1,11 +1,5 @@
 import { Flag, Layers, Tag, Trash2, X } from "lucide-react";
-import type { ProjectLabel, ProjectPriority } from "./page";
-
-export interface ProjectStatus {
-    name: string;
-    color: string;
-    description: string;
-}
+import type { ProjectLabel, ProjectPriority, ProjectStatus } from "./page";
 
 interface ProjectLabelPriorityProps {
     labels: ProjectLabel[];

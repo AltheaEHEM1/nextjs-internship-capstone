@@ -2,86 +2,27 @@
 
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import AddMemberModal from "@/components/modals/team/AddMemberModal";
 import AddTeamModal1 from "@/components/modals/team/AddTeamModal1";
-import AddTeamModal2, {
-	type TeamMemberAssignment,
-} from "@/components/modals/team/AddTeamModal2";
+import AddTeamModal2 from "@/components/modals/team/AddTeamModal2";
 import { PageHeader } from "@/components/page-header/PageHeader";
-
-// Types
-type Person = {
-	id: string;
-	name: string;
-	email: string;
-	role: string;
-	avatar: string;
-};
-type Team = { id: string; name: string; membersCount: number; icon: string };
+import { useTeamManagement } from "@/hooks/team/useTeam";
 
 export default function Team() {
-	const [activeTab, _setActiveTab] = useState<"people" | "teams">("teams");
-
-	// Modal states
-	const [isAddPeopleOpen, setIsAddPeopleOpen] = useState(false);
-
-	// Step tracker: 0 = closed, 1 = Step 1 modal, 2 = Step 2 modal
-	const [teamStep, setTeamStep] = useState<0 | 1 | 2>(0);
-
-	// Shared Team Form State combining both steps
-	const [teamData, setTeamData] = useState<{
-		teamName: string;
-		teamIcon: string;
-		coverUrl: string;
-		members: TeamMemberAssignment[];
-	}>({
-		teamName: "",
-		teamIcon: "💻",
-		coverUrl: "",
-		members: [],
-	});
-
-	// Mock Data
-	const people: Person[] = [
-		{
-			id: "1",
-			name: "Alex Mercer",
-			email: "alex@srg.tech",
-			role: "Frontend Developer",
-			avatar: "A",
-		},
-		{
-			id: "2",
-			name: "Sarah Jenkins",
-			email: "sarah@srg.tech",
-			role: "UI/UX Designer",
-			avatar: "S",
-		},
-	];
-
-	const teams: Team[] = [
-		{
-			id: "frontend-core",
-			name: "Frontend Core Team",
-			membersCount: 4,
-			icon: "💻",
-		},
-		{
-			id: "backend-infra",
-			name: "Backend & DevOps",
-			membersCount: 3,
-			icon: "⚡",
-		},
-	];
-
-	const handleMainAction = () => {
-		if (activeTab === "people") {
-			setIsAddPeopleOpen(true);
-		} else {
-			setTeamStep(1);
-		}
-	};
+	const {
+		activeTab,
+		people,
+		teams,
+		isAddPeopleOpen,
+		teamStep,
+		teamData,
+		handleMainAction,
+		closeAddPeopleModal,
+		closeTeamModal,
+		handleTeamStep1Next,
+		handleTeamStep2Back,
+		handleTeamStep2Submit,
+	} = useTeamManagement("teams");
 
 	return (
 		<div className="space-y-6 pb-12">
@@ -150,30 +91,23 @@ export default function Team() {
 
 			<AddMemberModal
 				opened={isAddPeopleOpen}
-				onClose={() => setIsAddPeopleOpen(false)}
+				onClose={closeAddPeopleModal}
 			/>
 
 			{/* Step 1 Modal */}
 			<AddTeamModal1
 				opened={teamStep === 1}
-				onClose={() => setTeamStep(0)}
-				onNext={(step1Data) => {
-					setTeamData((prev) => ({ ...prev, ...step1Data }));
-					setTeamStep(2);
-				}}
+				onClose={closeTeamModal}
+				onNext={handleTeamStep1Next}
 				initialData={teamData}
 			/>
 
 			{/* Step 2 Modal */}
 			<AddTeamModal2
 				opened={teamStep === 2}
-				onClose={() => setTeamStep(0)}
-				onBack={() => setTeamStep(1)}
-				onSubmit={(step2Data) => {
-					const finalPayload = { ...teamData, ...step2Data };
-					console.log("Creating final team payload:", finalPayload);
-					setTeamStep(0);
-				}}
+				onClose={closeTeamModal}
+				onBack={handleTeamStep2Back}
+				onSubmit={handleTeamStep2Submit}
 				initialData={teamData}
 			/>
 		</div>
