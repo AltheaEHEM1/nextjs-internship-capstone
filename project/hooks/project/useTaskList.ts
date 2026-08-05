@@ -1,3 +1,4 @@
+import type { ColumnDef } from "@tanstack/react-table";
 import {
 	getCoreRowModel,
 	getSortedRowModel,
@@ -5,7 +6,6 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import type { ColumnDef } from "@tanstack/react-table";
 
 export type Task = {
 	id: string;

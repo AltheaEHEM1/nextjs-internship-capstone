@@ -2,9 +2,9 @@ import {
 	BarChart3,
 	CheckCircle,
 	Clock,
+	type LucideIcon,
 	TrendingUp,
 	Users,
-	type LucideIcon,
 } from "lucide-react";
 import { useMemo } from "react";
 

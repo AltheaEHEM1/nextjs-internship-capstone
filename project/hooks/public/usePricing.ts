@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, type MouseEvent } from "react";
+import { type MouseEvent, useMemo, useRef, useState } from "react";
 
 export type PricingPlan = {
 	name: string;
@@ -119,7 +119,7 @@ export function usePricing() {
 		[],
 	);
 
-const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+	const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
 		if (!containerRef.current) return;
 		const rect = containerRef.current.getBoundingClientRect();
 		setMousePosition({

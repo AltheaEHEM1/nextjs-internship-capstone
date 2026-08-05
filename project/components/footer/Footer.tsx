@@ -1,7 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useCurrentYear } from "../../hooks/modal/useCurrentYear";
 
 export function Footer() {
+	const year = useCurrentYear();
+
 	return (
 		<footer className="border-t border-slate-800/60 bg-slate-950 py-8 text-slate-300">
 			<div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -122,7 +127,7 @@ export function Footer() {
 
 				{/* Bottom Bar */}
 				<div className="mt-8 flex flex-col items-center justify-between border-t border-slate-900 pt-4 text-xs text-slate-500 gap-2 sm:flex-row sm:mt-6 sm:gap-0">
-					<p>© {new Date().getFullYear()} Projectnify. All rights reserved.</p>
+					<p>© {year} Projectnify. All rights reserved.</p>
 					<div className="flex space-x-4">
 						<Link href="#" className="transition-colors hover:text-cyan-400">
 							Privacy

@@ -10,8 +10,8 @@ import {
 	UserCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
 import CreateTaskModal from "@/components/modals/task/CreateTaskModal";
+import { useProjectHeader } from "../../hooks/modal/useProjectHeader";
 
 export interface ProjectHeaderProps {
 	title: string;
@@ -28,23 +28,14 @@ export default function ProjectHeader({
 	onOpenAddPriority,
 	onOpenAddLabel,
 }: ProjectHeaderProps) {
-	const [dropdownOpen, setDropdownOpen] = useState(false);
-	const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
-	const dropdownRef = useRef<HTMLDivElement>(null);
-	const router = useRouter();
-
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
-				setDropdownOpen(false);
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
+	const {
+		dropdownOpen,
+		setDropdownOpen,
+		isCreateTaskOpen,
+		setIsCreateTaskOpen,
+		dropdownRef,
+		handleSettings,
+	} = useProjectHeader({ onOpenSettings, onOpenAddPriority, onOpenAddLabel });
 
 	return (
 		<>
@@ -87,11 +78,7 @@ export default function ProjectHeader({
 					<div className="relative group">
 						<button
 							type="button"
-							onClick={() =>
-								onOpenSettings
-									? onOpenSettings()
-									: router.push(`/projects/project-settings`)
-							}
+							onClick={() => handleSettings()}
 							className="inline-flex items-center justify-center rounded-lg border border-french_gray-300 bg-white p-2 text-outer_space-700 shadow-2xs transition-colors hover:bg-french_gray-50 dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-200 dark:hover:bg-payne's_gray-400"
 							aria-label="Project Settings"
 						>

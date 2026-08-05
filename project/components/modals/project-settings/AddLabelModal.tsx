@@ -1,8 +1,8 @@
 "use client";
 
 import { Tag } from "lucide-react";
-import { useState } from "react";
 import BaseModal from "@/components/layout/BaseModal";
+import { useAddLabel } from "@/hooks/project-settings/useAddLabel";
 import { cn } from "@/lib/utils";
 
 interface AddLabelProps {
@@ -42,16 +42,8 @@ const LABEL_COLORS = [
 ];
 
 export function AddLabelModal({ isOpen, onClose, onSave }: AddLabelProps) {
-	const [name, setName] = useState("");
-	const [selectedColor, setSelectedColor] = useState(LABEL_COLORS[0].class);
-
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!name.trim()) return;
-		onSave({ name, color: selectedColor });
-		setName("");
-		onClose();
-	};
+	const { name, setName, selectedColor, setSelectedColor, handleSubmit } =
+		useAddLabel("", LABEL_COLORS[0].class);
 
 	return (
 		<BaseModal opened={isOpen} onClose={onClose} width={448}>
@@ -68,7 +60,10 @@ export function AddLabelModal({ isOpen, onClose, onSave }: AddLabelProps) {
 			</div>
 
 			{/* Form */}
-			<form onSubmit={handleSubmit} className="p-6 space-y-4">
+			<form
+				onSubmit={(e) => handleSubmit(e, onSave, onClose)}
+				className="p-6 space-y-4"
+			>
 				<div>
 					<label
 						htmlFor="label-name"

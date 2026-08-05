@@ -89,10 +89,7 @@ export default function Team() {
 				</div>
 			)}
 
-			<AddMemberModal
-				opened={isAddPeopleOpen}
-				onClose={closeAddPeopleModal}
-			/>
+			<AddMemberModal opened={isAddPeopleOpen} onClose={closeAddPeopleModal} />
 
 			{/* Step 1 Modal */}
 			<AddTeamModal1

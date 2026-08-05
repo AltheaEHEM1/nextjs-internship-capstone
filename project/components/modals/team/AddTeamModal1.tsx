@@ -2,8 +2,9 @@
 
 import EmojiPicker, { Theme } from "emoji-picker-react"; // <-- Import the emoji picker
 import { FolderPlus, Smile, Upload, X } from "lucide-react";
-import { useEffect, useState } from "react";
+
 import BaseModal from "@/components/layout/BaseModal";
+import { useAddTeamModal1 } from "../../../hooks/modal/useAddTeamModal1";
 
 interface AddTeam1Props {
 	opened: boolean;
@@ -22,32 +23,18 @@ export default function AddTeamModal1({
 	onNext,
 	initialData,
 }: AddTeam1Props) {
-	const [teamName, setTeamName] = useState(initialData?.teamName || "");
-	const [teamIcon, setTeamIcon] = useState(initialData?.teamIcon || "💻");
-	const [coverUrl, setCoverUrl] = useState(initialData?.coverUrl || "");
-
-	// State to toggle the emoji picker visibility popup
-	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
-	useEffect(() => {
-		if (initialData) {
-			setTeamName(initialData.teamName || "");
-			setTeamIcon(initialData.teamIcon || "💻");
-			setCoverUrl(initialData.coverUrl || "");
-		}
-	}, [initialData]);
-
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (file) {
-			const objectUrl = URL.createObjectURL(file);
-			setCoverUrl(objectUrl);
-		}
-	};
-
-	const handleNext = () => {
-		onNext({ teamName, teamIcon, coverUrl });
-	};
+	const {
+		teamName,
+		setTeamName,
+		teamIcon,
+		setTeamIcon,
+		coverUrl,
+		setCoverUrl,
+		showEmojiPicker,
+		setShowEmojiPicker,
+		handleFileChange,
+		handleNext,
+	} = useAddTeamModal1({ initialData, onNext });
 
 	return (
 		<BaseModal

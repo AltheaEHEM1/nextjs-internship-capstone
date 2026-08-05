@@ -1,7 +1,4 @@
-import {
-	createColumnHelper,
-	type ColumnDef,
-} from "@tanstack/react-table";
+import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { useMemo } from "react";
 import type { Task } from "@/hooks/project/useTaskList";
@@ -63,12 +60,9 @@ export function useTaskListColumns() {
 						if (priority === "High")
 							colorClass = "text-amber-600 dark:text-amber-400 font-medium";
 						if (priority === "Medium")
-							colorClass =
-								"text-blue_munsell-600 dark:text-blue_munsell-400";
+							colorClass = "text-blue_munsell-600 dark:text-blue_munsell-400";
 
-						return (
-							<span className={`text-xs ${colorClass}`}>{priority}</span>
-						);
+						return <span className={`text-xs ${colorClass}`}>{priority}</span>;
 					},
 				}),
 				columnHelper.accessor("subtasksCount", {

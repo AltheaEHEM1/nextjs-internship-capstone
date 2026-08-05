@@ -115,39 +115,39 @@ export default function ProjectsPage() {
 				{[1, 2, 3, 4, 5, 6].map((i) => {
 					const { daysLeft, members, tasks, progress } = getPlaceholderStats(i);
 					return (
-					<Link
-						key={i}
-						href={`/projects/pages`}
-						className="group rounded-lg border border-french_gray-300 bg-white p-6 transition-shadow hover:shadow-lg dark:border-payne's_gray-400 dark:bg-outer_space-500"
-					>
-						<div className="mb-4 flex items-start justify-between">
-							<div className="h-3 w-3 rounded-full bg-blue_munsell-500"></div>
-							<div className="text-sm text-payne's_gray-500 dark:text-french_gray-400">
-								{daysLeft} days left
+						<Link
+							key={i}
+							href={`/projects/pages`}
+							className="group rounded-lg border border-french_gray-300 bg-white p-6 transition-shadow hover:shadow-lg dark:border-payne's_gray-400 dark:bg-outer_space-500"
+						>
+							<div className="mb-4 flex items-start justify-between">
+								<div className="h-3 w-3 rounded-full bg-blue_munsell-500"></div>
+								<div className="text-sm text-payne's_gray-500 dark:text-french_gray-400">
+									{daysLeft} days left
+								</div>
 							</div>
-						</div>
 
-						<h3 className="mb-2 text-lg font-semibold text-outer_space-500 dark:text-platinum-500">
-							Sample Project {i}
-						</h3>
+							<h3 className="mb-2 text-lg font-semibold text-outer_space-500 dark:text-platinum-500">
+								Sample Project {i}
+							</h3>
 
-						<p className="mb-4 text-sm text-payne's_gray-500 dark:text-french_gray-400">
-							This is a placeholder project description that will be replaced
-							with actual project data.
-						</p>
+							<p className="mb-4 text-sm text-payne's_gray-500 dark:text-french_gray-400">
+								This is a placeholder project description that will be replaced
+								with actual project data.
+							</p>
 
-						<div className="mb-4 flex items-center justify-between text-sm text-payne's_gray-500 dark:text-french_gray-400">
-							<span>{members} members</span>
-							<span>{tasks} tasks</span>
-						</div>
+							<div className="mb-4 flex items-center justify-between text-sm text-payne's_gray-500 dark:text-french_gray-400">
+								<span>{members} members</span>
+								<span>{tasks} tasks</span>
+							</div>
 
-						<div className="h-2 w-full rounded-full bg-french_gray-300 dark:bg-payne's_gray-400">
-							<div
-								className="h-2 rounded-full bg-blue_munsell-500"
-								style={{ width: `${progress}%` }}
-							></div>
-						</div>
-					</Link>
+							<div className="h-2 w-full rounded-full bg-french_gray-300 dark:bg-payne's_gray-400">
+								<div
+									className="h-2 rounded-full bg-blue_munsell-500"
+									style={{ width: `${progress}%` }}
+								></div>
+							</div>
+						</Link>
 					);
 				})}
 			</div>

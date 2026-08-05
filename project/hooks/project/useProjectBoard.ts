@@ -1,11 +1,19 @@
-import { useState } from "react";
+import type {
+	DragEndEvent,
+	DragOverEvent,
+	DragStartEvent,
+} from "@dnd-kit/core";
 import { PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import type { DragEndEvent, DragOverEvent, DragStartEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
+import { useState } from "react";
 import type { Task } from "@/components/board/TaskCard";
 
 export function useProjectBoard() {
-	const [kanbanColumns, setKanbanColumns] = useState<string[]>(["To Do", "In Progress", "Done"]);
+	const [kanbanColumns, setKanbanColumns] = useState<string[]>([
+		"To Do",
+		"In Progress",
+		"Done",
+	]);
 	const [isViewTaskOpen, setIsViewTaskOpen] = useState(false);
 	const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 	const [activeColumn, setActiveColumn] = useState<string | null>(null);
@@ -15,7 +23,8 @@ export function useProjectBoard() {
 			id: "task-1",
 			workType: "Feature",
 			title: "Design System Update #1",
-			description: "Refactor color tokens and component documentation for the layout migration.",
+			description:
+				"Refactor color tokens and component documentation for the layout migration.",
 			status: "To Do",
 			assignee: "U",
 			priority: "medium",
@@ -28,7 +37,8 @@ export function useProjectBoard() {
 			id: "task-2",
 			workType: "Feature",
 			title: "Design System Update #1",
-			description: "Refactor color tokens and component documentation for the layout migration.",
+			description:
+				"Refactor color tokens and component documentation for the layout migration.",
 			status: "To Do",
 			assignee: "U",
 			priority: "medium",
@@ -41,7 +51,8 @@ export function useProjectBoard() {
 			id: "task-3",
 			workType: "Feature",
 			title: "Design System Update #1",
-			description: "Refactor color tokens and component documentation for the layout migration.",
+			description:
+				"Refactor color tokens and component documentation for the layout migration.",
 			status: "To Do",
 			assignee: "U",
 			priority: "medium",
@@ -54,7 +65,8 @@ export function useProjectBoard() {
 			id: "task-4",
 			workType: "Feature",
 			title: "Design System Update #1",
-			description: "Refactor color tokens and component documentation for the layout migration.",
+			description:
+				"Refactor color tokens and component documentation for the layout migration.",
 			status: "To Do",
 			assignee: "U",
 			priority: "medium",
@@ -80,7 +92,11 @@ export function useProjectBoard() {
 
 	const handleUpdateTask = (updatedFields: Record<string, any>) => {
 		if (!selectedTask) return;
-		setTasks((prev) => prev.map((t) => (t.id === selectedTask.id ? { ...t, ...updatedFields } : t)));
+		setTasks((prev) =>
+			prev.map((t) =>
+				t.id === selectedTask.id ? { ...t, ...updatedFields } : t,
+			),
+		);
 		setSelectedTask((prev) => (prev ? { ...prev, ...updatedFields } : null));
 	};
 

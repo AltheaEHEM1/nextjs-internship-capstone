@@ -1,61 +1,38 @@
 "use client";
 
 import { FolderPlus, Plus, Shield, Trash2 } from "lucide-react";
-import { useState } from "react";
 import BaseModal from "@/components/layout/BaseModal";
+import { useAddTeamMemberModal } from "@/hooks/modal/useAddTeamMemberModal";
 
 interface AddTeamMemberProps {
 	opened: boolean;
 	onClose: () => void;
 }
 
-export type TeamMemberAssignment = {
-	member: string;
-	role: string;
-	accessibility: string;
-};
+import { TeamMemberAssignment } from "@/hooks/modal/useAddTeamMemberModal";
 
 export default function AddTeamMemberModal({
 	opened,
 	onClose,
 }: AddTeamMemberProps) {
-	const [membersList, setMembersList] = useState<TeamMemberAssignment[]>([]);
-	const [currentMember, setCurrentMember] = useState("");
-	const [currentRole, setCurrentRole] = useState("Member");
-	const [currentAccessibility, setAccessibility] = useState("member");
-
-	const handleAddToList = () => {
-		if (!currentMember) return;
-
-		if (membersList.some((m) => m.member === currentMember)) {
-			alert(`${currentMember} is already added to the list.`);
-			return;
-		}
-
-		setMembersList((prev) => [
-			...prev,
-			{
-				member: currentMember,
-				role: currentRole || "Member",
-				accessibility: currentAccessibility,
-			},
-		]);
-
-		setCurrentMember("");
-		setCurrentRole("Member");
-		setAccessibility("member");
-	};
-
-	const handleRemoveMember = (index: number) => {
-		setMembersList((prev) => prev.filter((_, i) => i !== index));
-	};
-
-	const handleCreate = () => {
-		console.log({
-			membersList,
-		});
-		onClose();
-	};
+	const {
+		membersList,
+		setMembersList,
+		currentMember,
+		setCurrentMember,
+		currentRole,
+		setCurrentRole,
+		currentAccessibility,
+		setCurrentAccessibility,
+		handleAddToList,
+		handleRemoveMember,
+		handleCreate,
+	} = useAddTeamMemberModal({
+		onSubmit: (members) => {
+			console.log({ members });
+			onClose();
+		},
+	});
 
 	return (
 		<BaseModal
@@ -135,7 +112,7 @@ export default function AddTeamMemberModal({
 									</label>
 									<select
 										value={currentAccessibility}
-										onChange={(e) => setAccessibility(e.target.value)}
+										onChange={(e) => setCurrentAccessibility(e.target.value)}
 										className="w-full rounded-lg border border-french_gray-300 p-2 text-sm dark:bg-outer_space-400 dark:border-payne's_gray-600 dark:text-platinum-100"
 									>
 										<option value="administrator">Administrator</option>

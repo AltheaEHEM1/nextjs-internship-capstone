@@ -1,8 +1,8 @@
 "use client";
 
 import { Flag } from "lucide-react";
-import { useState } from "react";
 import BaseModal from "@/components/layout/BaseModal";
+import { useAddPriority } from "@/hooks/project-settings/useAddPriority";
 import { cn } from "@/lib/utils";
 
 interface AddPriorityProps {
@@ -31,20 +31,17 @@ export function AddPriorityModal({
 	onClose,
 	onSave,
 }: AddPriorityProps) {
-	const [name, setName] = useState("");
-	const [description, setDescription] = useState("");
-	const [color, setColor] = useState(PRESET_COLORS[0].value);
-	const [level, setLevel] = useState(1);
-
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!name.trim()) return;
-		onSave({ name, description, color, level });
-		setName("");
-		setDescription("");
-		setLevel(1);
-		onClose();
-	};
+	const {
+		name,
+		setName,
+		description,
+		setDescription,
+		color,
+		setColor,
+		level,
+		setLevel,
+		handleSubmit,
+	} = useAddPriority("", "", PRESET_COLORS[0].value, 1);
 
 	return (
 		<BaseModal opened={isOpen} onClose={onClose} width={448}>
@@ -61,7 +58,10 @@ export function AddPriorityModal({
 			</div>
 
 			{/* Form */}
-			<form onSubmit={handleSubmit} className="p-6 space-y-4">
+			<form
+				onSubmit={(e) => handleSubmit(e, onSave, onClose)}
+				className="p-6 space-y-4"
+			>
 				<div>
 					<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
 						Priority Name

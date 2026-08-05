@@ -3,8 +3,8 @@
 import { Plus } from "lucide-react";
 import AddMemberModal from "@/components/modals/team/AddMemberModal";
 import AddTeamModal1 from "@/components/modals/team/AddTeamModal1";
-import { PageHeader } from "@/components/page-header/PageHeader";
 import AddTeamModal2 from "@/components/modals/team/AddTeamModal2";
+import { PageHeader } from "@/components/page-header/PageHeader";
 import { useTeamManagement } from "@/hooks/team/useTeam";
 
 export default function TeamPage() {
@@ -96,10 +96,7 @@ export default function TeamPage() {
 				</div>
 			)}
 
-			<AddMemberModal
-				opened={isAddPeopleOpen}
-				onClose={closeAddPeopleModal}
-			/>
+			<AddMemberModal opened={isAddPeopleOpen} onClose={closeAddPeopleModal} />
 			<AddTeamModal1
 				opened={teamStep === 1}
 				onClose={closeTeamModal}

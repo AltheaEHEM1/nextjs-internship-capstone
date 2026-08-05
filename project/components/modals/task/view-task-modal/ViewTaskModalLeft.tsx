@@ -1,7 +1,7 @@
 "use client";
 
 import { History, MessageSquare, Plus, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { useViewTaskModalLeft } from "../../../../hooks/modal/useViewTaskModalLeft";
 
 interface ViewTaskLeftProps {
 	taskData: {
@@ -16,38 +16,25 @@ export default function ViewTaskModalLeft({
 	taskData,
 	onUpdateTask,
 }: ViewTaskLeftProps) {
-	const [title, setTitle] = useState(taskData.title);
-	const [isEditingTitle, setIsEditingTitle] = useState(false);
-
-	const [description, setDescription] = useState(taskData.description);
-	const [isEditingDesc, setIsEditingDesc] = useState(false);
-
-	// Activity Tab State
-	const [activeTab, setActiveTab] = useState<"comments" | "history">(
-		"comments",
-	);
-	const [comments, setComments] = useState<string[]>([]);
-	const [newComment, setNewComment] = useState("");
-
-	const handleTitleBlur = () => {
-		setIsEditingTitle(false);
-		if (title !== taskData.title && onUpdateTask) {
-			onUpdateTask({ title });
-		}
-	};
-
-	const handleDescBlur = () => {
-		setIsEditingDesc(false);
-		if (description !== taskData.description && onUpdateTask) {
-			onUpdateTask({ description });
-		}
-	};
-
-	const handleAddComment = () => {
-		if (!newComment.trim()) return;
-		setComments((prev) => [...prev, newComment]);
-		setNewComment("");
-	};
+	const {
+		title,
+		setTitle,
+		isEditingTitle,
+		setIsEditingTitle,
+		description,
+		setDescription,
+		isEditingDesc,
+		setIsEditingDesc,
+		activeTab,
+		setActiveTab,
+		comments,
+		setComments,
+		newComment,
+		setNewComment,
+		handleTitleBlur,
+		handleDescBlur,
+		handleAddComment,
+	} = useViewTaskModalLeft({ taskData, onUpdateTask });
 
 	return (
 		<>

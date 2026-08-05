@@ -24,7 +24,6 @@ export default function PricingPage() {
 		faqs,
 	} = usePricing();
 
-
 	return (
 		<section
 			ref={containerRef}

@@ -1,9 +1,9 @@
 import {
 	Compass,
+	type LucideIcon,
 	ShieldAlert,
 	Target,
 	Zap,
-	type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 

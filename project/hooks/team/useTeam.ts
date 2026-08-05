@@ -55,7 +55,9 @@ const initialTeams: Team[] = [
 	},
 ];
 
-export function useTeamManagement(initialActiveTab: "people" | "teams" = "people") {
+export function useTeamManagement(
+	initialActiveTab: "people" | "teams" = "people",
+) {
 	const [activeTab, setActiveTab] = useState<"people" | "teams">(
 		initialActiveTab,
 	);

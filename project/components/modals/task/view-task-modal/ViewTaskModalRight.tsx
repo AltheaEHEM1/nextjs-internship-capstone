@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar, Clock, Flag, Tag, User } from "lucide-react";
-import { useState } from "react";
+import { useViewTaskModalRight } from "@/hooks/modal/useViewTaskModalRight";
 
 interface ViewTaskRightProps {
 	taskData: {
@@ -20,18 +20,21 @@ export default function ViewTaskModalRight({
 	taskData,
 	onUpdateTask,
 }: ViewTaskRightProps) {
-	const [status, setStatus] = useState(taskData.status);
-	const [assignee, setAssignee] = useState(taskData.assignee);
-	const [priority, setPriority] = useState(taskData.priority);
-	const [dueDate, setDueDate] = useState(taskData.dueDate);
-	const [label, setLabel] = useState(taskData.label);
-	const [startDate, setStartDate] = useState(taskData.startDate);
-
-	const handleFieldChange = (field: string, value: any) => {
-		if (onUpdateTask) {
-			onUpdateTask({ [field]: value });
-		}
-	};
+	const {
+		status,
+		setStatus,
+		assignee,
+		setAssignee,
+		priority,
+		setPriority,
+		dueDate,
+		setDueDate,
+		label,
+		setLabel,
+		startDate,
+		setStartDate,
+		handleFieldChange,
+	} = useViewTaskModalRight({ taskData, onUpdateTask });
 
 	return (
 		<>

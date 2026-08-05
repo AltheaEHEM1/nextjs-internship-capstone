@@ -1,6 +1,10 @@
 "use client";
 
 import BaseModal from "@/components/layout/BaseModal";
+import {
+	ALL_POSSIBLE_VIEWS,
+	useCustomView,
+} from "@/hooks/project/useCustomView";
 
 interface CustomViewProps {
 	opened: boolean;
@@ -9,34 +13,13 @@ interface CustomViewProps {
 	onChangeViews: (views: string[]) => void;
 }
 
-const ALL_POSSIBLE_VIEWS = [
-	{ name: "List", required: true },
-	{ name: "Board", required: false },
-	{ name: "Calendar", required: false },
-	{ name: "Map", required: false },
-	{ name: "Activity", required: false },
-	{ name: "Team", required: false },
-	{ name: "Gantt", required: false },
-	{ name: "Mind Map", required: false },
-	{ name: "Table", required: false },
-	{ name: "Timeline", required: false },
-	{ name: "Workload", required: false },
-];
-
 export default function CustomView({
 	opened,
 	onClose,
 	selectedViews,
 	onChangeViews,
 }: CustomViewProps) {
-	const toggleView = (viewName: string) => {
-		if (viewName === "List") return;
-		if (selectedViews.includes(viewName)) {
-			onChangeViews(selectedViews.filter((v) => v !== viewName));
-		} else {
-			onChangeViews([...selectedViews, viewName]);
-		}
-	};
+	const { toggleView } = useCustomView(selectedViews, onChangeViews);
 
 	return (
 		<BaseModal

@@ -1,11 +1,15 @@
 import { useState } from "react";
-import type { AccessRole, TeamMember } from "@/app/projects/project-settings/page";
+import type {
+	AccessRole,
+	TeamMember,
+} from "@/app/projects/project-settings/page";
 
 export function useProjectSettingsMemberState(initialMembers: TeamMember[]) {
 	const [members, setMembers] = useState<TeamMember[]>(initialMembers);
 	const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
 	const [editMemberRole, setEditMemberRole] = useState("");
-	const [editMemberAccess, setEditMemberAccess] = useState<AccessRole>("member");
+	const [editMemberAccess, setEditMemberAccess] =
+		useState<AccessRole>("member");
 
 	const handleEditMemberStart = (member: TeamMember) => {
 		setEditingMemberId(member.id);

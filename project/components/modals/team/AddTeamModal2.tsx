@@ -1,21 +1,18 @@
 "use client";
 
 import { FolderPlus, Plus, Shield, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import BaseModal from "@/components/layout/BaseModal";
-
-// Define the shape of a team member assignment
-export type TeamMemberAssignment = {
-	member: string;
-	role: string;
-	accessibility: string;
-};
+import {
+	type TeamMemberAssignment,
+	useAddTeamMemberModal,
+} from "../../../hooks/modal/useAddTeamMemberModal";
 
 interface AddTeam2Props {
 	opened: boolean;
 	onClose: () => void;
 	onBack: () => void;
-	onSubmit: (data: { members: TeamMemberAssignment[] }) => void;
+	onSubmit: (members: TeamMemberAssignment[]) => void;
 	initialData: { members?: TeamMemberAssignment[] };
 }
 
@@ -26,55 +23,25 @@ export default function AddTeamModal2({
 	onSubmit,
 	initialData,
 }: AddTeam2Props) {
-	// List of added members
-	const [membersList, setMembersList] = useState<TeamMemberAssignment[]>(
-		initialData.members || [],
-	);
-
-	// Form inputs for the *current* member being added
-	const [currentMember, setCurrentMember] = useState("");
-	const [currentRole, setCurrentRole] = useState("Member");
-	const [currentAccessibility, setCurrentAccessibility] = useState("member");
+	const {
+		membersList,
+		setMembersList,
+		currentMember,
+		setCurrentMember,
+		currentRole,
+		setCurrentRole,
+		currentAccessibility,
+		setCurrentAccessibility,
+		handleAddToList,
+		handleRemoveMember,
+		handleCreate,
+	} = useAddTeamMemberModal({ onSubmit: onSubmit });
 
 	useEffect(() => {
 		if (initialData.members) {
 			setMembersList(initialData.members);
 		}
-	}, [initialData]);
-
-	// Add current selection to the list
-	const handleAddToList = () => {
-		if (!currentMember) return;
-
-		// Prevent adding duplicate member entries if desired
-		if (membersList.some((m) => m.member === currentMember)) {
-			alert(`${currentMember} is already added to the list.`);
-			return;
-		}
-
-		setMembersList((prev) => [
-			...prev,
-			{
-				member: currentMember,
-				role: currentRole || "Member",
-				accessibility: currentAccessibility,
-			},
-		]);
-
-		// Reset inputs for the next entry
-		setCurrentMember("");
-		setCurrentRole("Member");
-		setCurrentAccessibility("member");
-	};
-
-	// Remove a member from the list
-	const handleRemoveMember = (index: number) => {
-		setMembersList((prev) => prev.filter((_, i) => i !== index));
-	};
-
-	const handleCreate = () => {
-		onSubmit({ members: membersList });
-	};
+	}, [initialData, setMembersList]);
 
 	return (
 		<BaseModal
