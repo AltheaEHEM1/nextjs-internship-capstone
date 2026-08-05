@@ -3,10 +3,8 @@
 import { FolderPlus, Plus, Shield, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import BaseModal from "@/components/layout/BaseModal";
-import {
-	type TeamMemberAssignment,
-	useAddTeamMemberModal,
-} from "../../../hooks/modal/useAddTeamMemberModal";
+import { useCustomAddTeamModal2Store } from "@/stores/team/custom-add-team-modal2-store";
+import type { TeamMemberAssignment } from "@/stores/team/custom-add-team-member-store";
 
 interface AddTeam2Props {
 	opened: boolean;
@@ -35,13 +33,19 @@ export default function AddTeamModal2({
 		handleAddToList,
 		handleRemoveMember,
 		handleCreate,
-	} = useAddTeamMemberModal({ onSubmit: onSubmit });
+		initialize,
+		reset,
+	} = useCustomAddTeamModal2Store();
 
 	useEffect(() => {
-		if (initialData.members) {
-			setMembersList(initialData.members);
+		if (opened) {
+			reset();
+			initialize({ onSubmit });
+			if (initialData.members) {
+				setMembersList(initialData.members);
+			}
 		}
-	}, [initialData, setMembersList]);
+	}, [opened]);
 
 	return (
 		<BaseModal

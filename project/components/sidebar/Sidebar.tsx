@@ -4,7 +4,8 @@ import { ChevronLeft, ChevronRight, Copyright, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
+import { useCustomSidebarStore } from "../../stores/components/custom-sidebar-store";
 import { cn } from "@/lib/utils";
 import { SidebarLink } from "./SidebarLink";
 import { NAV_CONFIG } from "./SidebarNavigationConfig";
@@ -16,15 +17,18 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ opened, close, role }: SidebarProps) {
-	const [collapsed, setCollapsed] = useState(false);
-	const [isHovered, setIsHovered] = useState(false);
-
-	// Changed to track a single open dropdown string label instead of a boolean map
-	const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+	const {
+		collapsed,
+		setCollapsed,
+		isHovered,
+		setIsHovered,
+		openDropdown,
+		setOpenDropdown,
+		isMobile,
+		setIsMobile,
+	} = useCustomSidebarStore();
 
 	const pathname = usePathname();
-
-	const [isMobile, setIsMobile] = React.useState(false);
 	React.useEffect(() => {
 		const checkMobile = () => setIsMobile(window.innerWidth < 1024);
 		checkMobile();
@@ -47,7 +51,7 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 
 	// Accordion Toggle: clicking an already open tab closes it, otherwise it switches open to the new one
 	const toggleItem = (label: string) => {
-		setOpenDropdown((prev) => (prev === label ? null : label));
+		setOpenDropdown(openDropdown === label ? null : label);
 	};
 
 	const NavItems = useMemo(() => {

@@ -1,179 +1,156 @@
-import type {
-	DragEndEvent,
-	DragOverEvent,
-	DragStartEvent,
+import { useCallback } from "react";
+import {
+	useSensor,
+	useSensors,
+	PointerSensor,
+	type DragStartEvent,
+	type DragOverEvent,
+	type DragEndEvent,
 } from "@dnd-kit/core";
-import { PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { useState } from "react";
+import { useProjectBoardStore } from "@/stores/project/project-board-store";
 import type { Task } from "@/components/board/TaskCard";
 
+/**
+ * Custom hook that encapsulates all Kanban board logic:
+ * drag-and-drop handling, task selection, and modal state.
+ */
 export function useProjectBoard() {
-	const [kanbanColumns, setKanbanColumns] = useState<string[]>([
-		"To Do",
-		"In Progress",
-		"Done",
-	]);
-	const [isViewTaskOpen, setIsViewTaskOpen] = useState(false);
-	const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-	const [activeColumn, setActiveColumn] = useState<string | null>(null);
-	const [activeTask, setActiveTask] = useState<Task | null>(null);
-	const [tasks, setTasks] = useState<Task[]>([
-		{
-			id: "task-1",
-			workType: "Feature",
-			title: "Design System Update #1",
-			description:
-				"Refactor color tokens and component documentation for the layout migration.",
-			status: "To Do",
-			assignee: "U",
-			priority: "medium",
-			dueDate: "2026-06-15",
-			label: "Frontend",
-			startDate: "2026-06-01",
-			reporter: "Admin",
-		},
-		{
-			id: "task-2",
-			workType: "Feature",
-			title: "Design System Update #1",
-			description:
-				"Refactor color tokens and component documentation for the layout migration.",
-			status: "To Do",
-			assignee: "U",
-			priority: "medium",
-			dueDate: "2026-06-15",
-			label: "Frontend",
-			startDate: "2026-06-01",
-			reporter: "Admin",
-		},
-		{
-			id: "task-3",
-			workType: "Feature",
-			title: "Design System Update #1",
-			description:
-				"Refactor color tokens and component documentation for the layout migration.",
-			status: "To Do",
-			assignee: "U",
-			priority: "medium",
-			dueDate: "2026-06-15",
-			label: "Frontend",
-			startDate: "2026-06-01",
-			reporter: "Admin",
-		},
-		{
-			id: "task-4",
-			workType: "Feature",
-			title: "Design System Update #1",
-			description:
-				"Refactor color tokens and component documentation for the layout migration.",
-			status: "To Do",
-			assignee: "U",
-			priority: "medium",
-			dueDate: "2026-06-15",
-			label: "Frontend",
-			startDate: "2026-06-01",
-			reporter: "Admin",
-		},
-	]);
+	const {
+		kanbanColumns,
+		tasks,
+		setTasks,
+		activeColumn,
+		setActiveColumn,
+		activeTask,
+		setActiveTask,
+		isViewTaskOpen,
+		setIsViewTaskOpen,
+		selectedTask,
+		setSelectedTask,
+	} = useProjectBoardStore();
 
+	// Require a minimum drag distance to avoid accidental drags on click
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
-			activationConstraint: {
-				distance: 5,
-			},
+			activationConstraint: { distance: 10 },
 		}),
 	);
 
-	const handleOpenTask = (task: Task) => {
-		setSelectedTask(task);
-		setIsViewTaskOpen(true);
-	};
+	const onDragStart = useCallback(
+		(event: DragStartEvent) => {
+			const { active } = event;
+			const data = active.data.current;
 
-	const handleUpdateTask = (updatedFields: Record<string, any>) => {
-		if (!selectedTask) return;
-		setTasks((prev) =>
-			prev.map((t) =>
-				t.id === selectedTask.id ? { ...t, ...updatedFields } : t,
-			),
-		);
-		setSelectedTask((prev) => (prev ? { ...prev, ...updatedFields } : null));
-	};
+			if (data?.type === "Column") {
+				setActiveColumn(active.id as string);
+				return;
+			}
 
-	const onDragStart = (event: DragStartEvent) => {
-		const { active } = event;
-		const data = active.data.current;
+			if (data?.type === "Task") {
+				setActiveTask(data.task as Task);
+			}
+		},
+		[setActiveColumn, setActiveTask],
+	);
 
-		if (data?.type === "Column") {
-			setActiveColumn(active.id as string);
-			return;
-		}
+	const onDragOver = useCallback(
+		(event: DragOverEvent) => {
+			const { active, over } = event;
+			if (!over) return;
 
-		if (data?.type === "Task") {
-			setActiveTask(data.task);
-		}
-	};
+			const activeId = active.id;
+			const overId = over.id;
+			if (activeId === overId) return;
 
-	const onDragOver = (event: DragOverEvent) => {
-		const { active, over } = event;
-		if (!over) return;
+			const activeData = active.data.current;
+			const overData = over.data.current;
 
-		const activeId = active.id;
-		const overId = over.id;
+			const isActiveTask = activeData?.type === "Task";
+			const isOverTask = overData?.type === "Task";
+			const isOverColumn = overData?.type === "Column";
 
-		if (activeId === overId) return;
+			if (!isActiveTask) return;
 
-		const isActiveATask = active.data.current?.type === "Task";
-		const isOverATask = over.data.current?.type === "Task";
+			// Dropping a task over another task
+			if (isOverTask) {
+				setTasks(
+					tasks.map((t) => {
+						if (t.id === activeId) {
+							return { ...t, status: (overData?.task as Task).status };
+						}
+						return t;
+					}),
+				);
+			}
 
-		if (!isActiveATask) return;
+			// Dropping a task over a column
+			if (isOverColumn) {
+				setTasks(
+					tasks.map((t) => {
+						if (t.id === activeId) {
+							return { ...t, status: overId as string };
+						}
+						return t;
+					}),
+				);
+			}
+		},
+		[tasks, setTasks],
+	);
 
-		if (isActiveATask && isOverATask) {
-			setTasks((tasks) => {
+	const onDragEnd = useCallback(
+		(event: DragEndEvent) => {
+			setActiveColumn(null);
+			setActiveTask(null);
+
+			const { active, over } = event;
+			if (!over) return;
+
+			const activeId = active.id;
+			const overId = over.id;
+			if (activeId === overId) return;
+
+			const activeData = active.data.current;
+			const overData = over.data.current;
+
+			// Reorder tasks within the same column
+			if (activeData?.type === "Task" && overData?.type === "Task") {
 				const activeIndex = tasks.findIndex((t) => t.id === activeId);
 				const overIndex = tasks.findIndex((t) => t.id === overId);
-
-				if (tasks[activeIndex].status !== tasks[overIndex].status) {
-					tasks[activeIndex].status = tasks[overIndex].status;
+				if (activeIndex !== -1 && overIndex !== -1) {
+					setTasks(arrayMove(tasks, activeIndex, overIndex));
 				}
+			}
+		},
+		[tasks, setTasks, setActiveColumn, setActiveTask],
+	);
 
-				return arrayMove(tasks, activeIndex, overIndex);
-			});
-		}
+	const handleOpenTask = useCallback(
+		(task: Task) => {
+			setSelectedTask(task);
+			setIsViewTaskOpen(true);
+		},
+		[setSelectedTask, setIsViewTaskOpen],
+	);
 
-		const isOverAColumn = kanbanColumns.includes(overId as string);
-		if (isActiveATask && isOverAColumn) {
-			setTasks((tasks) => {
-				const activeIndex = tasks.findIndex((t) => t.id === activeId);
-				tasks[activeIndex].status = overId as string;
-				return arrayMove(tasks, activeIndex, activeIndex);
-			});
-		}
-	};
+	const handleUpdateTask = useCallback(
+		(updatedFields: Record<string, any>) => {
+			if (!selectedTask) return;
+			setTasks(
+				tasks.map((t) =>
+					t.id === selectedTask.id ? { ...t, ...updatedFields } : t,
+				),
+			);
+			setSelectedTask({ ...selectedTask, ...updatedFields } as Task);
+		},
+		[tasks, selectedTask, setTasks, setSelectedTask],
+	);
 
-	const onDragEnd = (event: DragEndEvent) => {
-		setActiveColumn(null);
-		setActiveTask(null);
-
-		const { active, over } = event;
-		if (!over) return;
-
-		const activeId = active.id;
-		const overId = over.id;
-
-		if (activeId === overId) return;
-
-		const isActiveAColumn = active.data.current?.type === "Column";
-		if (isActiveAColumn) {
-			setKanbanColumns((columns) => {
-				const activeIndex = columns.indexOf(activeId as string);
-				const overIndex = columns.indexOf(overId as string);
-				return arrayMove(columns, activeIndex, overIndex);
-			});
-		}
-	};
-
-	const closeViewTask = () => setIsViewTaskOpen(false);
+	const closeViewTask = useCallback(() => {
+		setIsViewTaskOpen(false);
+		setSelectedTask(null);
+	}, [setIsViewTaskOpen, setSelectedTask]);
 
 	return {
 		kanbanColumns,

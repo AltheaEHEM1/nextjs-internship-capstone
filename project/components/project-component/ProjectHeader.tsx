@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import CreateTaskModal from "@/components/modals/task/CreateTaskModal";
-import { useProjectHeader } from "../../hooks/modal/useProjectHeader";
+import { useCustomProjectHeaderStore } from "../../stores/project/custom-project-header-store";
+import { useEffect } from "react";
 
 export interface ProjectHeaderProps {
 	title: string;
@@ -28,14 +29,20 @@ export default function ProjectHeader({
 	onOpenAddPriority,
 	onOpenAddLabel,
 }: ProjectHeaderProps) {
+	const router = useRouter();
 	const {
 		dropdownOpen,
 		setDropdownOpen,
 		isCreateTaskOpen,
 		setIsCreateTaskOpen,
-		dropdownRef,
 		handleSettings,
-	} = useProjectHeader({ onOpenSettings, onOpenAddPriority, onOpenAddLabel });
+		setNavigate,
+	} = useCustomProjectHeaderStore();
+
+	// Inject Next.js router into the store for navigation
+	useEffect(() => {
+		setNavigate(router.push);
+	}, [router, setNavigate]);
 
 	return (
 		<>

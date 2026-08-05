@@ -3,7 +3,11 @@
 import { UserButton } from "@clerk/nextjs";
 import { Menu, Moon, Search, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+// import { useState } from "react"; // removed, using Zustand store
+import { useCustomSidebarHeaderStore } from "../../stores/components/custom-sidebar-header-store";
+
+// removed top-level store hook
+
 import { Breadcrumbs } from "@/components/bread-crumbs/BreadCrumbs";
 import { useTheme } from "@/components/theme-color/ThemeProvider";
 
@@ -18,8 +22,7 @@ export default function SidebarHeader({
 }: SidebarHeaderProps) {
 	const { theme, setTheme } = useTheme();
 	const router = useRouter();
-	const [isSearchOpen, setIsSearchOpen] = useState(false);
-	const [searchQuery, setSearchQuery] = useState("");
+	const { isSearchOpen, setIsSearchOpen, searchQuery, setSearchQuery } = useCustomSidebarHeaderStore();
 
 	const handleLogout = () => {
 		if (onLogout) {
@@ -47,9 +50,8 @@ export default function SidebarHeader({
 			<div className="flex items-center gap-x-2 sm:gap-x-3">
 				<div className="relative flex items-center">
 					<div
-						className={`overflow-hidden transition-all duration-300 ease-in-out ${
-							isSearchOpen ? "w-64 opacity-100 mr-2" : "w-0 opacity-0"
-						}`}
+						className={`overflow-hidden transition-all duration-300 ease-in-out ${isSearchOpen ? "w-64 opacity-100 mr-2" : "w-0 opacity-0"
+							}`}
 					>
 						<input
 							type="text"

@@ -6,9 +6,8 @@ import { AddLabelModal } from "@/components/modals/project-settings/AddLabelModa
 import { AddPriorityModal } from "@/components/modals/project-settings/AddPriorityModal";
 import { AddStatusModal } from "@/components/modals/project-settings/AddStatusModal";
 import { PageHeader } from "@/components/page-header/PageHeader";
-import { useProjectSettingsGeneralState } from "@/hooks/project/useProjectSettingsGeneralState";
-import { useProjectSettingsLabelPriorityStatusState } from "@/hooks/project/useProjectSettingsLabelPriorityStatusState";
-import { useProjectSettingsMemberState } from "@/hooks/project/useProjectSettingsMemberState";
+import { useProjectSettingsStore } from "@/stores/project/project-settings-store";
+import { useEffect } from "react";
 import MemberRole from "./MemberRole";
 import ProjectLabelPriority from "./ProjectLabelPriorityStatus";
 
@@ -157,6 +156,20 @@ export default function ProjectSettingsPage({
 	onSave,
 	onDelete,
 }: ProjectSettingsPageProps) {
+	// Initialise global store with props received from the page
+	useEffect(() => {
+		useProjectSettingsStore.getState().initialize({
+			title: initialTitle,
+			description: initialDescription,
+			team: initialTeam,
+			access: initialAccess,
+			members: initialMembers,
+			labels: initialLabels,
+			priorities: initialPriorities,
+			statuses: initialStatuses,
+		});
+	}, []);
+
 	const {
 		title,
 		description,
@@ -174,14 +187,8 @@ export default function ProjectSettingsPage({
 		setTempDescription,
 		handleSaveGeneral,
 		handleCancelGeneral,
-	} = useProjectSettingsGeneralState(
-		initialTitle,
-		initialDescription,
-		initialTeam,
-		initialAccess,
-	);
 
-	const {
+		// Labels, priorities, statuses
 		labels,
 		priorities,
 		statuses,
@@ -197,14 +204,8 @@ export default function ProjectSettingsPage({
 		handleDeletePriority,
 		handleAddStatus,
 		handleDeleteStatus,
-	} = useProjectSettingsLabelPriorityStatusState(
-		initialLabels,
-		initialPriorities,
-		initialStatuses,
-	);
 
-	// Member edit states
-	const {
+		// Members
 		members,
 		editingMemberId,
 		editMemberRole,
@@ -215,7 +216,7 @@ export default function ProjectSettingsPage({
 		handleEditMemberStart,
 		handleEditMemberSave,
 		handleDeleteMember,
-	} = useProjectSettingsMemberState(initialMembers);
+	} = useProjectSettingsStore();
 
 	const handleSave = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -355,17 +356,7 @@ export default function ProjectSettingsPage({
 					handleDeleteMember={handleDeleteMember}
 				/>
 
-				<ProjectLabelPriority
-					labels={labels}
-					priorities={priorities}
-					statuses={statuses}
-					setIsLabelModalOpen={setIsLabelModalOpen}
-					setIsPriorityModalOpen={setIsPriorityModalOpen}
-					setIsStatusModalOpen={setIsStatusModalOpen}
-					handleDeleteLabel={handleDeleteLabel}
-					handleDeletePriority={handleDeletePriority}
-					handleDeleteStatus={handleDeleteStatus}
-				/>
+				<ProjectLabelPriority />
 
 				{/* Actions Footer */}
 				<div className="flex items-center justify-between pt-2">

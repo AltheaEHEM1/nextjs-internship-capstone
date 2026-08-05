@@ -1,23 +1,32 @@
+"use client";
+
 import { usePathname } from "next/navigation";
 
-const adminPaths = ["/dashboard", "/projects", "/team", "/notification"];
-const authPaths = ["/sign-in", "/sign-up"];
+/** Segment prefixes that map to each layout. */
+const AUTH_PREFIXES = ["/login", "/register", "/forgot-password"];
+const ADMIN_PREFIXES = [
+	"/dashboard",
+	"/projects",
+	"/project",
+	"/team",
+	"/task",
+	"/settings",
+];
 
+/** Routes where the admin <main> padding should be suppressed. */
+const NO_PADDING_PREFIXES = ["/project/"];
+
+/**
+ * Determines which layout shell to render based on the current pathname.
+ */
 export function useLayoutWrapper() {
 	const pathname = usePathname();
 
-	const isAdminPath = adminPaths.some((path) => pathname?.startsWith(path));
-	const isAuthPath = authPaths.some((path) => pathname?.startsWith(path));
+	const isAuthPath = AUTH_PREFIXES.some((p) => pathname.startsWith(p));
+	const isAdminPath = ADMIN_PREFIXES.some((p) => pathname.startsWith(p));
+	const disableAdminPadding = NO_PADDING_PREFIXES.some((p) =>
+		pathname.startsWith(p),
+	);
 
-	const disableAdminPadding =
-		!!pathname &&
-		pathname.startsWith("/projects/") &&
-		pathname !== "/projects" &&
-		!pathname.startsWith("/projects/project-settings");
-
-	return {
-		isAdminPath,
-		isAuthPath,
-		disableAdminPadding,
-	};
+	return { isAdminPath, isAuthPath, disableAdminPadding };
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import BaseModal from "@/components/layout/BaseModal";
-import {
-	ALL_POSSIBLE_VIEWS,
-	useCustomView,
-} from "@/hooks/project/useCustomView";
+import { ALL_POSSIBLE_VIEWS } from "@/hooks/project/useCustomView";
+import { useCustomViewStore } from "../../../stores/custom-view-store";
+import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 interface CustomViewProps {
 	opened: boolean;
@@ -19,7 +19,17 @@ export default function CustomView({
 	selectedViews,
 	onChangeViews,
 }: CustomViewProps) {
-	const { toggleView } = useCustomView(selectedViews, onChangeViews);
+	// Initialize store with props
+	useEffect(() => {
+		useCustomViewStore.getState().initialize(selectedViews, onChangeViews);
+	}, [selectedViews, onChangeViews]);
+
+	const { selectedViews: storeViews, toggleView } = useCustomViewStore(
+		useShallow((state) => ({
+			selectedViews: state.selectedViews,
+			toggleView: state.toggleView,
+		})),
+	);
 
 	return (
 		<BaseModal
@@ -44,7 +54,7 @@ export default function CustomView({
 				</p>
 				<div className="space-y-2">
 					{ALL_POSSIBLE_VIEWS.map(({ name, required }) => {
-						const active = selectedViews.includes(name) || required;
+						const active = storeViews.includes(name) || required;
 						return (
 							<div
 								key={name}

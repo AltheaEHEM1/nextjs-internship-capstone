@@ -1,51 +1,68 @@
-import { useState } from "react";
+import { useCallback } from "react";
+import { useProjectStore } from "@/stores/project/project-store";
 import type { AccessRole } from "@/components/modals/project/CreateProject1Modal";
-import type { WorkflowType } from "@/components/modals/project/CreateProject2Modal";
 
+/**
+ * Custom hook that wraps the project Zustand store,
+ * providing convenience accessors and handlers for the
+ * create-project modal flow used on the Projects page.
+ */
 export function useProject() {
-	const [modalStep, setModalStep] = useState<"closed" | "step1" | "step2">(
-		"closed",
+	const { modalStep, form, setModalStep, setFormField, resetForm } =
+		useProjectStore();
+
+	const setProjectName = useCallback(
+		(value: string) => setFormField("projectName", value),
+		[setFormField],
 	);
-	const [projectName, setProjectName] = useState("");
-	const [description, setDescription] = useState("");
-	const [access, setAccess] = useState<AccessRole>("administrator");
-	const [team, setTeam] = useState("");
 
-	const handleOpen = () => setModalStep("step1");
-	const handleClose = () => setModalStep("closed");
-	const handleNext = () => setModalStep("step2");
-	const handleBack = () => setModalStep("step1");
+	const setDescription = useCallback(
+		(value: string) => setFormField("description", value),
+		[setFormField],
+	);
 
-	const handleCreateFinal = (workflowData: {
-		workflow: WorkflowType;
-		views: string[];
-		statuses: any;
-	}) => {
-		const completeProjectData = {
-			name: projectName,
-			description,
-			access,
-			team,
-			...workflowData,
-		};
+	const setAccess = useCallback(
+		(value: AccessRole) => setFormField("access", value),
+		[setFormField],
+	);
 
-		console.log("Submitting Project Data:", completeProjectData);
-		setModalStep("closed");
-		setProjectName("");
-		setDescription("");
-		setAccess("administrator");
-		setTeam("");
-	};
+	const setTeam = useCallback(
+		(value: string) => setFormField("team", value),
+		[setFormField],
+	);
+
+	const handleOpen = useCallback(
+		() => setModalStep("step1"),
+		[setModalStep],
+	);
+
+	const handleClose = useCallback(() => resetForm(), [resetForm]);
+
+	const handleNext = useCallback(
+		() => setModalStep("step2"),
+		[setModalStep],
+	);
+
+	const handleBack = useCallback(
+		() => setModalStep("step1"),
+		[setModalStep],
+	);
+
+	const handleCreateFinal = useCallback(() => {
+		// TODO: persist the new project (API call / DB write)
+		console.log("Creating project:", form);
+		resetForm();
+	}, [form, resetForm]);
 
 	return {
 		modalStep,
-		projectName,
+		projectName: form.projectName,
 		setProjectName,
-		description,
+		description: form.description,
 		setDescription,
-		access,
+		access: form.access,
 		setAccess,
-		team,
+		team: form.team,
 		setTeam,
 		handleOpen,
 		handleClose,

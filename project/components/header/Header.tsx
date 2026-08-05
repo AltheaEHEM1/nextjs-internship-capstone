@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useHeader } from "../../hooks/modal/useHeader";
+import { useHeader } from "../../hooks/header/useHeader";
 
 export function Header() {
 	const { isOpen, setIsOpen, toggle, close, navLinks, pathname, isActive } =
@@ -79,19 +79,16 @@ export function Header() {
 						<span className="sr-only">Toggle navigation</span>
 						<span className="flex h-5 w-5 flex-col justify-between">
 							<span
-								className={`block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
-									isOpen ? "translate-y-1.5 rotate-45" : ""
-								}`}
+								className={`block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${isOpen ? "translate-y-1.5 rotate-45" : ""
+									}`}
 							/>
 							<span
-								className={`block h-0.5 w-5 rounded-full bg-current transition-opacity duration-300 ${
-									isOpen ? "opacity-0" : ""
-								}`}
+								className={`block h-0.5 w-5 rounded-full bg-current transition-opacity duration-300 ${isOpen ? "opacity-0" : ""
+									}`}
 							/>
 							<span
-								className={`block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
-									isOpen ? "-translate-y-1.5 -rotate-45" : ""
-								}`}
+								className={`block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${isOpen ? "-translate-y-1.5 -rotate-45" : ""
+									}`}
 							/>
 						</span>
 					</button>

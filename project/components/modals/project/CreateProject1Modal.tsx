@@ -2,7 +2,7 @@
 
 import { FolderPlus, Users } from "lucide-react";
 import BaseModal from "@/components/layout/BaseModal";
-import { useMinDate } from "@/hooks/modal/useMinDate";
+import { useMinDate } from "@/hooks/project/useMinDate";
 
 export type AccessRole = "administrator" | "member" | "viewer";
 

@@ -2,7 +2,8 @@
 
 import { Flag } from "lucide-react";
 import BaseModal from "@/components/layout/BaseModal";
-import { useAddPriority } from "@/hooks/project-settings/useAddPriority";
+import { useCustomPriorityStore } from "@/stores/custom-priority-store";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface AddPriorityProps {
@@ -41,7 +42,18 @@ export function AddPriorityModal({
 		level,
 		setLevel,
 		handleSubmit,
-	} = useAddPriority("", "", PRESET_COLORS[0].value, 1);
+	} = useCustomPriorityStore();
+
+	useEffect(() => {
+		useCustomPriorityStore.getState().initialize(
+			"",
+			"",
+			PRESET_COLORS[0].value,
+			1,
+			onSave,
+			onClose
+		);
+	}, [onSave, onClose]);
 
 	return (
 		<BaseModal opened={isOpen} onClose={onClose} width={448}>
@@ -59,7 +71,7 @@ export function AddPriorityModal({
 
 			{/* Form */}
 			<form
-				onSubmit={(e) => handleSubmit(e, onSave, onClose)}
+				onSubmit={(e) => handleSubmit(e)}
 				className="p-6 space-y-4"
 			>
 				<div>

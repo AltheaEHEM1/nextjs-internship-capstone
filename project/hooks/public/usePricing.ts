@@ -1,142 +1,156 @@
-import { type MouseEvent, useMemo, useRef, useState } from "react";
+// hooks/public/usePricing.ts
+"use client";
 
-export type PricingPlan = {
-	name: string;
-	badge?: string;
-	description: string;
-	monthlyPrice?: number;
-	yearlyPrice?: number;
-	customPrice?: string;
-	priceSubtext?: string;
-	features: string[];
-	ctaText: string;
-	ctaHref: string;
-	highlighted: boolean;
-};
+import { useState, useRef, useCallback } from "react";
 
-export type PricingFaq = {
-	question: string;
-	answer: string;
-};
+export interface PricingPlan {
+  name: string;
+  description: string;
+  monthlyPrice?: number;
+  yearlyPrice?: number;
+  customPrice?: string;
+  priceSubtext?: string;
+  features: string[];
+  highlighted: boolean;
+  badge?: string;
+  ctaText: string;
+  ctaHref: string;
+}
 
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+const plans: PricingPlan[] = [
+  {
+    name: "Free",
+    description: "Perfect for individuals just getting started.",
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    features: [
+      "Up to 3 projects",
+      "Basic task management",
+      "1 GB storage",
+      "Community support",
+    ],
+    highlighted: false,
+    ctaText: "Get Started Free",
+    ctaHref: "/register",
+  },
+  {
+    name: "Starter",
+    description: "Great for small teams and freelancers.",
+    monthlyPrice: 9,
+    yearlyPrice: 7,
+    features: [
+      "Up to 10 projects",
+      "Advanced task management",
+      "10 GB storage",
+      "Email support",
+      "Team collaboration",
+    ],
+    highlighted: false,
+    ctaText: "Start Starter",
+    ctaHref: "/register?plan=starter",
+  },
+  {
+    name: "Pro",
+    description: "For growing teams who need more power.",
+    monthlyPrice: 29,
+    yearlyPrice: 23,
+    features: [
+      "Unlimited projects",
+      "Priority task management",
+      "100 GB storage",
+      "Priority support",
+      "Advanced analytics",
+      "Custom integrations",
+    ],
+    highlighted: true,
+    badge: "Most Popular",
+    ctaText: "Go Pro",
+    ctaHref: "/register?plan=pro",
+  },
+  {
+    name: "Enterprise",
+    description: "Custom solutions for large organizations.",
+    customPrice: "Custom",
+    priceSubtext: "Contact us for pricing",
+    features: [
+      "Unlimited everything",
+      "Dedicated account manager",
+      "SLA guarantee",
+      "SSO & advanced security",
+      "Custom onboarding",
+      "24/7 phone support",
+    ],
+    highlighted: false,
+    ctaText: "Contact Sales",
+    ctaHref: "/contact",
+  },
+];
+
+const faqs: FaqItem[] = [
+  {
+    question: "Can I switch plans at any time?",
+    answer:
+      "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any billing differences automatically.",
+  },
+  {
+    question: "Is there a free trial for paid plans?",
+    answer:
+      "Absolutely. Every paid plan comes with a 14-day free trial — no credit card required. You can explore all features before committing.",
+  },
+  {
+    question: "What payment methods do you accept?",
+    answer:
+      "We accept all major credit and debit cards (Visa, Mastercard, Amex), as well as PayPal and bank transfers for Enterprise customers.",
+  },
+  {
+    question: "How does the yearly billing discount work?",
+    answer:
+      "Choosing yearly billing gives you 2 months free (equivalent to a 20% discount). You're billed once per year at the discounted rate shown.",
+  },
+  {
+    question: "Can I add more team members later?",
+    answer:
+      "Yes! You can invite additional team members at any time from your dashboard. Seats are billed on a per-user basis for Starter and Pro plans.",
+  },
+];
+
+/**
+ * Custom hook for the Pricing page.
+ * Provides plan data, FAQ data, billing toggle, FAQ accordion, and cursor spotlight state.
+ */
 export function usePricing() {
-	const [isYearly, setIsYearly] = useState(false);
-	const [openFaq, setOpenFaq] = useState<number | null>(null);
-	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-	const containerRef = useRef<HTMLDivElement>(null);
+  const [isYearly, setIsYearly] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLElement>(null);
 
-	const plans: PricingPlan[] = useMemo(
-		() => [
-			{
-				name: "Starter",
-				description: "Perfect for individuals and small personal projects.",
-				monthlyPrice: 9,
-				yearlyPrice: 7,
-				features: [
-					"Up to 3 active projects",
-					"Basic Kanban boards",
-					"Task management & deadlines",
-					"Limited team collaboration",
-					"Email support",
-				],
-				ctaText: "Get Started",
-				ctaHref: "#",
-				highlighted: false,
-			},
-			{
-				name: "Pro",
-				description: "Best for growing teams and active freelancers.",
-				monthlyPrice: 24,
-				yearlyPrice: 19,
-				features: [
-					"Unlimited active projects",
-					"Advanced Kanban workflows",
-					"Team collaboration tools",
-					"File attachments & comments",
-					"Progress analytics & reports",
-					"Priority email support",
-				],
-				ctaText: "Get Pro",
-				ctaHref: "#",
-				highlighted: false,
-			},
-			{
-				name: "Business",
-				badge: "Most Popular",
-				description: "Designed for companies and large-scale project teams.",
-				monthlyPrice: 79,
-				yearlyPrice: 63,
-				features: [
-					"Unlimited projects & members",
-					"Advanced permissions & roles",
-					"Real-time collaboration",
-					"Custom workflows & automation",
-					"Admin dashboard & reporting",
-					"Dedicated onboarding manager",
-				],
-				ctaText: "Get Business",
-				ctaHref: "#",
-				highlighted: true,
-			},
-			{
-				name: "Enterprise",
-				description: "For organizations with strict security and custom needs.",
-				customPrice: "Custom",
-				priceSubtext: "Tailored to your organization",
-				features: [
-					"Everything in Business",
-					"SAML/SSO and security controls",
-					"Custom API & integrations",
-					"Dedicated account manager",
-					"Custom SLA guarantees",
-				],
-				ctaText: "Contact Sales",
-				ctaHref: "#",
-				highlighted: false,
-			},
-		],
-		[],
-	);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (rect) {
+        setMousePosition({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        });
+      }
+    },
+    []
+  );
 
-	const faqs: PricingFaq[] = useMemo(
-		() => [
-			{
-				question: "Can I change my plan later?",
-				answer:
-					"Yes, you can upgrade, downgrade, or cancel your subscription at any time directly from your account settings page.",
-			},
-			{
-				question: "Is there a free trial available?",
-				answer:
-					"All paid plans come with a 14-day free trial. No credit card required to get started.",
-			},
-			{
-				question: "How does annual billing work?",
-				answer:
-					"When you choose yearly billing, you are billed upfront for 12 months at a 20% discount compared to monthly billing.",
-			},
-		],
-		[],
-	);
-
-	const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-		if (!containerRef.current) return;
-		const rect = containerRef.current.getBoundingClientRect();
-		setMousePosition({
-			x: e.clientX - rect.left,
-			y: e.clientY - rect.top,
-		});
-	};
-
-	return {
-		isYearly,
-		setIsYearly,
-		openFaq,
-		setOpenFaq,
-		mousePosition,
-		containerRef,
-		handleMouseMove,
-		plans,
-		faqs,
-	};
+  return {
+    isYearly,
+    setIsYearly,
+    openFaq,
+    setOpenFaq,
+    mousePosition,
+    containerRef,
+    handleMouseMove,
+    plans,
+    faqs,
+  } as const;
 }

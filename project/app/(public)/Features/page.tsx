@@ -10,12 +10,122 @@ import {
 	Sparkles,
 	Zap,
 } from "lucide-react";
-import { useFeatures } from "@/hooks/public/useFeatures";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Metric {
+	label: string;
+	value: string;
+}
+
+interface CoreModule {
+	moduleLabel: string;
+	statusLabel: string;
+	title: string;
+	description: string;
+	metrics: Metric[];
+	features: string[];
+}
+
+interface FeatureModule {
+	moduleLabel: string;
+	statusLabel: string;
+	title: string;
+	description: string;
+	features: string[];
+}
+
+interface UxModule {
+	moduleLabel: string;
+	title: string;
+	description: string;
+	metaLabel: string;
+	items: string[];
+}
+
+interface RoadmapModule {
+	moduleLabel: string;
+	title: string;
+	description: string;
+	metaLabel: string;
+	items: string[];
+}
+
+// ─── Static Data ──────────────────────────────────────────────────────────────
+
+const SYSTEM_HEALTH = "All Systems Operational";
+
+const CORE_MODULE: CoreModule = {
+	moduleLabel: "Core Engine",
+	statusLabel: "Live",
+	title: "Intelligent Task Management",
+	description:
+		"A unified workspace for organizing, prioritizing, and tracking all your tasks and projects — designed for clarity and speed.",
+	metrics: [
+		{ label: "Avg. Resolution Time", value: "2.4h" },
+		{ label: "Task Completion Rate", value: "98.1%" },
+		{ label: "Integrations", value: "40+" },
+		{ label: "Uptime SLA", value: "99.9%" },
+	],
+	features: [
+		"Drag-and-drop kanban boards",
+		"Smart priority queues",
+		"Recurring task automation",
+		"Multi-project views",
+		"Custom workflows",
+		"Deadline tracking",
+	],
+};
+
+const TEAM_MODULE: FeatureModule = {
+	moduleLabel: "Team Controls",
+	statusLabel: "Beta",
+	title: "Real-Time Collaboration",
+	description:
+		"Keep your entire team in sync with live updates, role-based access, and streamlined communication tools.",
+	features: [
+		"Role-based permissions",
+		"Live activity feed",
+		"@mention notifications",
+		"Shared workspaces",
+	],
+};
+
+const UX_MODULE: UxModule = {
+	moduleLabel: "UX Layer",
+	title: "Polished & Accessible",
+	description:
+		"Designed with accessibility in mind — every interaction is smooth, every surface is responsive, and every workflow feels effortless.",
+	metaLabel: "WCAG 2.1 AA",
+	items: [
+		"Keyboard-first navigation",
+		"Dark & light mode",
+		"Responsive at any breakpoint",
+		"Reduced motion support",
+		"Screen-reader friendly",
+		"Focus-visible states",
+	],
+};
+
+const ROADMAP_MODULE: RoadmapModule = {
+	moduleLabel: "Roadmap",
+	title: "Advanced Engine",
+	description:
+		"A next-generation processing layer coming soon — featuring AI-assisted prioritization, predictive analytics, and deeper integrations.",
+	metaLabel: "Coming Soon",
+	items: [
+		"AI task suggestions",
+		"Predictive deadlines",
+		"Resource planning",
+		"Custom reporting",
+		"Webhook automations",
+		"API v2 access",
+	],
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function Features() {
-	const { systemHealth, coreModule, teamModule, uxModule, roadmapModule } =
-		useFeatures();
-
 	return (
 		<section className="relative py-16 sm:py-24 lg:py-28 px-4 sm:px-6 lg:px-8 bg-slate-950 text-slate-100 overflow-hidden font-sans">
 			{/* Background Radial Glow */}
@@ -42,7 +152,7 @@ export function Features() {
 						<span className="text-xs font-medium text-slate-300">
 							System Health:{" "}
 							<strong className="text-emerald-400 font-bold">
-								{systemHealth}
+								{SYSTEM_HEALTH}
 							</strong>
 						</span>
 					</div>
@@ -59,24 +169,24 @@ export function Features() {
 						<div>
 							<div className="flex flex-wrap items-center justify-between gap-2 mb-6">
 								<span className="px-3 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold">
-									{coreModule.moduleLabel}
+									{CORE_MODULE.moduleLabel}
 								</span>
 								<span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
 									<span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-									{coreModule.statusLabel}
+									{CORE_MODULE.statusLabel}
 								</span>
 							</div>
 
 							<h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-								{coreModule.title}
+								{CORE_MODULE.title}
 							</h3>
 							<p className="text-slate-400 text-xs sm:text-sm max-w-xl mb-6 sm:mb-8">
-								{coreModule.description}
+								{CORE_MODULE.description}
 							</p>
 
 							{/* Metrics */}
 							<div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 max-w-md">
-								{coreModule.metrics.map((metric) => (
+								{CORE_MODULE.metrics.map((metric: Metric) => (
 									<div
 										key={metric.label}
 										className="bg-slate-950/60 border border-slate-800 p-3 sm:p-4 rounded-xl"
@@ -94,7 +204,7 @@ export function Features() {
 
 						{/* Checklist */}
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6 border-t border-slate-800/80">
-							{coreModule.features.map((feat) => (
+							{CORE_MODULE.features.map((feat: string) => (
 								<div
 									key={feat}
 									className="flex items-center gap-2 text-xs text-slate-300"
@@ -111,10 +221,10 @@ export function Features() {
 						<div>
 							<div className="flex items-center justify-between mb-6 gap-2">
 								<span className="px-3 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold">
-									{teamModule.moduleLabel}
+									{TEAM_MODULE.moduleLabel}
 								</span>
 								<span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-									{teamModule.statusLabel}
+									{TEAM_MODULE.statusLabel}
 								</span>
 							</div>
 
@@ -123,15 +233,15 @@ export function Features() {
 							</div>
 
 							<h3 className="text-lg sm:text-xl font-bold text-white mb-2">
-								{teamModule.title}
+								{TEAM_MODULE.title}
 							</h3>
 							<p className="text-slate-400 text-xs sm:text-sm mb-6">
-								{teamModule.description}
+								{TEAM_MODULE.description}
 							</p>
 						</div>
 
 						<div className="space-y-2 pt-6 border-t border-slate-800/80">
-							{teamModule.features.map((feature) => (
+							{TEAM_MODULE.features.map((feature: string) => (
 								<div
 									key={feature}
 									className="flex items-center gap-2 text-xs text-slate-300"
@@ -152,24 +262,24 @@ export function Features() {
 								</div>
 								<div>
 									<span className="text-xs text-emerald-400 font-bold block">
-										{uxModule.moduleLabel}
+										{UX_MODULE.moduleLabel}
 									</span>
 									<h3 className="text-base sm:text-lg font-bold text-white">
-										{uxModule.title}
+										{UX_MODULE.title}
 									</h3>
 								</div>
 							</div>
 							<span className="text-xs text-slate-400 font-mono shrink-0">
-								{uxModule.metaLabel}
+								{UX_MODULE.metaLabel}
 							</span>
 						</div>
 
 						<p className="text-slate-400 text-xs sm:text-sm mb-6">
-							{uxModule.description}
+							{UX_MODULE.description}
 						</p>
 
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
-							{uxModule.items.map((item) => (
+							{UX_MODULE.items.map((item: string) => (
 								<div key={item}>• {item}</div>
 							))}
 						</div>
@@ -184,24 +294,24 @@ export function Features() {
 								</div>
 								<div>
 									<span className="text-xs text-slate-400 font-bold block">
-										{roadmapModule.moduleLabel}
+										{ROADMAP_MODULE.moduleLabel}
 									</span>
 									<h3 className="text-base sm:text-lg font-bold text-white">
-										{roadmapModule.title}
+										{ROADMAP_MODULE.title}
 									</h3>
 								</div>
 							</div>
 							<span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-400 shrink-0">
-								{roadmapModule.metaLabel}
+								{ROADMAP_MODULE.metaLabel}
 							</span>
 						</div>
 
 						<p className="text-slate-400 text-xs sm:text-sm mb-6">
-							{roadmapModule.description}
+							{ROADMAP_MODULE.description}
 						</p>
 
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-400">
-							{roadmapModule.items.map((item) => (
+							{ROADMAP_MODULE.items.map((item: string) => (
 								<div key={item} className="flex items-center gap-2">
 									<Clock className="w-3.5 h-3.5 shrink-0" /> {item}
 								</div>

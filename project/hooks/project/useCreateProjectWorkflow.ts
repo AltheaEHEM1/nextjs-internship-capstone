@@ -1,51 +1,50 @@
-"use client";
+import { useState, useCallback } from "react";
 
-import { useCallback, useState } from "react";
+/* ── Types ──────────────────────────────────────────────── */
 
-export type WorkflowType = "starter" | "project_management";
-type SubViewType = "main" | "views" | "statuses";
+export interface StatusGroup {
+	notStarted: string[];
+	active: string[];
+	done: string[];
+	closed: string[];
+}
 
-export function useCreateProjectWorkflow(initial: WorkflowType = "starter") {
-	const [workflow, setWorkflow] = useState<WorkflowType>(initial);
-	const [activeSubView, setActiveSubView] = useState<SubViewType>("main");
+type SubView = "main" | "views" | "statuses";
+type Workflow = "starter" | "project_management";
 
-	const [views, setViews] = useState<string[]>(["List", "Board"]);
+/* ── Default data per workflow ────────────────────────────── */
 
-	const [statuses, setStatuses] = useState(() => ({
-		notStarted: ["Not started", "To do"],
-		active: ["Active", "In progress"],
-		done: ["Done"],
-		closed: ["Closed", "Complete"],
-	}));
+const STARTER_VIEWS = ["List", "Board"];
+const PM_VIEWS = ["List", "Board", "Calendar", "Gantt", "Team"];
 
-	const handleWorkflowChange = useCallback((type: WorkflowType) => {
-		setWorkflow(type);
-		if (type === "starter") {
-			setViews(["List", "Board"]);
-			setStatuses({
-				notStarted: ["Not started", "To do"],
-				active: ["Active", "In progress"],
-				done: ["Done"],
-				closed: ["Closed", "Complete"],
-			});
-		} else {
-			setViews(["List", "Board", "Calendar", "Gantt", "Team"]);
-			setStatuses({
-				notStarted: ["Not started", "To do"],
-				active: [
-					"Active",
-					"Planning",
-					"In progress",
-					"At risk",
-					"Update Required",
-					"On hold",
-				],
-				done: ["Done", "Complete"],
-				closed: ["Closed", "Cancelled"],
-			});
-		}
-	}, []);
+const DEFAULT_STATUSES: StatusGroup = {
+	notStarted: ["To Do"],
+	active: ["In Progress"],
+	done: ["Done"],
+	closed: ["Closed"],
+};
 
+/* ── Hook ─────────────────────────────────────────────────── */
+
+/**
+ * Manages the local UI state for the CreateProject step-2 modal
+ * (workflow selection, default views, and task statuses).
+ */
+export function useCreateProjectWorkflow() {
+	const [workflow, setWorkflow] = useState<Workflow>("starter");
+	const [activeSubView, setActiveSubView] = useState<SubView>("main");
+	const [views, setViews] = useState<string[]>(STARTER_VIEWS);
+	const [statuses, setStatuses] = useState<StatusGroup>(DEFAULT_STATUSES);
+
+	const handleWorkflowChange = useCallback(
+		(w: Workflow) => {
+			setWorkflow(w);
+			setViews(w === "starter" ? STARTER_VIEWS : PM_VIEWS);
+		},
+		[],
+	);
+
+	/** Collects all form data and returns the final payload. */
 	const handleFinalCreate = useCallback(
 		() => ({ workflow, views, statuses }),
 		[workflow, views, statuses],
@@ -53,14 +52,13 @@ export function useCreateProjectWorkflow(initial: WorkflowType = "starter") {
 
 	return {
 		workflow,
-		setWorkflow,
 		activeSubView,
-		setActiveSubView,
 		views,
-		setViews,
 		statuses,
+		setViews,
 		setStatuses,
 		handleWorkflowChange,
+		setActiveSubView,
 		handleFinalCreate,
-	} as const;
+	};
 }

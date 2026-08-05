@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import AddTeamMemberModal from "@/components/modals/team/AddTeamMemberModal";
-import { useSpecificTeam } from "@/hooks/team/useSpecificTeam";
+import { useTeamStore } from "@/stores/team/team-store";
 
 export default function SpecificTeam() {
 	const {
@@ -20,7 +20,7 @@ export default function SpecificTeam() {
 		toggleMenu,
 		openAddMemberModal,
 		closeAddMemberModal,
-	} = useSpecificTeam();
+	} = useTeamStore();
 
 	return (
 		<div className="space-y-6 pb-12">

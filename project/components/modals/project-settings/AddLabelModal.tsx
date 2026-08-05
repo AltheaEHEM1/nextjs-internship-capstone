@@ -2,7 +2,9 @@
 
 import { Tag } from "lucide-react";
 import BaseModal from "@/components/layout/BaseModal";
-import { useAddLabel } from "@/hooks/project-settings/useAddLabel";
+import { useCustomLabelStore } from "../../../stores/custom-label-store";
+import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { cn } from "@/lib/utils";
 
 interface AddLabelProps {
@@ -42,8 +44,20 @@ const LABEL_COLORS = [
 ];
 
 export function AddLabelModal({ isOpen, onClose, onSave }: AddLabelProps) {
-	const { name, setName, selectedColor, setSelectedColor, handleSubmit } =
-		useAddLabel("", LABEL_COLORS[0].class);
+	const { name, setName, selectedColor, setSelectedColor, handleSubmit } = useCustomLabelStore(
+		useShallow((state) => ({
+			name: state.name,
+			setName: state.setName,
+			selectedColor: state.selectedColor,
+			setSelectedColor: state.setSelectedColor,
+			handleSubmit: state.handleSubmit,
+		})),
+	);
+
+  // Initialize store with callbacks when component mounts/updates
+  useEffect(() => {
+    useCustomLabelStore.getState().initialize("", LABEL_COLORS[0].class, onSave, onClose);
+  }, [onSave, onClose]);
 
 	return (
 		<BaseModal opened={isOpen} onClose={onClose} width={448}>
@@ -61,7 +75,7 @@ export function AddLabelModal({ isOpen, onClose, onSave }: AddLabelProps) {
 
 			{/* Form */}
 			<form
-				onSubmit={(e) => handleSubmit(e, onSave, onClose)}
+				onSubmit={handleSubmit}
 				className="p-6 space-y-4"
 			>
 				<div>

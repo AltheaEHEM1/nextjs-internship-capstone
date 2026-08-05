@@ -1,8 +1,10 @@
 "use client";
 
 import { Calendar, Flag, Plus, Tag, Users } from "lucide-react";
-import { useState } from "react";
+import { useEffect } from "react";
 import BaseModal from "@/components/layout/BaseModal";
+import { useCustomCreateTaskStore } from "@/stores/task/custom-create-task-store";
+import type { WorkType, Status } from "@/stores/task/custom-create-task-store";
 
 interface CreateTaskModalProps {
 	opened: boolean;
@@ -17,21 +19,38 @@ export default function CreateTaskModal({
 	onOpenAddPriority,
 	onOpenAddLabel,
 }: CreateTaskModalProps) {
-	const [taskName, setTaskName] = useState("");
-	const [project, setProject] = useState("");
-	const [workType, setWorkType] = useState("Task");
-	const [status, setStatus] = useState("To Do");
-	const [description, setDescription] = useState("");
-	const [assignee, setAssignee] = useState("");
-	const [priority, setPriority] = useState("Medium");
-	const [dueDate, setDueDate] = useState("");
-	const [startDate, setStartDate] = useState("");
-	const [labels, setLabels] = useState("");
-	const [team, setTeam] = useState("");
-	const [reporter, setReporter] = useState("");
+	const {
+		taskName,
+		setTaskName,
+		project,
+		setProject,
+		workType,
+		setWorkType,
+		status,
+		setStatus,
+		description,
+		setDescription,
+		assignee,
+		setAssignee,
+		priority,
+		setPriority,
+		dueDate,
+		setDueDate,
+		startDate,
+		setStartDate,
+		labels,
+		setLabels,
+		team,
+		setTeam,
+		reporter,
+		setReporter,
+		reset,
+	} = useCustomCreateTaskStore();
 
 	const handleCreate = (e: React.FormEvent) => {
 		e.preventDefault();
+		// Optionally reset after creation
+		reset();
 		console.log({
 			taskName,
 			project,
@@ -48,6 +67,12 @@ export default function CreateTaskModal({
 		});
 		onClose();
 	};
+
+	useEffect(() => {
+		if (opened) {
+			reset();
+		}
+	}, [opened]);
 
 	return (
 		<BaseModal
@@ -127,7 +152,7 @@ export default function CreateTaskModal({
 						</label>
 						<select
 							value={workType}
-							onChange={(e) => setWorkType(e.target.value)}
+							onChange={(e) => setWorkType(e.target.value as WorkType)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
 						>
 							<option value="Epic">Epic</option>
@@ -147,7 +172,7 @@ export default function CreateTaskModal({
 						</label>
 						<select
 							value={status}
-							onChange={(e) => setStatus(e.target.value)}
+							onChange={(e) => setStatus(e.target.value as Status)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
 						>
 							<option value="To Do">To Do</option>
@@ -259,10 +284,9 @@ export default function CreateTaskModal({
 						</div>
 						<select
 							value={priority}
-							onChange={(e) => setPriority(e.target.value)}
+							onChange={(e) => setPriority(e.target.value as "High" | "Medium" | "Low")}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
 						>
-							<option value="Critical">Critical</option>
 							<option value="High">High</option>
 							<option value="Medium">Medium</option>
 							<option value="Low">Low</option>

@@ -1,7 +1,8 @@
 "use client";
 
 import { History, MessageSquare, Plus, Trash2, X } from "lucide-react";
-import { useViewTaskModalLeft } from "../../../../hooks/modal/useViewTaskModalLeft";
+import { useCustomViewTaskLeftStore } from "@/stores/task/custom-view-task-left-store";
+import { useEffect } from "react";
 
 interface ViewTaskLeftProps {
 	taskData: {
@@ -34,7 +35,11 @@ export default function ViewTaskModalLeft({
 		handleTitleBlur,
 		handleDescBlur,
 		handleAddComment,
-	} = useViewTaskModalLeft({ taskData, onUpdateTask });
+	} = useCustomViewTaskLeftStore();
+
+	useEffect(() => {
+		useCustomViewTaskLeftStore.getState().initialize(taskData, onUpdateTask);
+	}, [taskData, onUpdateTask]);
 
 	return (
 		<>
@@ -91,22 +96,20 @@ export default function ViewTaskModalLeft({
 					<button
 						type="button"
 						onClick={() => setActiveTab("comments")}
-						className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${
-							activeTab === "comments"
-								? "border-[#1e9b65] text-[#1e9b65]"
-								: "border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400"
-						}`}
+						className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${activeTab === "comments"
+							? "border-[#1e9b65] text-[#1e9b65]"
+							: "border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400"
+							}`}
 					>
 						<MessageSquare size={14} /> Comments ({comments.length})
 					</button>
 					<button
 						type="button"
 						onClick={() => setActiveTab("history")}
-						className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${
-							activeTab === "history"
-								? "border-[#1e9b65] text-[#1e9b65]"
-								: "border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400"
-						}`}
+						className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${activeTab === "history"
+							? "border-[#1e9b65] text-[#1e9b65]"
+							: "border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400"
+							}`}
 					>
 						<History size={14} /> History
 					</button>

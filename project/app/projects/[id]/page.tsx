@@ -8,6 +8,7 @@ import {
 import { createPortal } from "react-dom";
 import { ColumnContainer } from "@/components/board/ColumnContainer";
 import { TaskCard } from "@/components/board/TaskCard";
+import type { Task } from "@/components/board/TaskCard";
 import ViewTaskModal from "@/components/modals/task/view-task-modal/ViewTaskModal";
 import { useProjectBoard } from "@/hooks/project/useProjectBoard";
 
@@ -41,11 +42,11 @@ export default function BoardPage() {
 						items={kanbanColumns}
 						strategy={horizontalListSortingStrategy}
 					>
-						{kanbanColumns.map((columnTitle) => (
+						{kanbanColumns.map((columnTitle: string) => (
 							<ColumnContainer
 								key={columnTitle}
 								columnTitle={columnTitle}
-								tasks={tasks.filter((t) => t.status === columnTitle)}
+								tasks={tasks.filter((t: Task) => t.status === columnTitle)}
 								onOpenTask={handleOpenTask}
 							/>
 						))}

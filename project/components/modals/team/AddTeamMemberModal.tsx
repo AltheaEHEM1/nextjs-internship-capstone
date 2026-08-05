@@ -2,14 +2,16 @@
 
 import { FolderPlus, Plus, Shield, Trash2 } from "lucide-react";
 import BaseModal from "@/components/layout/BaseModal";
-import { useAddTeamMemberModal } from "@/hooks/modal/useAddTeamMemberModal";
+import { useEffect } from "react";
+import { useCustomAddTeamMemberStore } from "@/stores/team/custom-add-team-member-store";
+import type { TeamMemberAssignment } from "@/stores/team/custom-add-team-member-store";
 
 interface AddTeamMemberProps {
 	opened: boolean;
 	onClose: () => void;
 }
 
-import { TeamMemberAssignment } from "@/hooks/modal/useAddTeamMemberModal";
+
 
 export default function AddTeamMemberModal({
 	opened,
@@ -27,12 +29,21 @@ export default function AddTeamMemberModal({
 		handleAddToList,
 		handleRemoveMember,
 		handleCreate,
-	} = useAddTeamMemberModal({
-		onSubmit: (members) => {
-			console.log({ members });
-			onClose();
-		},
-	});
+		initialize,
+		reset,
+	} = useCustomAddTeamMemberStore();
+
+	useEffect(() => {
+		if (opened) {
+			reset();
+			initialize({
+				onSubmit: (members: TeamMemberAssignment[]) => {
+					console.log({ members });
+					onClose();
+				}
+			});
+		}
+	}, [opened, onClose]);
 
 	return (
 		<BaseModal
@@ -147,7 +158,7 @@ export default function AddTeamMemberModal({
 							</p>
 						) : (
 							<div className="max-h-48 overflow-y-auto space-y-2 pr-1">
-								{membersList.map((item, index) => (
+								{membersList.map((item: TeamMemberAssignment, index: number) => (
 									<div
 										key={index}
 										className="flex items-center justify-between rounded-lg border border-french_gray-200 bg-white p-3 shadow-2xs dark:border-payne's_gray-600 dark:bg-outer_space-500"

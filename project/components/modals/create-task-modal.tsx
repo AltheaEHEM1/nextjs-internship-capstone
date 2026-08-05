@@ -33,19 +33,19 @@ Integration:
 - Real-time updates for comments
 */
 
-export function CreateTaskModal() {
-	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-			<div className="mx-4 w-full max-w-2xl rounded-lg bg-white p-6 dark:bg-outer_space-500">
-				<h3 className="mb-4 text-lg font-semibold text-outer_space-500 dark:text-platinum-500">
-					TODO: Create/Edit Task Modal
-				</h3>
-				<div className="rounded border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
-					<p className="text-sm text-yellow-800 dark:text-yellow-200">
-						📋 Implement task creation/editing form with rich features
-					</p>
-				</div>
-			</div>
-		</div>
-	);
-}
+// export function CreateTaskModal() {
+// 	return (
+// 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+// 			<div className="mx-4 w-full max-w-2xl rounded-lg bg-white p-6 dark:bg-outer_space-500">
+// 				<h3 className="mb-4 text-lg font-semibold text-outer_space-500 dark:text-platinum-500">
+// 					TODO: Create/Edit Task Modal
+// 				</h3>
+// 				<div className="rounded border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+// 					<p className="text-sm text-yellow-800 dark:text-yellow-200">
+// 						📋 Implement task creation/editing form with rich features
+// 					</p>
+// 				</div>
+// 			</div>
+// 		</div>
+// 	);
+// }

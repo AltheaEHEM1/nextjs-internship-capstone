@@ -34,7 +34,7 @@ export default function CreateProject2({
 		handleWorkflowChange,
 		setActiveSubView,
 		handleFinalCreate,
-	} = useCreateProjectWorkflow("starter");
+	} = useCreateProjectWorkflow();
 
 	const handleCreate = () => onCreate(handleFinalCreate());
 

@@ -2,19 +2,29 @@
 
 import { Gantt } from "gantt-task-react";
 import "gantt-task-react/dist/index.css";
-import { useGanttChart } from "@/hooks/project/useGanttChart";
+import { ViewMode } from "gantt-task-react";
+import { useMemo } from "react";
+import { useGanttStore } from "@/stores/project/gantt-store";
 
 export default function GanttChart() {
-	const {
-		viewMode,
-		setViewMode,
-		viewModeOptions,
-		tasks,
-		columnWidth,
-		handleTaskChange,
-		handleTaskDelete,
-		handleProgressChange,
-	} = useGanttChart();
+	const viewMode = useGanttStore(state => state.viewMode);
+	const setViewMode = useGanttStore(state => state.setViewMode);
+	const tasks = useGanttStore(state => state.tasks);
+	const handleTaskChange = useGanttStore(state => state.handleTaskChange);
+	const handleTaskDelete = useGanttStore(state => state.handleTaskDelete);
+	const handleProgressChange = useGanttStore(state => state.handleProgressChange);
+
+	const viewModeOptions = useMemo(() => [
+		{ mode: ViewMode.Day, label: "Day" },
+		{ mode: ViewMode.Week, label: "Week" },
+		{ mode: ViewMode.Month, label: "Month" },
+	], []);
+
+	const columnWidth = useMemo(() => {
+		if (viewMode === ViewMode.Month) return 150;
+		if (viewMode === ViewMode.Week) return 250;
+		return 65;
+	}, [viewMode]);
 
 	return (
 		<div className="space-y-4 pb-12">
@@ -37,11 +47,10 @@ export default function GanttChart() {
 							key={option.label}
 							type="button"
 							onClick={() => setViewMode(option.mode)}
-							className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-								viewMode === option.mode
+							className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === option.mode
 									? "bg-blue_munsell-500 text-white"
 									: "text-outer_space-600 hover:bg-platinum-100 dark:text-platinum-300 dark:hover:bg-payne's_gray-400"
-							}`}
+								}`}
 						>
 							{option.label}
 						</button>

@@ -2,10 +2,10 @@
 
 import { Tldraw } from "tldraw";
 import "tldraw/tldraw.css";
-import { useWhiteboard } from "@/hooks/project/useWhiteboard";
+import { useWhiteboardStore } from "@/stores/project/whiteboard-store";
 
 export default function WhiteBoard() {
-	const { persistenceKey } = useWhiteboard();
+	const persistenceKey = useWhiteboardStore(state => state.persistenceKey);
 
 	return (
 		<div className="space-y-4 pb-12">

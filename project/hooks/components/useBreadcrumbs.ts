@@ -1,33 +1,39 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
-function formatSegment(segment: string) {
-	if (/^\d+$/.test(segment)) return "Details";
-
-	return segment
-		.split("-")
-		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(" ");
+export interface Breadcrumb {
+	href: string;
+	label: string;
+	isCurrent: boolean;
 }
 
-export function useBreadcrumbs() {
+/**
+ * Derives breadcrumb entries from the current pathname.
+ * Each path segment is title-cased and linked.
+ * The last segment is marked as `isCurrent`.
+ */
+export function useBreadcrumbs(): { breadcrumbs: Breadcrumb[] } {
 	const pathname = usePathname();
-	const segments = pathname?.split("/").filter(Boolean) ?? [];
-	const items = segments.filter((segment) => segment !== "dashboard");
 
-	const breadcrumbs = items.map((segment, index) => {
-		const originalIndex = segments.indexOf(segment);
-		const href = `/${segments.slice(0, originalIndex + 1).join("/")}`;
-		const isCurrent = index === items.length - 1;
+	const breadcrumbs = useMemo(() => {
+		const segments = pathname.split("/").filter(Boolean);
 
-		return {
-			segment,
-			label: formatSegment(segment),
-			href,
-			isCurrent,
-		};
-	});
+		// Skip the first segment if it's "dashboard" (already shown as a static link)
+		const filtered =
+			segments[0] === "dashboard" ? segments.slice(1) : segments;
+
+		return filtered.map((segment, index) => {
+			const href = `/${segments.slice(0, segments.indexOf(segment) + 1).join("/")}`;
+			const label = decodeURIComponent(segment)
+				.replace(/[-_]/g, " ")
+				.replace(/\b\w/g, (c) => c.toUpperCase());
+			const isCurrent = index === filtered.length - 1;
+
+			return { href, label, isCurrent };
+		});
+	}, [pathname]);
 
 	return { breadcrumbs };
 }

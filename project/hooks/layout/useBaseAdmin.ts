@@ -1,13 +1,14 @@
-"use client";
+import { useState, useCallback } from "react";
 
-import { useCallback, useState } from "react";
-
-export function useBaseAdmin(initial = false) {
-	const [sidebarOpen, setSidebarOpen] = useState(initial);
+/**
+ * Manages the open/close state of the mobile sidebar.
+ * @param initialOpen - Whether the sidebar starts open (default `false`).
+ */
+export function useBaseAdmin(initialOpen = false) {
+	const [sidebarOpen, setSidebarOpen] = useState(initialOpen);
 
 	const open = useCallback(() => setSidebarOpen(true), []);
 	const close = useCallback(() => setSidebarOpen(false), []);
-	const toggle = useCallback(() => setSidebarOpen((v) => !v), []);
 
-	return { sidebarOpen, open, close, toggle };
+	return { sidebarOpen, open, close };
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import EmojiPicker, { Theme } from "emoji-picker-react"; // <-- Import the emoji picker
+import EmojiPicker, { Theme } from "emoji-picker-react";
 import { FolderPlus, Smile, Upload, X } from "lucide-react";
 
 import BaseModal from "@/components/layout/BaseModal";
-import { useAddTeamModal1 } from "../../../hooks/modal/useAddTeamModal1";
+import { useEffect } from "react";
+import { useCustomAddTeamModal1Store } from "@/stores/team/custom-add-team-modal1-store";
 
 interface AddTeam1Props {
 	opened: boolean;
@@ -34,7 +35,16 @@ export default function AddTeamModal1({
 		setShowEmojiPicker,
 		handleFileChange,
 		handleNext,
-	} = useAddTeamModal1({ initialData, onNext });
+		initialize,
+		reset,
+	} = useCustomAddTeamModal1Store();
+
+	useEffect(() => {
+		if (opened) {
+			reset();
+			initialize({ onNext, initialData });
+		}
+	}, [opened]);
 
 	return (
 		<BaseModal
@@ -90,7 +100,7 @@ export default function AddTeamModal1({
 						<div className="mt-1 flex items-center gap-2">
 							<button
 								type="button"
-								onClick={() => setShowEmojiPicker((prev) => !prev)}
+								onClick={() => setShowEmojiPicker(!showEmojiPicker)}
 								className="flex items-center gap-2 rounded-lg border border-french_gray-300 px-3 py-2 text-lg dark:bg-outer_space-400 dark:border-payne's_gray-600 dark:text-platinum-100 hover:border-blue_munsell-500 transition"
 							>
 								<span>{teamIcon}</span>

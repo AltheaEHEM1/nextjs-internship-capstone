@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCurrentYear } from "../../hooks/modal/useCurrentYear";
+import { useCurrentYear } from "../../hooks/footer/useCurrentYear";
 
 export function Footer() {
 	const year = useCurrentYear();

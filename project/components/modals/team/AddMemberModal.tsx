@@ -2,7 +2,8 @@
 
 import { UserPlus } from "lucide-react";
 import BaseModal from "@/components/layout/BaseModal";
-import { useAddMemberModal } from "../../../hooks/modal/useAddMemberModal";
+import { useEffect } from "react";
+import { useCustomAddMemberStore } from "@/stores/team/custom-add-member-store";
 
 interface AddMemberProps {
 	opened: boolean;
@@ -10,8 +11,14 @@ interface AddMemberProps {
 }
 
 export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
-	const { contact, setContact, notes, setNotes, handleSendInvites } =
-		useAddMemberModal({ onClose });
+	const { contact, setContact, notes, setNotes, handleSendInvites, initialize, reset } = useCustomAddMemberStore();
+	useEffect(() => {
+		if (opened) {
+			reset();
+			initialize({ onClose });
+		}
+	}, [opened, onClose]);
+
 	return (
 		<BaseModal
 			opened={opened}

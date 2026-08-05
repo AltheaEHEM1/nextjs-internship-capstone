@@ -1,10 +1,117 @@
 "use client";
 
+import { useState } from "react";
 import { PageHeader } from "@/components/page-header/PageHeader";
-import { useNotification } from "@/hooks/notification/useNotification";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type SettingKey =
+	| "projectUpdates"
+	| "taskAssignments"
+	| "taskComments"
+	| "dueDateReminders"
+	| "teamInvitations"
+	| "memberActivity"
+	| "emailDigest"
+	| "browserPush";
+
+interface NotificationToggle {
+	key: SettingKey;
+	title: string;
+	description: string;
+}
+
+interface NotificationSection {
+	title: string;
+	description: string;
+	toggles: NotificationToggle[];
+}
+
+type NotificationSettings = Record<SettingKey, boolean>;
+
+// ─── Static Data ──────────────────────────────────────────────────────────────
+
+const SECTIONS: NotificationSection[] = [
+	{
+		title: "Project Notifications",
+		description: "Control alerts related to your projects and their status.",
+		toggles: [
+			{
+				key: "projectUpdates",
+				title: "Project Updates",
+				description: "Receive notifications when a project status changes.",
+			},
+			{
+				key: "taskAssignments",
+				title: "Task Assignments",
+				description: "Get notified when a task is assigned to you.",
+			},
+			{
+				key: "taskComments",
+				title: "Task Comments",
+				description: "Be alerted when someone comments on your tasks.",
+			},
+			{
+				key: "dueDateReminders",
+				title: "Due Date Reminders",
+				description: "Reminders 24 hours before a task is due.",
+			},
+		],
+	},
+	{
+		title: "Team Notifications",
+		description: "Stay informed about team activity and membership changes.",
+		toggles: [
+			{
+				key: "teamInvitations",
+				title: "Team Invitations",
+				description: "Notifications for new team invitations.",
+			},
+			{
+				key: "memberActivity",
+				title: "Member Activity",
+				description: "Updates when team members complete or create tasks.",
+			},
+		],
+	},
+	{
+		title: "Delivery Preferences",
+		description: "Choose how and where you receive your notifications.",
+		toggles: [
+			{
+				key: "emailDigest",
+				title: "Email Digest",
+				description: "Receive a daily summary of activity via email.",
+			},
+			{
+				key: "browserPush",
+				title: "Browser Push",
+				description: "Enable push notifications in your browser.",
+			},
+		],
+	},
+];
+
+const DEFAULT_SETTINGS: NotificationSettings = {
+	projectUpdates: true,
+	taskAssignments: true,
+	taskComments: false,
+	dueDateReminders: true,
+	teamInvitations: true,
+	memberActivity: false,
+	emailDigest: true,
+	browserPush: false,
+};
+
+// ─── Page Component ───────────────────────────────────────────────────────────
 
 export default function NotificationsPage() {
-	const { settings, handleToggle, sections } = useNotification();
+	const [settings, setSettings] =
+		useState<NotificationSettings>(DEFAULT_SETTINGS);
+
+	const handleToggle = (key: SettingKey) => {
+		setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+	};
 
 	return (
 		<div className="space-y-6 max-w-4xl">
@@ -14,7 +121,7 @@ export default function NotificationsPage() {
 			/>
 
 			<div className="space-y-6 divide-y divide-gray-200 dark:divide-gray-800">
-				{sections.map((section, index) => (
+				{SECTIONS.map((section: NotificationSection, index: number) => (
 					<div
 						key={section.title}
 						className={index === 0 ? "pt-4 first:pt-0" : "pt-6"}
@@ -26,7 +133,7 @@ export default function NotificationsPage() {
 							{section.description}
 						</p>
 						<div className="space-y-4">
-							{section.toggles.map((toggle) => (
+							{section.toggles.map((toggle: NotificationToggle) => (
 								<ToggleItem
 									key={toggle.key}
 									title={toggle.title}
@@ -42,6 +149,8 @@ export default function NotificationsPage() {
 		</div>
 	);
 }
+
+// ─── Sub-component ────────────────────────────────────────────────────────────
 
 function ToggleItem({
 	title,
