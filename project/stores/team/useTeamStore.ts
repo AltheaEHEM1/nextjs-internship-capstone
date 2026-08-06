@@ -1,171 +1,182 @@
 import { create } from "zustand";
 
-export interface TeamMemberAssignment {
-  member: string;
-  role: string;
-  accessibility: string;
+export interface PersonItem {
+	id: string;
+	name: string;
+	email: string;
+	role: string;
+	avatar: string;
 }
 
-export interface Person {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  role: string;
+export interface InvitationItem {
+	id: string;
+	email: string;
+	role: string;
+	status: "pending" | "accepted" | "declined";
+	sentAt: string;
+}
+
+export interface TeamMemberItem {
+	member: string; // Member/Person ID
+	role: string;
+	accessibility: "administrator" | "member" | "viewer";
 }
 
 export interface TeamItem {
-  id: string;
-  name: string;
-  icon: string;
-  membersCount: number;
+	id: string;
+	name: string;
+	icon: string;
+	membersCount: number;
 }
 
-export interface TeamDetail {
-  name: string;
-  icon: string;
-  coverUrl: string;
-  members: Array<{ id: string; name: string; avatar: string; role: string }>;
+export interface TeamState {
+	activeTab: "people" | "teams";
+
+	// Modal Visibility
+	isAddPeopleOpen: boolean;
+	isTeamModalOpen: boolean;
+	isAddMemberOpen: boolean;
+	isMenuOpen: boolean;
+
+	// Form & Wizard State
+	teamStep: number;
+	teamName: string;
+	teamIcon: string;
+	coverUrl: string;
+	addPeopleContact: string;
+	addPeopleNotes: string;
+
+	// Collections
+	invitations: InvitationItem[];
+	people: PersonItem[];
+	teams: TeamItem[];
+	membersList: TeamMemberItem[];
+	teamDetail: any | null;
+
+	// Actions
+	setActiveTab: (tab: "people" | "teams") => void;
+	setTeamStep: (step: number) => void;
+	openAddPeopleModal: () => void;
+	closeAddPeopleModal: () => void;
+	openTeamModal: () => void;
+	closeTeamModal: () => void;
+	openAddMemberModal: () => void;
+	closeAddMemberModal: () => void;
+	toggleMenu: () => void;
+
+	setTeamName: (val: string) => void;
+	setTeamIcon: (val: string) => void;
+	setCoverUrl: (val: string) => void;
+	setAddPeopleContact: (val: string) => void;
+	setAddPeopleNotes: (val: string) => void;
+
+	// Invite Flow Actions
+	sendInvitation: (email: string, role?: string) => void;
+	acceptInvitation: (invitationId: string) => void;
+
+	addMemberToList: (member: TeamMemberItem) => void;
+	removeMemberFromList: (index: number) => void;
+	setTeamDetail: (detail: any) => void;
+	resetTeamForm: () => void;
 }
 
-interface TeamState {
-  activeTab: "people" | "teams";
-  setActiveTab: (tab: "people" | "teams") => void;
-  people: Person[];
-  teams: TeamItem[];
-  teamDetail: TeamDetail;
-  isMenuOpen: boolean;
-  isAddMemberOpen: boolean;
-  isAddPeopleOpen: boolean;
-  teamStep: number;
-  addPeopleContact: string;
-  addPeopleNotes: string;
-  teamName: string;
-  teamIcon: string;
-  coverUrl: string;
-  showEmojiPicker: boolean;
-  membersList: TeamMemberAssignment[];
-  currentMember: string;
-  currentRole: string;
-  currentAccessibility: string;
-  toggleMenu: () => void;
-  openAddMemberModal: () => void;
-  closeAddMemberModal: () => void;
-  openAddPeopleModal: () => void;
-  closeAddPeopleModal: () => void;
-  openTeamModal: () => void;
-  closeTeamModal: () => void;
-  setTeamStep: (step: number) => void;
-  setAddPeopleContact: (val: string) => void;
-  setAddPeopleNotes: (val: string) => void;
-  setTeamName: (val: string) => void;
-  setTeamIcon: (val: string) => void;
-  setCoverUrl: (val: string) => void;
-  setShowEmojiPicker: (val: boolean) => void;
-  setCurrentMember: (val: string) => void;
-  setCurrentRole: (val: string) => void;
-  setCurrentAccessibility: (val: string) => void;
-  setMembersList: (list: TeamMemberAssignment[]) => void;
-  handleAddMemberToList: () => void;
-  handleRemoveMemberFromList: (index: number) => void;
-  addMembersToTeamDetail: () => void;
-  resetTeamForm: () => void;
-}
+export const useTeamStore = create<TeamState>((set) => ({
+	activeTab: "people",
 
-export const useTeamStore = create<TeamState>((set, get) => ({
-  activeTab: "people",
-  setActiveTab: (tab) => set({ activeTab: tab }),
-  people: [
-    { id: "1", name: "Alex Mercer", email: "alex@srg.tech", avatar: "AM", role: "Software Engineer" },
-    { id: "2", name: "Sarah Jenkins", email: "sarah@srg.tech", avatar: "SJ", role: "Product Manager" },
-  ],
-  teams: [
-    { id: "core-arch", name: "Core Architecture Unit", icon: "⚡", membersCount: 4 },
-  ],
-  teamDetail: {
-    name: "Core Architecture Unit",
-    icon: "⚡",
-    coverUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
-    members: [
-      { id: "1", name: "Alex Mercer", avatar: "AM", role: "Lead Architect" },
-    ],
-  },
-  isMenuOpen: false,
-  isAddMemberOpen: false,
-  isAddPeopleOpen: false,
-  teamStep: 0,
-  addPeopleContact: "",
-  addPeopleNotes: "",
-  teamName: "",
-  teamIcon: "🚀",
-  coverUrl: "",
-  showEmojiPicker: false,
-  membersList: [],
-  currentMember: "",
-  currentRole: "",
-  currentAccessibility: "member",
-  toggleMenu: () => set((s) => ({ isMenuOpen: !s.isMenuOpen })),
-  openAddMemberModal: () => set({ isAddMemberOpen: true }),
-  closeAddMemberModal: () => set({ isAddMemberOpen: false }),
-  openAddPeopleModal: () => set({ isAddPeopleOpen: true }),
-  closeAddPeopleModal: () => set({ isAddPeopleOpen: false }),
-  openTeamModal: () => set({ teamStep: 1 }),
-  closeTeamModal: () => set({ teamStep: 0 }),
-  setTeamStep: (step) => set({ teamStep: step }),
-  setAddPeopleContact: (addPeopleContact) => set({ addPeopleContact }),
-  setAddPeopleNotes: (addPeopleNotes) => set({ addPeopleNotes }),
-  setTeamName: (teamName) => set({ teamName }),
-  setTeamIcon: (teamIcon) => set({ teamIcon }),
-  setCoverUrl: (coverUrl) => set({ coverUrl }),
-  setShowEmojiPicker: (showEmojiPicker) => set({ showEmojiPicker }),
-  setCurrentMember: (currentMember) => set({ currentMember }),
-  setCurrentRole: (currentRole) => set({ currentRole }),
-  setCurrentAccessibility: (currentAccessibility) => set({ currentAccessibility }),
-  setMembersList: (membersList) => set({ membersList }),
-  handleAddMemberToList: () => {
-    const { currentMember, currentRole, currentAccessibility, membersList } = get();
-    if (!currentMember) return;
-    set({
-      membersList: [
-        ...membersList,
-        { member: currentMember, role: currentRole || "Member", accessibility: currentAccessibility },
-      ],
-      currentMember: "",
-      currentRole: "",
-      currentAccessibility: "member",
-    });
-  },
-  handleRemoveMemberFromList: (index) => {
-    set((state) => ({
-      membersList: state.membersList.filter((_, i) => i !== index),
-    }));
-  },
-  addMembersToTeamDetail: () => {
-    const { membersList, teamDetail } = get();
-    const newMembers = membersList.map((m, index) => ({
-      id: `${Date.now()}-${index}`,
-      name: m.member,
-      avatar: m.member.split(" ").map((n) => n[0]).join("").toUpperCase(),
-      role: m.role,
-    }));
-    set({
-      teamDetail: {
-        ...teamDetail,
-        members: [...teamDetail.members, ...newMembers],
-      },
-      membersList: [],
-      isAddMemberOpen: false,
-    });
-  },
-  resetTeamForm: () =>
-    set({
-      teamName: "",
-      teamIcon: "🚀",
-      coverUrl: "",
-      membersList: [],
-      currentMember: "",
-      currentRole: "",
-      currentAccessibility: "member",
-      showEmojiPicker: false,
-    }),
+	isAddPeopleOpen: false,
+	isTeamModalOpen: false,
+	isAddMemberOpen: false,
+	isMenuOpen: false,
+
+	teamStep: 0,
+	teamName: "",
+	teamIcon: "🚀",
+	coverUrl: "",
+	addPeopleContact: "",
+	addPeopleNotes: "",
+
+	invitations: [],
+	people: [],
+	teams: [],
+	membersList: [],
+	teamDetail: null,
+
+	setActiveTab: (activeTab) => set({ activeTab }),
+	setTeamStep: (teamStep) => set({ teamStep }),
+
+	openAddPeopleModal: () => set({ isAddPeopleOpen: true }),
+	closeAddPeopleModal: () => set({ isAddPeopleOpen: false }),
+
+	openTeamModal: () => set({ isTeamModalOpen: true, teamStep: 1 }),
+	closeTeamModal: () => set({ isTeamModalOpen: false, teamStep: 0 }),
+
+	openAddMemberModal: () => set({ isAddMemberOpen: true }),
+	closeAddMemberModal: () => set({ isAddMemberOpen: false }),
+	toggleMenu: () => set((state) => ({ isMenuOpen: !state.isMenuOpen })),
+
+	setTeamName: (teamName) => set({ teamName }),
+	setTeamIcon: (teamIcon) => set({ teamIcon }),
+	setCoverUrl: (coverUrl) => set({ coverUrl }),
+	setAddPeopleContact: (addPeopleContact) => set({ addPeopleContact }),
+	setAddPeopleNotes: (addPeopleNotes) => set({ addPeopleNotes }),
+
+	// Step 1: Send invitation to an individual
+	sendInvitation: (email, role = "Member") =>
+		set((state) => ({
+			invitations: [
+				...state.invitations,
+				{
+					id: Date.now().toString(),
+					email,
+					role,
+					status: "pending",
+					sentAt: new Date().toISOString(),
+				},
+			],
+		})),
+
+	// Step 2: User accepts invitation -> Add them to available 'people' and update invite status
+	acceptInvitation: (invitationId) =>
+		set((state) => {
+			const targetInvite = state.invitations.find(
+				(inv) => inv.id === invitationId,
+			);
+			if (!targetInvite || targetInvite.status === "accepted") return state;
+
+			const newPerson: PersonItem = {
+				id: targetInvite.id,
+				name: targetInvite.email.split("@")[0], // Fallback name generation
+				email: targetInvite.email,
+				role: targetInvite.role,
+				avatar: targetInvite.email.charAt(0).toUpperCase(),
+			};
+
+			return {
+				invitations: state.invitations.map((inv) =>
+					inv.id === invitationId ? { ...inv, status: "accepted" } : inv,
+				),
+				people: [...state.people, newPerson],
+			};
+		}),
+
+	addMemberToList: (member) =>
+		set((state) => ({ membersList: [...state.membersList, member] })),
+
+	removeMemberFromList: (index) =>
+		set((state) => ({
+			membersList: state.membersList.filter((_, i) => i !== index),
+		})),
+
+	setTeamDetail: (teamDetail) => set({ teamDetail }),
+
+	resetTeamForm: () =>
+		set({
+			teamStep: 0,
+			teamName: "",
+			teamIcon: "🚀",
+			coverUrl: "",
+			membersList: [],
+			addPeopleContact: "",
+			addPeopleNotes: "",
+		}),
 }));
