@@ -64,9 +64,24 @@ const STATS: Stat[] = [
 ];
 
 const RECENT_PROJECTS: RecentProject[] = [
-	{ id: "1", name: "Website Redesign", lastUpdated: "2 hours ago", progressPercent: 65 },
-	{ id: "2", name: "Mobile App", lastUpdated: "Yesterday", progressPercent: 40 },
-	{ id: "3", name: "API Integration", lastUpdated: "3 days ago", progressPercent: 80 },
+	{
+		id: "1",
+		name: "Website Redesign",
+		lastUpdated: "2 hours ago",
+		progressPercent: 65,
+	},
+	{
+		id: "2",
+		name: "Mobile App",
+		lastUpdated: "Yesterday",
+		progressPercent: 40,
+	},
+	{
+		id: "3",
+		name: "API Integration",
+		lastUpdated: "3 days ago",
+		progressPercent: 80,
+	},
 ];
 
 const QUICK_ACTIONS: QuickAction[] = [
@@ -76,7 +91,11 @@ const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 const UPCOMING_DEADLINES: UpcomingDeadline[] = [
-	{ title: "Website Redesign – Phase 1", type: "Project Milestone", date: "Aug 10" },
+	{
+		title: "Website Redesign – Phase 1",
+		type: "Project Milestone",
+		date: "Aug 10",
+	},
 	{ title: "Q3 Performance Review", type: "Team Event", date: "Aug 15" },
 	{ title: "API v2 Launch", type: "Deployment", date: "Aug 20" },
 ];
@@ -89,10 +108,34 @@ const ANALYTICS_TASKS: string[] = [
 ];
 
 const ANALYTICS_METRICS: AnalyticsMetric[] = [
-	{ title: "Task Completion Rate", value: "87%", unit: "This month", color: "blue", icon: CheckSquare },
-	{ title: "Avg. Task Duration", value: "2.4h", unit: "Per task", color: "green", icon: Clock },
-	{ title: "Team Velocity", value: "34", unit: "Points / sprint", color: "purple", icon: TrendingUp },
-	{ title: "Active Members", value: "8", unit: "Contributors", color: "orange", icon: Users },
+	{
+		title: "Task Completion Rate",
+		value: "87%",
+		unit: "This month",
+		color: "blue",
+		icon: CheckSquare,
+	},
+	{
+		title: "Avg. Task Duration",
+		value: "2.4h",
+		unit: "Per task",
+		color: "green",
+		icon: Clock,
+	},
+	{
+		title: "Team Velocity",
+		value: "34",
+		unit: "Points / sprint",
+		color: "purple",
+		icon: TrendingUp,
+	},
+	{
+		title: "Active Members",
+		value: "8",
+		unit: "Contributors",
+		color: "orange",
+		icon: Users,
+	},
 ];
 
 // ─── Page Component ───────────────────────────────────────────────────────────

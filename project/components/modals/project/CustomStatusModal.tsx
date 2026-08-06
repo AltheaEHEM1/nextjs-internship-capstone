@@ -7,8 +7,8 @@ import {
 	Plus,
 	Trash2,
 } from "lucide-react";
-import BaseModal from "@/components/layout/BaseModal";
 import { useEffect } from "react";
+import BaseModal from "@/components/layout/BaseModal";
 import { useCustomStatusStore } from "../../../stores/custom-status-store";
 
 interface CustomStatusProps {
@@ -31,11 +31,11 @@ export default function CustomStatus({
 }: CustomStatusProps) {
 	// Initialize the store with props when component mounts/updates
 	useEffect(() => {
-	  useCustomStatusStore.getState().initialize(status, onChangeStatus);
+		useCustomStatusStore.getState().initialize(status, onChangeStatus);
 	}, [status, onChangeStatus]);
 
-	const { inputs, setInputs, handleAdd, handleRemove, addPrompted } = useCustomStatusStore();
-
+	const { inputs, setInputs, handleAdd, handleRemove, addPrompted } =
+		useCustomStatusStore();
 
 	const categories = [
 		{ key: "notStarted", label: "Not started" },

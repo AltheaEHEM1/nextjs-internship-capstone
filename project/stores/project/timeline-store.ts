@@ -1,7 +1,7 @@
 // Timeline Zustand store
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { TimelineItem } from '@/hooks/project/useTimeline';
+import type { TimelineItem } from '@/hooks/project/useTimeline';
 
 type TimelineOptions = {
   editable: boolean;

@@ -9,7 +9,7 @@ import {
 	Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useRef, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

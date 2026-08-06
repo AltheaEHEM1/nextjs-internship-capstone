@@ -1,10 +1,10 @@
 "use client";
 
 import { Flag } from "lucide-react";
-import BaseModal from "@/components/layout/BaseModal";
-import { useCustomPriorityStore } from "@/stores/custom-priority-store";
 import { useEffect } from "react";
+import BaseModal from "@/components/layout/BaseModal";
 import { cn } from "@/lib/utils";
+import { useCustomPriorityStore } from "@/stores/custom-priority-store";
 
 interface AddPriorityProps {
 	isOpen: boolean;
@@ -45,14 +45,9 @@ export function AddPriorityModal({
 	} = useCustomPriorityStore();
 
 	useEffect(() => {
-		useCustomPriorityStore.getState().initialize(
-			"",
-			"",
-			PRESET_COLORS[0].value,
-			1,
-			onSave,
-			onClose
-		);
+		useCustomPriorityStore
+			.getState()
+			.initialize("", "", PRESET_COLORS[0].value, 1, onSave, onClose);
 	}, [onSave, onClose]);
 
 	return (
@@ -70,10 +65,7 @@ export function AddPriorityModal({
 			</div>
 
 			{/* Form */}
-			<form
-				onSubmit={(e) => handleSubmit(e)}
-				className="p-6 space-y-4"
-			>
+			<form onSubmit={(e) => handleSubmit(e)} className="p-6 space-y-4">
 				<div>
 					<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
 						Priority Name

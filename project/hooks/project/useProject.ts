@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { useProjectStore } from "@/stores/project/project-store";
 import type { AccessRole } from "@/components/modals/project/CreateProject1Modal";
+import { useProjectStore } from "@/stores/project/project-store";
 
 /**
  * Custom hook that wraps the project Zustand store,
@@ -31,22 +31,13 @@ export function useProject() {
 		[setFormField],
 	);
 
-	const handleOpen = useCallback(
-		() => setModalStep("step1"),
-		[setModalStep],
-	);
+	const handleOpen = useCallback(() => setModalStep("step1"), [setModalStep]);
 
 	const handleClose = useCallback(() => resetForm(), [resetForm]);
 
-	const handleNext = useCallback(
-		() => setModalStep("step2"),
-		[setModalStep],
-	);
+	const handleNext = useCallback(() => setModalStep("step2"), [setModalStep]);
 
-	const handleBack = useCallback(
-		() => setModalStep("step1"),
-		[setModalStep],
-	);
+	const handleBack = useCallback(() => setModalStep("step1"), [setModalStep]);
 
 	const handleCreateFinal = useCallback(() => {
 		// TODO: persist the new project (API call / DB write)

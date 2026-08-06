@@ -22,7 +22,8 @@ export default function SidebarHeader({
 }: SidebarHeaderProps) {
 	const { theme, setTheme } = useTheme();
 	const router = useRouter();
-	const { isSearchOpen, setIsSearchOpen, searchQuery, setSearchQuery } = useCustomSidebarHeaderStore();
+	const { isSearchOpen, setIsSearchOpen, searchQuery, setSearchQuery } =
+		useCustomSidebarHeaderStore();
 
 	const handleLogout = () => {
 		if (onLogout) {
@@ -50,8 +51,9 @@ export default function SidebarHeader({
 			<div className="flex items-center gap-x-2 sm:gap-x-3">
 				<div className="relative flex items-center">
 					<div
-						className={`overflow-hidden transition-all duration-300 ease-in-out ${isSearchOpen ? "w-64 opacity-100 mr-2" : "w-0 opacity-0"
-							}`}
+						className={`overflow-hidden transition-all duration-300 ease-in-out ${
+							isSearchOpen ? "w-64 opacity-100 mr-2" : "w-0 opacity-0"
+						}`}
 					>
 						<input
 							type="text"

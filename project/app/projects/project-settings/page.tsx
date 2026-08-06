@@ -2,12 +2,12 @@
 
 import { ArrowLeft, Check, Edit, Save, Trash2, X } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 import { AddLabelModal } from "@/components/modals/project-settings/AddLabelModal";
 import { AddPriorityModal } from "@/components/modals/project-settings/AddPriorityModal";
 import { AddStatusModal } from "@/components/modals/project-settings/AddStatusModal";
 import { PageHeader } from "@/components/page-header/PageHeader";
 import { useProjectSettingsStore } from "@/stores/project/project-settings-store";
-import { useEffect } from "react";
 import MemberRole from "./MemberRole";
 import ProjectLabelPriority from "./ProjectLabelPriorityStatus";
 

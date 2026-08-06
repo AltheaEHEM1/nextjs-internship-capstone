@@ -1,10 +1,10 @@
 "use client";
 
 import { Layers } from "lucide-react";
-import BaseModal from "@/components/layout/BaseModal";
-import { useCustomAddStatusStore } from "@/stores/custom-add-status-store";
 import { useEffect } from "react";
+import BaseModal from "@/components/layout/BaseModal";
 import { cn } from "@/lib/utils";
+import { useCustomAddStatusStore } from "@/stores/custom-add-status-store";
 
 interface AddStatusProps {
 	isOpen: boolean;
@@ -56,13 +56,9 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 	} = useCustomAddStatusStore();
 
 	useEffect(() => {
-		useCustomAddStatusStore.getState().initialize(
-			"",
-			"",
-			PRESET_COLORS[0].value,
-			onSave,
-			onClose
-		);
+		useCustomAddStatusStore
+			.getState()
+			.initialize("", "", PRESET_COLORS[0].value, onSave, onClose);
 	}, [onSave, onClose]);
 
 	return (
@@ -80,10 +76,7 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 			</div>
 
 			{/* Form */}
-			<form
-				onSubmit={(e) => handleSubmit(e)}
-				className="p-6 space-y-4"
-			>
+			<form onSubmit={(e) => handleSubmit(e)} className="p-6 space-y-4">
 				<div>
 					<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
 						Status Name

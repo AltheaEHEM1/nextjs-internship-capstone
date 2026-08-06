@@ -3,8 +3,8 @@
 import { Calendar, Flag, Plus, Tag, Users } from "lucide-react";
 import { useEffect } from "react";
 import BaseModal from "@/components/layout/BaseModal";
+import type { Status, WorkType } from "@/stores/task/custom-create-task-store";
 import { useCustomCreateTaskStore } from "@/stores/task/custom-create-task-store";
-import type { WorkType, Status } from "@/stores/task/custom-create-task-store";
 
 interface CreateTaskModalProps {
 	opened: boolean;
@@ -284,7 +284,9 @@ export default function CreateTaskModal({
 						</div>
 						<select
 							value={priority}
-							onChange={(e) => setPriority(e.target.value as "High" | "Medium" | "Low")}
+							onChange={(e) =>
+								setPriority(e.target.value as "High" | "Medium" | "Low")
+							}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
 						>
 							<option value="High">High</option>

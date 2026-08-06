@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 
 /* ── Types ──────────────────────────────────────────────── */
 
@@ -36,13 +36,10 @@ export function useCreateProjectWorkflow() {
 	const [views, setViews] = useState<string[]>(STARTER_VIEWS);
 	const [statuses, setStatuses] = useState<StatusGroup>(DEFAULT_STATUSES);
 
-	const handleWorkflowChange = useCallback(
-		(w: Workflow) => {
-			setWorkflow(w);
-			setViews(w === "starter" ? STARTER_VIEWS : PM_VIEWS);
-		},
-		[],
-	);
+	const handleWorkflowChange = useCallback((w: Workflow) => {
+		setWorkflow(w);
+		setViews(w === "starter" ? STARTER_VIEWS : PM_VIEWS);
+	}, []);
 
 	/** Collects all form data and returns the final payload. */
 	const handleFinalCreate = useCallback(

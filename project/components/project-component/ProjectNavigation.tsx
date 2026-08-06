@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { useCustomProjectNavigationStore } from "../../stores/project/custom-project-navigation-store";
 import React from "react";
+import { useCustomProjectNavigationStore } from "../../stores/project/custom-project-navigation-store";
 
 export default function ProjectNavigation({
 	projectId,
@@ -56,18 +56,19 @@ export default function ProjectNavigation({
 						item.slug === ""
 							? current === target
 							: current === target ||
-							(current.startsWith(target) &&
-								(current.length === target.length ||
-									current.charAt(target.length) === "/"));
+								(current.startsWith(target) &&
+									(current.length === target.length ||
+										current.charAt(target.length) === "/"));
 
 					return (
 						<Link
 							key={item.label}
 							href={href}
-							className={`flex whitespace-nowrap items-center border-b-2 px-1 py-3 text-sm font-medium transition-colors ${isActive
+							className={`flex whitespace-nowrap items-center border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
+								isActive
 									? "border-blue_munsell-600 text-blue_munsell-700 dark:border-blue_munsell-400 dark:text-blue_munsell-300"
 									: "border-transparent text-outer_space-500 hover:border-french_gray-400 hover:text-outer_space-700 dark:text-platinum-500 dark:hover:border-payne's_gray-300 dark:hover:text-platinum-300"
-								}`}
+							}`}
 						>
 							<item.icon className="mr-2" size={16} />
 							{item.label}

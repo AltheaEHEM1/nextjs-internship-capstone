@@ -10,9 +10,9 @@ import {
 	UserCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import CreateTaskModal from "@/components/modals/task/CreateTaskModal";
 import { useCustomProjectHeaderStore } from "../../stores/project/custom-project-header-store";
-import { useEffect } from "react";
 
 export interface ProjectHeaderProps {
 	title: string;

@@ -1,15 +1,15 @@
-import { useCallback } from "react";
 import {
+	type DragEndEvent,
+	type DragOverEvent,
+	type DragStartEvent,
+	PointerSensor,
 	useSensor,
 	useSensors,
-	PointerSensor,
-	type DragStartEvent,
-	type DragOverEvent,
-	type DragEndEvent,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { useProjectBoardStore } from "@/stores/project/project-board-store";
+import { useCallback } from "react";
 import type { Task } from "@/components/board/TaskCard";
+import { useProjectBoardStore } from "@/stores/project/project-board-store";
 
 /**
  * Custom hook that encapsulates all Kanban board logic:
