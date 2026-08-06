@@ -1,18 +1,18 @@
 // Calendar Zustand store
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
-import { CalendarEvent } from '@/hooks/project/useCalendar';
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
+import type { CalendarEvent } from "@/hooks/project/useCalendar";
 
 export interface CalendarState {
-  events: CalendarEvent[];
-  setEvents: (events: CalendarEvent[]) => void;
-  addEvent: (event: CalendarEvent) => void;
+	events: CalendarEvent[];
+	setEvents: (events: CalendarEvent[]) => void;
+	addEvent: (event: CalendarEvent) => void;
 }
 
 export const useCalendarStore = create<CalendarState>(
-  devtools((set) => ({
-    events: [],
-    setEvents: (events) => set({ events }),
-    addEvent: (event) => set(state => ({ events: [...state.events, event] })),
-  }))
+	devtools((set) => ({
+		events: [],
+		setEvents: (events) => set({ events }),
+		addEvent: (event) => set((state) => ({ events: [...state.events, event] })),
+	})),
 );

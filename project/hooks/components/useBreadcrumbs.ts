@@ -21,8 +21,7 @@ export function useBreadcrumbs(): { breadcrumbs: Breadcrumb[] } {
 		const segments = pathname.split("/").filter(Boolean);
 
 		// Skip the first segment if it's "dashboard" (already shown as a static link)
-		const filtered =
-			segments[0] === "dashboard" ? segments.slice(1) : segments;
+		const filtered = segments[0] === "dashboard" ? segments.slice(1) : segments;
 
 		return filtered.map((segment, index) => {
 			const href = `/${segments.slice(0, segments.indexOf(segment) + 1).join("/")}`;

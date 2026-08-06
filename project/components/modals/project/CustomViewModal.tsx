@@ -1,10 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 import BaseModal from "@/components/layout/BaseModal";
 import { ALL_POSSIBLE_VIEWS } from "@/hooks/project/useCustomView";
 import { useCustomViewStore } from "../../../stores/custom-view-store";
-import { useEffect } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 interface CustomViewProps {
 	opened: boolean;

@@ -72,17 +72,19 @@ export default function AboutPage() {
 									type="button"
 									key={item.id}
 									onClick={() => setActiveTab(index)}
-									className={`w-full text-left p-3.5 sm:p-5 rounded-2xl transition-all duration-300 border flex items-center justify-between group ${isActive
+									className={`w-full text-left p-3.5 sm:p-5 rounded-2xl transition-all duration-300 border flex items-center justify-between group ${
+										isActive
 											? "bg-white border-slate-300 shadow-xl shadow-slate-200/60 scale-[1.01] sm:scale-[1.02]"
 											: "bg-white/50 hover:bg-white/80 border-transparent hover:border-slate-200"
-										}`}
+									}`}
 								>
 									<div className="flex items-center gap-3 sm:gap-4 min-w-0">
 										<div
-											className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 ${isActive
+											className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
+												isActive
 													? item.accentBg
 													: "bg-slate-100 text-slate-500 group-hover:bg-slate-200"
-												}`}
+											}`}
 										>
 											<Icon className="w-4 h-4 sm:w-5 sm:h-5" />
 										</div>
@@ -99,10 +101,11 @@ export default function AboutPage() {
 									</div>
 
 									<ChevronRight
-										className={`w-4 h-4 transition-all shrink-0 ${isActive
+										className={`w-4 h-4 transition-all shrink-0 ${
+											isActive
 												? "text-slate-800 translate-x-1"
 												: "text-slate-400 opacity-0 group-hover:opacity-100"
-											}`}
+										}`}
 									/>
 								</button>
 							);
@@ -140,10 +143,11 @@ export default function AboutPage() {
 											type="button"
 											key={idx}
 											onClick={() => setActiveTab(idx)}
-											className={`h-1.5 rounded-full cursor-pointer transition-all duration-500 ${idx === activeTab
+											className={`h-1.5 rounded-full cursor-pointer transition-all duration-500 ${
+												idx === activeTab
 													? `w-8 bg-gradient-to-r ${activeFeature.gradient}`
 													: "w-3 bg-slate-200 hover:bg-slate-300"
-												}`}
+											}`}
 										/>
 									))}
 								</div>

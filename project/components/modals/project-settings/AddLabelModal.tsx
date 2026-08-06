@@ -1,11 +1,11 @@
 "use client";
 
 import { Tag } from "lucide-react";
-import BaseModal from "@/components/layout/BaseModal";
-import { useCustomLabelStore } from "../../../stores/custom-label-store";
 import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
+import BaseModal from "@/components/layout/BaseModal";
 import { cn } from "@/lib/utils";
+import { useCustomLabelStore } from "../../../stores/custom-label-store";
 
 interface AddLabelProps {
 	isOpen: boolean;
@@ -44,20 +44,23 @@ const LABEL_COLORS = [
 ];
 
 export function AddLabelModal({ isOpen, onClose, onSave }: AddLabelProps) {
-	const { name, setName, selectedColor, setSelectedColor, handleSubmit } = useCustomLabelStore(
-		useShallow((state) => ({
-			name: state.name,
-			setName: state.setName,
-			selectedColor: state.selectedColor,
-			setSelectedColor: state.setSelectedColor,
-			handleSubmit: state.handleSubmit,
-		})),
-	);
+	const { name, setName, selectedColor, setSelectedColor, handleSubmit } =
+		useCustomLabelStore(
+			useShallow((state) => ({
+				name: state.name,
+				setName: state.setName,
+				selectedColor: state.selectedColor,
+				setSelectedColor: state.setSelectedColor,
+				handleSubmit: state.handleSubmit,
+			})),
+		);
 
-  // Initialize store with callbacks when component mounts/updates
-  useEffect(() => {
-    useCustomLabelStore.getState().initialize("", LABEL_COLORS[0].class, onSave, onClose);
-  }, [onSave, onClose]);
+	// Initialize store with callbacks when component mounts/updates
+	useEffect(() => {
+		useCustomLabelStore
+			.getState()
+			.initialize("", LABEL_COLORS[0].class, onSave, onClose);
+	}, [onSave, onClose]);
 
 	return (
 		<BaseModal opened={isOpen} onClose={onClose} width={448}>
@@ -74,10 +77,7 @@ export function AddLabelModal({ isOpen, onClose, onSave }: AddLabelProps) {
 			</div>
 
 			{/* Form */}
-			<form
-				onSubmit={handleSubmit}
-				className="p-6 space-y-4"
-			>
+			<form onSubmit={handleSubmit} className="p-6 space-y-4">
 				<div>
 					<label
 						htmlFor="label-name"
