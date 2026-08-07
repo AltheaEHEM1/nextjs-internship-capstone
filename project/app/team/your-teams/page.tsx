@@ -19,7 +19,7 @@ interface TeamItem {
 	id: string | number;
 	name: string;
 	icon: string;
-	membersCount: number;
+	membersCount?: number;
 }
 
 export default function Team() {
@@ -28,6 +28,7 @@ export default function Team() {
 		people,
 		teams,
 		isAddPeopleOpen,
+		isTeamModalOpen,
 		teamStep,
 		teamName,
 		teamIcon,
@@ -38,7 +39,7 @@ export default function Team() {
 		handleTeamStep1Next,
 		handleTeamStep2Back,
 		handleTeamStep2Submit,
-	} = useTeamManagement("teams");
+	} = useTeamManagement("teams") as any;
 
 	return (
 		<div className="space-y-6 pb-12">
@@ -60,10 +61,10 @@ export default function Team() {
 
 			{activeTab === "people" && (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-					{people.map((person: Person) => (
+					{people?.map((person: Person) => (
 						<div
 							key={person.id}
-							className="rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500"
+							className="rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs dark:border-paynes_gray-600 dark:bg-outer_space-500"
 						>
 							<div className="flex items-center gap-3">
 								<div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue_munsell-500 font-bold text-white text-sm">
@@ -85,9 +86,9 @@ export default function Team() {
 
 			{activeTab === "teams" && (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-					{teams.map((team: TeamItem) => (
+					{teams?.map((team: TeamItem) => (
 						<Link key={team.id} href={`/team/${team.id}`}>
-							<div className="rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500 hover:border-blue_munsell-400 transition-all cursor-pointer">
+							<div className="rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs dark:border-paynes_gray-600 dark:bg-outer_space-500 hover:border-blue_munsell-400 transition-all cursor-pointer">
 								<div className="flex items-center gap-3">
 									<span className="text-2xl">{team.icon}</span>
 									<div>
@@ -95,7 +96,7 @@ export default function Team() {
 											{team.name}
 										</h4>
 										<p className="text-xs text-outer_space-400 dark:text-platinum-400">
-											{team.membersCount} active members
+											{team.membersCount ?? 0} active members
 										</p>
 									</div>
 								</div>
@@ -109,15 +110,14 @@ export default function Team() {
 
 			{/* Step 1 Modal */}
 			<AddTeamModal1
-				opened={teamStep === 1}
+				opened={isTeamModalOpen && teamStep === 1}
 				onClose={closeTeamModal}
 				onNext={handleTeamStep1Next}
-				initialData={{ teamName, teamIcon, coverUrl }}
 			/>
 
 			{/* Step 2 Modal */}
 			<AddTeamModal2
-				opened={teamStep === 2}
+				opened={isTeamModalOpen && teamStep === 2}
 				onClose={closeTeamModal}
 				onBack={handleTeamStep2Back}
 				onSubmit={handleTeamStep2Submit}

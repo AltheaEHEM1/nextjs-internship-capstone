@@ -1,8 +1,8 @@
 "use client";
 
-import { FolderPlus, Plus, Shield } from "lucide-react";
+import { FolderPlus, Plus, Shield, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getAcceptedInvitesAction } from "@/actions/team-action";
+import { getAcceptedInvitesAction } from "@/actions/team/TeamMember";
 import BaseModal from "@/components/layout/BaseModal";
 import { useTeamStore } from "@/stores/team/useTeamStore";
 
@@ -35,27 +35,42 @@ export default function AddTeamModal2({
 	>("member");
 
 	const addMemberToList = useTeamStore((s) => s.addMemberToList);
+	const removeMemberFromList = useTeamStore((s) => s.removeMemberFromList);
 	const membersList = useTeamStore((s) => s.membersList);
 
 	useEffect(() => {
 		if (opened) {
-			getAcceptedInvitesAction().then(setAcceptedUsers).catch(console.error);
+			getAcceptedInvitesAction()
+				.then((res: any) => {
+					// Handles both raw array returns or standard { success, data } server action wrappers
+					if (Array.isArray(res)) {
+						setAcceptedUsers(res);
+					} else if (res?.success && Array.isArray(res.data)) {
+						setAcceptedUsers(res.data);
+					} else if (Array.isArray(res?.users)) {
+						setAcceptedUsers(res.users);
+					}
+				})
+				.catch(console.error);
 		}
 	}, [opened]);
 
 	const handleAddClick = () => {
 		if (!currentMember) return;
-
 		addMemberToList({
 			userId: currentMember,
 			role: currentRole,
 			permission: currentAccessibility,
 		} as any);
-
 		// Reset form fields
 		setCurrentMember("");
 		setCurrentRole("Member");
 	};
+
+	// Look up display info (name/email) for a queued member by userId,
+	// since membersList only stores the raw userId/role/permission.
+	const getUserInfo = (userId: string) =>
+		acceptedUsers.find((u) => u.id === userId);
 
 	return (
 		<BaseModal
@@ -103,11 +118,16 @@ export default function AddTeamModal2({
 								className="w-full mt-1 rounded-lg border border-french_gray-300 p-2 text-sm"
 							>
 								<option value="">Choose accepted user...</option>
-								{acceptedUsers.map((u) => (
-									<option key={u.id} value={u.id}>
-										{u.name} ({u.email})
-									</option>
-								))}
+								{acceptedUsers
+									// hide users already queued so they can't be added twice
+									.filter(
+										(u) => !membersList.some((m) => m.userId === u.id),
+									)
+									.map((u) => (
+										<option key={u.id} value={u.id}>
+											{u.name} ({u.email})
+										</option>
+									))}
 							</select>
 						</div>
 						<div>
@@ -151,6 +171,49 @@ export default function AddTeamModal2({
 						<Plus size={16} />
 						Add to Team List
 					</button>
+				</div>
+
+				{/* Queued members */}
+				<div className="rounded-xl border border-french_gray-200 p-4 space-y-3">
+					<h4 className="text-xs font-semibold text-outer_space-700 uppercase tracking-wider">
+						Members to Add ({membersList.length})
+					</h4>
+
+					{membersList.length === 0 ? (
+						<p className="text-xs text-gray-400 py-2 text-center">
+							No members added yet.
+						</p>
+					) : (
+						<div className="divide-y divide-french_gray-100">
+							{membersList.map((m) => {
+								const info = getUserInfo(m.userId);
+								return (
+									<div
+										key={m.userId}
+										className="py-2.5 flex items-center justify-between first:pt-0 last:pb-0"
+									>
+										<div>
+											<p className="text-xs font-semibold text-outer_space-800">
+												{info?.name ?? m.userId}
+											</p>
+											<p className="text-[11px] text-outer_space-400">
+												{info?.email ? `${info.email} · ` : ""}
+												{m.role} · {m.permission}
+											</p>
+										</div>
+										<button
+											type="button"
+											onClick={() => removeMemberFromList(m.userId)}
+											className="rounded-md p-1.5 text-gray-400 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
+											aria-label={`Remove ${info?.name ?? "member"}`}
+										>
+											<X size={14} />
+										</button>
+									</div>
+								);
+							})}
+						</div>
+					)}
 				</div>
 			</div>
 		</BaseModal>

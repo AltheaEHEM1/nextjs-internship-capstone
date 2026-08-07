@@ -1,7 +1,8 @@
 "use client";
+
 import { UserPlus } from "lucide-react";
 import { useState } from "react";
-import { sendUserInvitationAction } from "@/actions/team-action";
+import { sendUserInvitationAction } from "@/actions/team/Invitation";
 import BaseModal from "@/components/layout/BaseModal";
 
 interface AddMemberProps {
@@ -11,6 +12,7 @@ interface AddMemberProps {
 
 export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 	const [addPeopleContact, setAddPeopleContact] = useState("");
+	const [notes, setNotes] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [feedback, setFeedback] = useState<{
 		type: "success" | "error";
@@ -39,8 +41,11 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 		setLoading(true);
 		setFeedback(null);
 		try {
+			// Pass both email and the optional notes string to the action
 			await Promise.all(
-				emails.map((email: string) => sendUserInvitationAction(email)),
+				emails.map((email: string) =>
+					sendUserInvitationAction(email, notes.trim() || undefined),
+				),
 			);
 
 			setFeedback({
@@ -48,6 +53,7 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 				text: `Successfully sent ${emails.length} invitation(s).`,
 			});
 			setAddPeopleContact("");
+			setNotes("");
 			setTimeout(() => {
 				setFeedback(null);
 				onClose();
@@ -97,7 +103,11 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 			<div className="space-y-4">
 				{feedback && (
 					<div
-						className={`p-3 rounded-xl text-xs font-medium ${feedback.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}
+						className={`p-3 rounded-xl text-xs font-medium ${
+							feedback.type === "success"
+								? "bg-emerald-50 text-emerald-700"
+								: "bg-rose-50 text-rose-700"
+						}`}
 					>
 						{feedback.text}
 					</div>
@@ -111,7 +121,26 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 						placeholder="colleague@example.com"
 						value={addPeopleContact}
 						onChange={(e) => setAddPeopleContact(e.target.value)}
-						className="w-full mt-1 rounded-lg border border-french_gray-300 p-2 text-sm"
+						className="w-full mt-1 rounded-lg border border-french_gray-300 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue_munsell-500"
+					/>
+				</div>
+
+				<div>
+					<div className="flex justify-between items-center">
+						<label className="text-xs font-medium text-outer_space-500">
+							Personal Note <span className="text-gray-400">(Optional)</span>
+						</label>
+						<span className="text-[10px] text-gray-400">
+							{notes.length}/100
+						</span>
+					</div>
+					<textarea
+						maxLength={100}
+						rows={3}
+						placeholder="Add a personal message to your invitation..."
+						value={notes}
+						onChange={(e) => setNotes(e.target.value)}
+						className="w-full mt-1 rounded-lg border border-french_gray-300 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue_munsell-500 resize-none"
 					/>
 				</div>
 			</div>

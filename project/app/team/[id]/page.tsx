@@ -1,20 +1,150 @@
 "use client";
 
-import { ArrowLeft, MoreHorizontal, UserPlus } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, UserPlus, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getTeamDetailAction, deleteTeamAction } from "@/actions/team/Team";
+import { removeTeamMemberAction, updateTeamMemberAction } from "@/actions/team/TeamMember";
 import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import { useTeamStore } from "@/stores/team/useTeamStore";
+import { useToast } from "@/hooks/toast/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function SpecificTeam() {
+	const params = useParams();
+	const router = useRouter();
+	const teamId = params.id as string;
+
 	const teamDetail = useTeamStore((s) => s.teamDetail);
+	const setTeamDetail = useTeamStore((s) => s.setTeamDetail);
 	const isMenuOpen = useTeamStore((s) => s.isMenuOpen);
 	const isAddMemberOpen = useTeamStore((s) => s.isAddMemberOpen);
 	const toggleMenu = useTeamStore((s) => s.toggleMenu);
 	const openAddMemberModal = useTeamStore((s) => s.openAddMemberModal);
 	const closeAddMemberModal = useTeamStore((s) => s.closeAddMemberModal);
+	const { toast } = useToast();
 
-	// Fallback check if store data hasn't initialized yet
-	if (!teamDetail) return null;
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	const handleDeleteTeam = async () => {
+		if (confirm("Are you sure you want to delete this team?")) {
+			const res = await deleteTeamAction(teamId);
+			if (res.success) {
+				toast({
+					title: "Team deleted",
+					description: "The team has been successfully deleted.",
+				});
+				router.push("/team");
+			} else {
+				toast({
+					title: "Error",
+					description: res.error || "Failed to delete team.",
+					variant: "destructive",
+				});
+			}
+		}
+	};
+
+	const handleDeleteMember = async (userId: string) => {
+		if (confirm("Are you sure you want to remove this member?")) {
+			const res = await removeTeamMemberAction(teamId, userId);
+			if (res.success) {
+				toast({
+					title: "Member removed",
+					description: "The member has been successfully removed.",
+				});
+				router.refresh();
+			} else {
+				toast({
+					title: "Error",
+					description: res.error || "Failed to remove member.",
+					variant: "destructive",
+				});
+			}
+		}
+	};
+
+	const handleEditMember = async (userId: string, currentRole: string) => {
+		const newRole = prompt("Enter new role:", currentRole);
+		if (newRole && newRole !== currentRole) {
+			const res = await updateTeamMemberAction({ teamId, userId, role: newRole });
+			if (res.success) {
+				toast({
+					title: "Role updated",
+					description: "The member's role has been successfully updated.",
+				});
+				router.refresh();
+			} else {
+				toast({
+					title: "Error",
+					description: res.error || "Failed to update member role.",
+					variant: "destructive",
+				});
+			}
+		}
+	};
+
+	// Fetch the team + its members from the DB whenever the id changes.
+	// Without this, `teamDetail` in the store never gets populated and
+	// the page falls through to `return null` forever.
+	useEffect(() => {
+		let cancelled = false;
+
+		async function loadTeamDetail() {
+			setLoading(true);
+			setError(null);
+			const res = await getTeamDetailAction(teamId);
+			if (cancelled) return;
+
+			if (res.success) {
+				setTeamDetail(res.data as any);
+			} else {
+				setError(res.error ?? "Failed to load team.");
+				setTeamDetail(null);
+			}
+			setLoading(false);
+		}
+
+		if (teamId) loadTeamDetail();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [teamId, setTeamDetail]);
+
+	if (loading) {
+		return (
+			<div className="flex items-center justify-center py-24">
+				<p className="text-sm text-outer_space-500 dark:text-platinum-300">
+					Loading team...
+				</p>
+			</div>
+		);
+	}
+
+	if (error || !teamDetail) {
+		return (
+			<div className="space-y-6 pb-12">
+				<Link
+					href="/team"
+					className="inline-flex items-center gap-2 rounded-xl border border-french_gray-200 bg-white px-3 py-2 text-sm font-medium text-outer_space-700 shadow-xs transition-colors hover:bg-platinum-100 dark:border-paynes_gray-600 dark:bg-outer_space-500 dark:text-platinum-200 dark:hover:bg-outer_space-400"
+				>
+					<ArrowLeft size={16} />
+					Back to Teams
+				</Link>
+				<Alert variant="destructive">
+					<AlertCircle className="h-4 w-4" />
+					<AlertTitle>Error</AlertTitle>
+					<AlertDescription>
+						{error ?? "Team not found."}
+					</AlertDescription>
+				</Alert>
+			</div>
+		);
+	}
 
 	return (
 		<div className="space-y-6 pb-12">
@@ -74,6 +204,7 @@ export default function SpecificTeam() {
 									</button>
 									<button
 										type="button"
+										onClick={handleDeleteTeam}
 										className="flex w-full items-center gap-2 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
 									>
 										Delete Team
@@ -107,6 +238,24 @@ export default function SpecificTeam() {
 										{m.role}
 									</p>
 								</div>
+							</div>
+							<div className="flex items-center gap-2">
+								<button
+									type="button"
+									onClick={() => handleEditMember(m.userId, m.role || "Member")}
+									className="p-1.5 text-outer_space-400 hover:text-blue_munsell-500 hover:bg-blue_munsell-50 dark:hover:bg-outer_space-600 rounded-md transition-colors"
+									title="Edit Member Role"
+								>
+									<Pencil size={14} />
+								</button>
+								<button
+									type="button"
+									onClick={() => handleDeleteMember(m.userId)}
+									className="p-1.5 text-outer_space-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md transition-colors"
+									title="Remove Member"
+								>
+									<Trash2 size={14} />
+								</button>
 							</div>
 						</div>
 					))}

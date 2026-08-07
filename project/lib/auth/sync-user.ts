@@ -4,40 +4,61 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 
 export async function syncUser() {
-	const clerkUser = await currentUser();
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+        return null;
+    }
 
-	if (!clerkUser) {
-		return null;
-	}
+    const primaryEmail = clerkUser.emailAddresses.find(
+        (e) => e.id === clerkUser.primaryEmailAddressId,
+    )?.emailAddress;
 
-	const primaryEmail = clerkUser.emailAddresses.find(
-		(e) => e.id === clerkUser.primaryEmailAddressId,
-	)?.emailAddress;
+    if (!primaryEmail) {
+        throw new Error("User does not have a primary email address.");
+    }
 
-	if (!primaryEmail) {
-		throw new Error("User does not have a primary email address.");
-	}
+    const freshName = clerkUser.firstName
+        ? `${clerkUser.firstName} ${clerkUser.lastName ?? ""}`.trim()
+        : primaryEmail.split("@")[0];
 
-	const existingUser = await db.query.users.findFirst({
-		where: eq(users.clerkId, clerkUser.id),
-	});
+    const freshAvatar = clerkUser.imageUrl;
 
-	if (existingUser) {
-		return existingUser;
-	}
+    const existingUser = await db.query.users.findFirst({
+        where: eq(users.clerkId, clerkUser.id),
+    });
 
-	// Insert user if not found in PostgreSQL
-	const [newUser] = await db
-		.insert(users)
-		.values({
-			clerkId: clerkUser.id,
-			email: primaryEmail,
-			name: clerkUser.firstName
-				? `${clerkUser.firstName} ${clerkUser.lastName ?? ""}`.trim()
-				: primaryEmail.split("@")[0],
-			avatar: clerkUser.imageUrl,
-		})
-		.returning();
+    if (existingUser) {
+        const hasChanged =
+            existingUser.email !== primaryEmail ||
+            existingUser.name !== freshName ||
+            existingUser.avatar !== freshAvatar;
 
-	return newUser;
+        if (!hasChanged) {
+            return existingUser;
+        }
+
+        const [updatedUser] = await db
+            .update(users)
+            .set({
+                email: primaryEmail,
+                name: freshName,
+                avatar: freshAvatar,
+            })
+            .where(eq(users.id, existingUser.id))
+            .returning();
+
+        return updatedUser;
+    }
+
+    const [newUser] = await db
+        .insert(users)
+        .values({
+            clerkId: clerkUser.id,
+            email: primaryEmail,
+            name: freshName,
+            avatar: freshAvatar,
+        })
+        .returning();
+
+    return newUser;
 }
