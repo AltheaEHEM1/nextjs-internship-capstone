@@ -1,13 +1,10 @@
-//modified
-
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import type React from "react";
 import "./globals.css";
-
-// TODO: Task 2.1 - Set up Clerk authentication service
 import { ClerkProvider } from "@clerk/nextjs";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
+import { Toaster } from "@/components/toast/toaster";
 
 //import { ThemeProvider } from "@/components/theme-provider";
 
@@ -51,6 +48,7 @@ export default function RootLayout({
 					className={`${poppins.className} ${geistSans.variable} ${geistMono.variable}`}
 				>
 					<LayoutWrapper>{children}</LayoutWrapper>
+					<Toaster />
 				</body>
 			</html>
 		</ClerkProvider>

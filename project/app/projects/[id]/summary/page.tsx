@@ -56,11 +56,36 @@ const TEAM_WORKLOAD: TeamMember[] = [
 ];
 
 const RECENT_ACTIVITIES: ActivityItem[] = [
-	{ id: "a1", title: "Completed task: Design system tokens", author: "Alice", time: "2 min ago" },
-	{ id: "a2", title: "Moved 'API Integration' to In Review", author: "Bob", time: "14 min ago" },
-	{ id: "a3", title: "Added comment on 'Auth flow' task", author: "Carol", time: "1 hr ago" },
-	{ id: "a4", title: "Created task: Write unit tests", author: "Dave", time: "3 hrs ago" },
-	{ id: "a5", title: "Updated sprint deadline to Aug 20", author: "Alice", time: "Yesterday" },
+	{
+		id: "a1",
+		title: "Completed task: Design system tokens",
+		author: "Alice",
+		time: "2 min ago",
+	},
+	{
+		id: "a2",
+		title: "Moved 'API Integration' to In Review",
+		author: "Bob",
+		time: "14 min ago",
+	},
+	{
+		id: "a3",
+		title: "Added comment on 'Auth flow' task",
+		author: "Carol",
+		time: "1 hr ago",
+	},
+	{
+		id: "a4",
+		title: "Created task: Write unit tests",
+		author: "Dave",
+		time: "3 hrs ago",
+	},
+	{
+		id: "a5",
+		title: "Updated sprint deadline to Aug 20",
+		author: "Alice",
+		time: "Yesterday",
+	},
 ];
 
 // ─── Page Component ───────────────────────────────────────────────────────────

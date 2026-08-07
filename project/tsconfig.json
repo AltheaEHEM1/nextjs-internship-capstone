@@ -14,11 +14,13 @@
 		"isolatedModules": true,
 		"jsx": "react-jsx",
 		"incremental": true,
+		"ignoreDeprecations": "5.0",
 		"plugins": [
 			{
 				"name": "next"
 			}
 		],
+		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./*"]
 		}
@@ -28,8 +30,7 @@
 		"**/*.ts",
 		"**/*.tsx",
 		".next/types/**/*.ts",
-		".next/dev/types/**/*.ts",
-		"middleware.ts.disableds"
+		".next/dev/types/**/*.ts"
 	],
 	"exclude": ["node_modules"]
 }

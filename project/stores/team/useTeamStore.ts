@@ -1,171 +1,149 @@
 import { create } from "zustand";
 
-export interface TeamMemberAssignment {
-  member: string;
-  role: string;
-  accessibility: string;
-}
-
-export interface Person {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  role: string;
+export interface PersonItem {
+	id: string;
+	name: string;
+	email: string;
+	avatar?: string | null;
+	role?: string;
+	projects?: {
+		id: number | string;
+		name: string;
+		role: string;
+		status: string;
+	}[];
+	teams?: { id: string; name: string; icon: string }[];
 }
 
 export interface TeamItem {
-  id: string;
-  name: string;
-  icon: string;
-  membersCount: number;
+	id: string;
+	name: string;
+	icon?: string | null;
+	coverUrl?: string | null;
+	membersCount?: number;
 }
 
-export interface TeamDetail {
-  name: string;
-  icon: string;
-  coverUrl: string;
-  members: Array<{ id: string; name: string; avatar: string; role: string }>;
+export interface TeamMemberInput {
+	userId: string;
+	role: string;
+	permission: "administrator" | "member" | "viewer";
 }
 
-interface TeamState {
-  activeTab: "people" | "teams";
-  setActiveTab: (tab: "people" | "teams") => void;
-  people: Person[];
-  teams: TeamItem[];
-  teamDetail: TeamDetail;
-  isMenuOpen: boolean;
-  isAddMemberOpen: boolean;
-  isAddPeopleOpen: boolean;
-  teamStep: number;
-  addPeopleContact: string;
-  addPeopleNotes: string;
-  teamName: string;
-  teamIcon: string;
-  coverUrl: string;
-  showEmojiPicker: boolean;
-  membersList: TeamMemberAssignment[];
-  currentMember: string;
-  currentRole: string;
-  currentAccessibility: string;
-  toggleMenu: () => void;
-  openAddMemberModal: () => void;
-  closeAddMemberModal: () => void;
-  openAddPeopleModal: () => void;
-  closeAddPeopleModal: () => void;
-  openTeamModal: () => void;
-  closeTeamModal: () => void;
-  setTeamStep: (step: number) => void;
-  setAddPeopleContact: (val: string) => void;
-  setAddPeopleNotes: (val: string) => void;
-  setTeamName: (val: string) => void;
-  setTeamIcon: (val: string) => void;
-  setCoverUrl: (val: string) => void;
-  setShowEmojiPicker: (val: boolean) => void;
-  setCurrentMember: (val: string) => void;
-  setCurrentRole: (val: string) => void;
-  setCurrentAccessibility: (val: string) => void;
-  setMembersList: (list: TeamMemberAssignment[]) => void;
-  handleAddMemberToList: () => void;
-  handleRemoveMemberFromList: (index: number) => void;
-  addMembersToTeamDetail: () => void;
-  resetTeamForm: () => void;
+export interface TeamDetail extends TeamItem {
+	members: Array<{
+		id: string;
+		userId: string;
+		role: string | null;
+		permission: "administrator" | "member" | "viewer";
+		name: string;
+		email: string;
+		avatar?: string | null;
+	}>;
 }
+
+export interface TeamState {
+	// tab + lists
+	activeTab: "people" | "teams";
+	people: PersonItem[];
+	teams: TeamItem[];
+	teamDetail: TeamDetail | null;
+
+	// "Add People" modal
+	isAddPeopleOpen: boolean;
+	addPeopleContact: string;
+	addPeopleNotes: string;
+
+	// "Create Team" 2-step modal
+	isTeamModalOpen: boolean;
+	teamStep: number; // 0 = closed, 1 = step 1, 2 = step 2
+	teamName: string;
+	teamIcon: string;
+	coverUrl: string;
+	membersList: TeamMemberInput[];
+
+	// Specific team page
+	isMenuOpen: boolean;
+	isAddMemberOpen: boolean;
+
+	// setters
+	setActiveTab: (tab: "people" | "teams") => void;
+	setPeople: (people: PersonItem[]) => void;
+	setTeams: (teams: TeamItem[]) => void;
+	setTeamDetail: (team: TeamDetail | null) => void;
+	setAddPeopleContact: (v: string) => void;
+	setAddPeopleNotes: (v: string) => void;
+	openAddPeopleModal: () => void;
+	closeAddPeopleModal: () => void;
+	setTeamName: (v: string) => void;
+	setTeamIcon: (v: string) => void;
+	setCoverUrl: (v: string) => void;
+	setTeamStep: (step: number) => void;
+	openTeamModal: () => void;
+	closeTeamModal: () => void;
+	resetTeamForm: () => void;
+	addMemberToList: (member: TeamMemberInput) => void;
+	removeMemberFromList: (userId: string) => void;
+	removePerson: (id: string) => void;
+	toggleMenu: () => void;
+	openAddMemberModal: () => void;
+	closeAddMemberModal: () => void;
+}
+
+const formDefaults = {
+	teamName: "",
+	teamIcon: "🚀",
+	coverUrl: "",
+	teamStep: 0,
+	isTeamModalOpen: false,
+	membersList: [] as TeamMemberInput[],
+};
 
 export const useTeamStore = create<TeamState>((set, get) => ({
-  activeTab: "people",
-  setActiveTab: (tab) => set({ activeTab: tab }),
-  people: [
-    { id: "1", name: "Alex Mercer", email: "alex@srg.tech", avatar: "AM", role: "Software Engineer" },
-    { id: "2", name: "Sarah Jenkins", email: "sarah@srg.tech", avatar: "SJ", role: "Product Manager" },
-  ],
-  teams: [
-    { id: "core-arch", name: "Core Architecture Unit", icon: "⚡", membersCount: 4 },
-  ],
-  teamDetail: {
-    name: "Core Architecture Unit",
-    icon: "⚡",
-    coverUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
-    members: [
-      { id: "1", name: "Alex Mercer", avatar: "AM", role: "Lead Architect" },
-    ],
-  },
-  isMenuOpen: false,
-  isAddMemberOpen: false,
-  isAddPeopleOpen: false,
-  teamStep: 0,
-  addPeopleContact: "",
-  addPeopleNotes: "",
-  teamName: "",
-  teamIcon: "🚀",
-  coverUrl: "",
-  showEmojiPicker: false,
-  membersList: [],
-  currentMember: "",
-  currentRole: "",
-  currentAccessibility: "member",
-  toggleMenu: () => set((s) => ({ isMenuOpen: !s.isMenuOpen })),
-  openAddMemberModal: () => set({ isAddMemberOpen: true }),
-  closeAddMemberModal: () => set({ isAddMemberOpen: false }),
-  openAddPeopleModal: () => set({ isAddPeopleOpen: true }),
-  closeAddPeopleModal: () => set({ isAddPeopleOpen: false }),
-  openTeamModal: () => set({ teamStep: 1 }),
-  closeTeamModal: () => set({ teamStep: 0 }),
-  setTeamStep: (step) => set({ teamStep: step }),
-  setAddPeopleContact: (addPeopleContact) => set({ addPeopleContact }),
-  setAddPeopleNotes: (addPeopleNotes) => set({ addPeopleNotes }),
-  setTeamName: (teamName) => set({ teamName }),
-  setTeamIcon: (teamIcon) => set({ teamIcon }),
-  setCoverUrl: (coverUrl) => set({ coverUrl }),
-  setShowEmojiPicker: (showEmojiPicker) => set({ showEmojiPicker }),
-  setCurrentMember: (currentMember) => set({ currentMember }),
-  setCurrentRole: (currentRole) => set({ currentRole }),
-  setCurrentAccessibility: (currentAccessibility) => set({ currentAccessibility }),
-  setMembersList: (membersList) => set({ membersList }),
-  handleAddMemberToList: () => {
-    const { currentMember, currentRole, currentAccessibility, membersList } = get();
-    if (!currentMember) return;
-    set({
-      membersList: [
-        ...membersList,
-        { member: currentMember, role: currentRole || "Member", accessibility: currentAccessibility },
-      ],
-      currentMember: "",
-      currentRole: "",
-      currentAccessibility: "member",
-    });
-  },
-  handleRemoveMemberFromList: (index) => {
-    set((state) => ({
-      membersList: state.membersList.filter((_, i) => i !== index),
-    }));
-  },
-  addMembersToTeamDetail: () => {
-    const { membersList, teamDetail } = get();
-    const newMembers = membersList.map((m, index) => ({
-      id: `${Date.now()}-${index}`,
-      name: m.member,
-      avatar: m.member.split(" ").map((n) => n[0]).join("").toUpperCase(),
-      role: m.role,
-    }));
-    set({
-      teamDetail: {
-        ...teamDetail,
-        members: [...teamDetail.members, ...newMembers],
-      },
-      membersList: [],
-      isAddMemberOpen: false,
-    });
-  },
-  resetTeamForm: () =>
-    set({
-      teamName: "",
-      teamIcon: "🚀",
-      coverUrl: "",
-      membersList: [],
-      currentMember: "",
-      currentRole: "",
-      currentAccessibility: "member",
-      showEmojiPicker: false,
-    }),
+	activeTab: "people",
+	people: [],
+	teams: [],
+	teamDetail: null,
+	isAddPeopleOpen: false,
+	addPeopleContact: "",
+	addPeopleNotes: "",
+	...formDefaults,
+	isMenuOpen: false,
+	isAddMemberOpen: false,
+
+	setActiveTab: (tab) => set({ activeTab: tab }),
+	setPeople: (people) => set({ people }),
+	setTeams: (teams) => set({ teams }),
+	setTeamDetail: (team) => set({ teamDetail: team }),
+	setAddPeopleContact: (v) => set({ addPeopleContact: v }),
+	setAddPeopleNotes: (v) => set({ addPeopleNotes: v }),
+	openAddPeopleModal: () => set({ isAddPeopleOpen: true }),
+	closeAddPeopleModal: () => set({ isAddPeopleOpen: false }),
+	setTeamName: (v) => set({ teamName: v }),
+	setTeamIcon: (v) => set({ teamIcon: v }),
+	setCoverUrl: (v) => set({ coverUrl: v }),
+	setTeamStep: (step) => set({ teamStep: step, isTeamModalOpen: step > 0 }),
+	openTeamModal: () => set({ isTeamModalOpen: true, teamStep: 1 }),
+	closeTeamModal: () => set({ isTeamModalOpen: false, teamStep: 0 }),
+	resetTeamForm: () => set({ ...formDefaults }),
+
+	addMemberToList: (member) =>
+		set((state) => {
+			const exists = state.membersList.some((m) => m.userId === member.userId);
+			if (exists) return state;
+			return { membersList: [...state.membersList, member] };
+		}),
+
+	removeMemberFromList: (userId) =>
+		set((state) => ({
+			membersList: state.membersList.filter((m) => m.userId !== userId),
+		})),
+
+	removePerson: (id) =>
+		set((state) => ({
+			people: state.people.filter((p) => p.id !== id),
+		})),
+
+	toggleMenu: () => set((s) => ({ isMenuOpen: !s.isMenuOpen })),
+	openAddMemberModal: () => set({ isAddMemberOpen: true, isMenuOpen: false }),
+	closeAddMemberModal: () => set({ isAddMemberOpen: false }),
 }));
