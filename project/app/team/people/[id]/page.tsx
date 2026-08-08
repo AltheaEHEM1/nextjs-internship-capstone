@@ -9,6 +9,7 @@ import {
 	removePersonAction,
 } from "@/actions/team/TeamMember";
 import { useTeamStore } from "@/stores/team/useTeamStore";
+import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
 import { useToast } from "@/hooks/toast/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import { AlertCircle } from "lucide-react";
@@ -34,6 +35,7 @@ export default function PersonDetailPage() {
 	const personId = params.id as string;
 
 	const removePersonFromStore = useTeamStore((s) => s.removePerson);
+	const setBreadcrumbMapping = useBreadcrumbStore((s) => s.setMapping);
 	const { toast } = useToast();
 
 	const [person, setPerson] = useState<PersonDetail | null>(null);
@@ -52,6 +54,7 @@ export default function PersonDetailPage() {
 
 			if (res.success && res.data) {
 				setPerson(res.data);
+				setBreadcrumbMapping(personId, res.data.name);
 			} else {
 				setError(res.error || "Person not found.");
 			}
@@ -63,7 +66,7 @@ export default function PersonDetailPage() {
 		return () => {
 			isMounted = false;
 		};
-	}, [personId]);
+	}, [personId, setBreadcrumbMapping]);
 
 	const handleDelete = async () => {
 		if (!person) return;

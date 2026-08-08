@@ -30,21 +30,7 @@ const transporter = nodemailer.createTransport({
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-async function getAuthenticatedDbUser() {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
-    let dbUser = await db.query.users.findFirst({
-        where: eq(users.clerkId, userId),
-    });
-
-    if (!dbUser) {
-        dbUser = (await syncUser()) ?? undefined;
-    }
-
-    if (!dbUser) throw new Error("User sync failed");
-    return dbUser;
-}
+import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 
 export async function sendUserInvitationAction(email: string, notes?: string) {
     try {

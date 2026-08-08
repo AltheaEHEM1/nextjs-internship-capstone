@@ -8,21 +8,7 @@ import { db } from "@/lib/db";
 import { invitations, projectMembers, projects, teamMembers, teams, users } from "@/lib/db/schema";
 import { sendUserInvitationAction } from "./Invitation";
 
-async function getAuthenticatedDbUser() {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
-    let dbUser = await db.query.users.findFirst({
-        where: eq(users.clerkId, userId),
-    });
-
-    if (!dbUser) {
-        dbUser = (await syncUser()) ?? undefined;
-    }
-
-    if (!dbUser) throw new Error("User sync failed");
-    return dbUser;
-}
+import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 
 export async function getAcceptedInvitesAction() {
     try {

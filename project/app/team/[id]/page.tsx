@@ -8,6 +8,7 @@ import { getTeamDetailAction, deleteTeamAction } from "@/actions/team/Team";
 import { removeTeamMemberAction, updateTeamMemberAction } from "@/actions/team/TeamMember";
 import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import { useTeamStore } from "@/stores/team/useTeamStore";
+import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
 import { useToast } from "@/hooks/toast/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import { AlertCircle } from "lucide-react";
@@ -24,6 +25,7 @@ export default function SpecificTeam() {
 	const toggleMenu = useTeamStore((s) => s.toggleMenu);
 	const openAddMemberModal = useTeamStore((s) => s.openAddMemberModal);
 	const closeAddMemberModal = useTeamStore((s) => s.closeAddMemberModal);
+	const setBreadcrumbMapping = useBreadcrumbStore((s) => s.setMapping);
 	const { toast } = useToast();
 
 	const [loading, setLoading] = useState(true);
@@ -99,8 +101,9 @@ export default function SpecificTeam() {
 			const res = await getTeamDetailAction(teamId);
 			if (cancelled) return;
 
-			if (res.success) {
+			if (res.success && res.data) {
 				setTeamDetail(res.data as any);
+				setBreadcrumbMapping(teamId, (res.data as any).name);
 			} else {
 				setError(res.error ?? "Failed to load team.");
 				setTeamDetail(null);
@@ -113,7 +116,7 @@ export default function SpecificTeam() {
 		return () => {
 			cancelled = true;
 		};
-	}, [teamId, setTeamDetail]);
+	}, [teamId, setTeamDetail, setBreadcrumbMapping]);
 
 	if (loading) {
 		return (

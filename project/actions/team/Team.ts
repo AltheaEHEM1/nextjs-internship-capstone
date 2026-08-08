@@ -1,27 +1,11 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { syncUser } from "@/lib/auth/sync-user";
 import { db } from "@/lib/db";
 import { teamMembers, teams, users } from "@/lib/db/schema";
+import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 
-async function getAuthenticatedDbUser() {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
-    let dbUser = await db.query.users.findFirst({
-        where: eq(users.clerkId, userId),
-    });
-
-    if (!dbUser) {
-        dbUser = (await syncUser()) ?? undefined;
-    }
-
-    if (!dbUser) throw new Error("User sync failed");
-    return dbUser;
-}
 
 export async function getUserTeamsAction() {
     try {
