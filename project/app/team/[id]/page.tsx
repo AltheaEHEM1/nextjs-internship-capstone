@@ -1,17 +1,26 @@
 "use client";
 
-import { ArrowLeft, MoreHorizontal, UserPlus, Pencil, Trash2 } from "lucide-react";
+import {
+	AlertCircle,
+	ArrowLeft,
+	MoreHorizontal,
+	Pencil,
+	Trash2,
+	UserPlus,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getTeamDetailAction, deleteTeamAction } from "@/actions/team/Team";
-import { removeTeamMemberAction, updateTeamMemberAction } from "@/actions/team/TeamMember";
-import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
-import { useTeamStore } from "@/stores/team/useTeamStore";
-import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
-import { useToast } from "@/hooks/toast/use-toast";
+import { deleteTeamAction, getTeamDetailAction } from "@/actions/team/Team";
+import {
+	removeTeamMemberAction,
+	updateTeamMemberAction,
+} from "@/actions/team/TeamMember";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
-import { AlertCircle } from "lucide-react";
+import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
+import { useToast } from "@/hooks/toast/use-toast";
+import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
+import { useTeamStore } from "@/stores/team/useTeamStore";
 
 export default function SpecificTeam() {
 	const params = useParams();
@@ -72,7 +81,11 @@ export default function SpecificTeam() {
 	const handleEditMember = async (userId: string, currentRole: string) => {
 		const newRole = prompt("Enter new role:", currentRole);
 		if (newRole && newRole !== currentRole) {
-			const res = await updateTeamMemberAction({ teamId, userId, role: newRole });
+			const res = await updateTeamMemberAction({
+				teamId,
+				userId,
+				role: newRole,
+			});
 			if (res.success) {
 				toast({
 					title: "Role updated",
@@ -141,9 +154,7 @@ export default function SpecificTeam() {
 				<Alert variant="destructive">
 					<AlertCircle className="h-4 w-4" />
 					<AlertTitle>Error</AlertTitle>
-					<AlertDescription>
-						{error ?? "Team not found."}
-					</AlertDescription>
+					<AlertDescription>{error ?? "Team not found."}</AlertDescription>
 				</Alert>
 			</div>
 		);

@@ -5,17 +5,17 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 
 export async function getAuthenticatedDbUser() {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+	const { userId } = await auth();
+	if (!userId) throw new Error("Unauthorized");
 
-    let dbUser = await db.query.users.findFirst({
-        where: eq(users.clerkId, userId),
-    });
+	let dbUser = await db.query.users.findFirst({
+		where: eq(users.clerkId, userId),
+	});
 
-    if (!dbUser) {
-        dbUser = (await syncUser()) ?? undefined;
-    }
+	if (!dbUser) {
+		dbUser = (await syncUser()) ?? undefined;
+	}
 
-    if (!dbUser) throw new Error("User sync failed");
-    return dbUser;
+	if (!dbUser) throw new Error("User sync failed");
+	return dbUser;
 }

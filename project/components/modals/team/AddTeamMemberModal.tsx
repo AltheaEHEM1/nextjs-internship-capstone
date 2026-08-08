@@ -27,7 +27,9 @@ export function AddTeamMemberModal({
 		Array<{ id: string; name: string; email: string }>
 	>([]);
 	const [existingEmails, setExistingEmails] = useState<Set<string>>(new Set());
-	const [existingUserIds, setExistingUserIds] = useState<Set<string>>(new Set());
+	const [existingUserIds, setExistingUserIds] = useState<Set<string>>(
+		new Set(),
+	);
 
 	const [email, setEmail] = useState("");
 	const [role, setRole] = useState("Member");
@@ -165,10 +167,7 @@ export function AddTeamMemberModal({
 										),
 								)
 								.map((person) => (
-									<option
-										key={person.id || person.email}
-										value={person.email}
-									>
+									<option key={person.id || person.email} value={person.email}>
 										{person.name
 											? `${person.name} (${person.email})`
 											: person.email}
@@ -231,4 +230,3 @@ export function AddTeamMemberModal({
 		</div>
 	);
 }
-

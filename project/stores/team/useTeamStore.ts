@@ -98,7 +98,7 @@ const formDefaults = {
 	membersList: [] as TeamMemberInput[],
 };
 
-export const useTeamStore = create<TeamState>((set, get) => ({
+export const useTeamStore = create<TeamState>((set, _get) => ({
 	activeTab: "people",
 	people: [],
 	teams: [],

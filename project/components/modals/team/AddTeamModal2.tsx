@@ -120,9 +120,7 @@ export default function AddTeamModal2({
 								<option value="">Choose accepted user...</option>
 								{acceptedUsers
 									// hide users already queued so they can't be added twice
-									.filter(
-										(u) => !membersList.some((m) => m.userId === u.id),
-									)
+									.filter((u) => !membersList.some((m) => m.userId === u.id))
 									.map((u) => (
 										<option key={u.id} value={u.id}>
 											{u.name} ({u.email})

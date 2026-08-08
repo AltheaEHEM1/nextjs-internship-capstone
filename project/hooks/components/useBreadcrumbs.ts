@@ -27,11 +27,14 @@ export function useBreadcrumbs(): { breadcrumbs: Breadcrumb[] } {
 
 		return filtered.map((segment, index) => {
 			const href = `/${segments.slice(0, segments.indexOf(segment) + 1).join("/")}`;
-			
+
 			let label = mappings[segment];
-			
+
 			if (!label) {
-				const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment);
+				const isUUID =
+					/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+						segment,
+					);
 				if (isUUID) {
 					label = "Detail"; // Fallback until data loads and sets mapping
 				} else {

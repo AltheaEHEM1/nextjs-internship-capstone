@@ -1,6 +1,14 @@
 "use client";
 
-import { ArrowLeft, Briefcase, Folder, Mail, Trash2, Users } from "lucide-react";
+import {
+	AlertCircle,
+	ArrowLeft,
+	Briefcase,
+	Folder,
+	Mail,
+	Trash2,
+	Users,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,11 +16,10 @@ import {
 	getPersonDetailAction,
 	removePersonAction,
 } from "@/actions/team/TeamMember";
-import { useTeamStore } from "@/stores/team/useTeamStore";
-import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
-import { useToast } from "@/hooks/toast/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
-import { AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/toast/use-toast";
+import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
+import { useTeamStore } from "@/stores/team/useTeamStore";
 
 interface PersonDetail {
 	id: string;
@@ -125,9 +132,7 @@ export default function PersonDetailPage() {
 				<Alert variant="destructive">
 					<AlertCircle className="h-4 w-4" />
 					<AlertTitle>Error</AlertTitle>
-					<AlertDescription>
-						{error || "Person not found."}
-					</AlertDescription>
+					<AlertDescription>{error || "Person not found."}</AlertDescription>
 				</Alert>
 			</div>
 		);
@@ -252,4 +257,3 @@ export default function PersonDetailPage() {
 		</div>
 	);
 }
-

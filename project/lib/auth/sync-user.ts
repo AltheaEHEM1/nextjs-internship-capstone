@@ -4,61 +4,61 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 
 export async function syncUser() {
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
-        return null;
-    }
+	const clerkUser = await currentUser();
+	if (!clerkUser) {
+		return null;
+	}
 
-    const primaryEmail = clerkUser.emailAddresses.find(
-        (e) => e.id === clerkUser.primaryEmailAddressId,
-    )?.emailAddress;
+	const primaryEmail = clerkUser.emailAddresses.find(
+		(e) => e.id === clerkUser.primaryEmailAddressId,
+	)?.emailAddress;
 
-    if (!primaryEmail) {
-        throw new Error("User does not have a primary email address.");
-    }
+	if (!primaryEmail) {
+		throw new Error("User does not have a primary email address.");
+	}
 
-    const freshName = clerkUser.firstName
-        ? `${clerkUser.firstName} ${clerkUser.lastName ?? ""}`.trim()
-        : primaryEmail.split("@")[0];
+	const freshName = clerkUser.firstName
+		? `${clerkUser.firstName} ${clerkUser.lastName ?? ""}`.trim()
+		: primaryEmail.split("@")[0];
 
-    const freshAvatar = clerkUser.imageUrl;
+	const freshAvatar = clerkUser.imageUrl;
 
-    const existingUser = await db.query.users.findFirst({
-        where: eq(users.clerkId, clerkUser.id),
-    });
+	const existingUser = await db.query.users.findFirst({
+		where: eq(users.clerkId, clerkUser.id),
+	});
 
-    if (existingUser) {
-        const hasChanged =
-            existingUser.email !== primaryEmail ||
-            existingUser.name !== freshName ||
-            existingUser.avatar !== freshAvatar;
+	if (existingUser) {
+		const hasChanged =
+			existingUser.email !== primaryEmail ||
+			existingUser.name !== freshName ||
+			existingUser.avatar !== freshAvatar;
 
-        if (!hasChanged) {
-            return existingUser;
-        }
+		if (!hasChanged) {
+			return existingUser;
+		}
 
-        const [updatedUser] = await db
-            .update(users)
-            .set({
-                email: primaryEmail,
-                name: freshName,
-                avatar: freshAvatar,
-            })
-            .where(eq(users.id, existingUser.id))
-            .returning();
+		const [updatedUser] = await db
+			.update(users)
+			.set({
+				email: primaryEmail,
+				name: freshName,
+				avatar: freshAvatar,
+			})
+			.where(eq(users.id, existingUser.id))
+			.returning();
 
-        return updatedUser;
-    }
+		return updatedUser;
+	}
 
-    const [newUser] = await db
-        .insert(users)
-        .values({
-            clerkId: clerkUser.id,
-            email: primaryEmail,
-            name: freshName,
-            avatar: freshAvatar,
-        })
-        .returning();
+	const [newUser] = await db
+		.insert(users)
+		.values({
+			clerkId: clerkUser.id,
+			email: primaryEmail,
+			name: freshName,
+			avatar: freshAvatar,
+		})
+		.returning();
 
-    return newUser;
+	return newUser;
 }

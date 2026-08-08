@@ -1,10 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
 import { teamMembers, teams } from "@/lib/db/schema";
-import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
-
 
 export async function createTeamWithMembersAction(data: {
 	name: string;
