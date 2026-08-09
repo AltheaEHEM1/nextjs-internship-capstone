@@ -1,19 +1,135 @@
 "use client";
 
 import {
+	ArrowLeft,
 	CheckCircle2,
 	CircleDot,
+	GripVertical,
 	MoreHorizontal,
 	Plus,
 	Trash2,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+	DndContext,
+	DragOverlay,
+	PointerSensor,
+	closestCenter,
+	useSensor,
+	useSensors,
+	type DragEndEvent,
+	type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+	SortableContext,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import BaseModal from "@/components/layout/BaseModal";
+import { useSortableItem } from "@/hooks/components/useSortableItem";
 import { useCustomStatusStore } from "../../../stores/custom-status-store";
+
+type StatusCategory = "notStarted" | "active" | "done" | "closed";
+
+interface SortableStatusItemProps {
+	category: StatusCategory;
+	index: number;
+	item: string;
+	onRemove: () => void;
+}
+
+function SortableStatusItem({
+	category,
+	index,
+	item,
+	onRemove,
+}: SortableStatusItemProps) {
+	const id = `${category}:${index}:${item}`;
+	const { setNodeRef, attributes, listeners, isDragging, style } =
+		useSortableItem({
+			id,
+			data: {
+				type: "StatusItem",
+				category,
+				index,
+				item,
+			},
+		});
+
+	return (
+		<div
+			ref={setNodeRef}
+			style={style}
+			className={`flex items-center justify-between rounded-lg border border-gray-200 bg-gray-300 px-4 py-2.5 shadow-xs ${
+				isDragging ? "opacity-60 shadow-lg ring-2 ring-[#1e9b65]/40" : ""
+			}`}
+		>
+			<div className="flex items-center gap-3">
+				<span
+					{...attributes}
+					{...listeners}
+					className="cursor-grab active:cursor-grabbing text-gray-500 hover:text-gray-700"
+				>
+					<GripVertical size={16} />
+				</span>
+				{category === "done" || category === "closed" ? (
+					<CheckCircle2 size={16} className="text-emerald-500" />
+				) : (
+					<CircleDot size={16} className="text-indigo-400" />
+				)}
+				<span className="text-xs font-bold tracking-wide text-gray uppercase">
+					{item}
+				</span>
+			</div>
+			<div className="flex items-center gap-2">
+				<button
+					type="button"
+					onClick={onRemove}
+					className="text-gray-500 hover:text-red-400"
+				>
+					<Trash2 size={14} />
+				</button>
+				<MoreHorizontal size={16} className="text-gray-500" />
+			</div>
+		</div>
+	);
+}
+
+function StatusItemDisplay({
+	category,
+	item,
+}: {
+	category: StatusCategory;
+	item: string;
+}) {
+	return (
+		<div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-300 px-4 py-2.5 shadow-lg opacity-80">
+			<span className="text-gray-500">
+				<GripVertical size={16} />
+			</span>
+			{category === "done" || category === "closed" ? (
+				<CheckCircle2 size={16} className="text-emerald-500" />
+			) : (
+				<CircleDot size={16} className="text-indigo-400" />
+			)}
+			<span className="text-xs font-bold tracking-wide text-gray uppercase">
+				{item}
+			</span>
+		</div>
+	);
+}
+
+function parseItemId(id: string | number) {
+	const parts = String(id).split(":");
+	const category = parts[0] as StatusCategory;
+	const fromIndex = Number(parts[1]);
+	const item = parts.slice(2).join(":");
+	return { category, fromIndex, item };
+}
 
 interface CustomStatusProps {
 	opened: boolean;
 	onClose: () => void;
+	onBack?: () => void;
 	status: {
 		notStarted: string[];
 		active: string[];
@@ -26,30 +142,77 @@ interface CustomStatusProps {
 export default function CustomStatus({
 	opened,
 	onClose,
+	onBack,
 	status,
 	onChangeStatus,
 }: CustomStatusProps) {
-	// Initialize the store with props when component mounts/updates
 	useEffect(() => {
 		useCustomStatusStore.getState().initialize(status, onChangeStatus);
 	}, [status, onChangeStatus]);
 
-	const { inputs, setInputs, handleAdd, handleRemove, addPrompted } =
+	const { handleRemove, handleReorder, addPrompted } =
 		useCustomStatusStore();
 
 	const categories = [
-		{ key: "notStarted", label: "Not started" },
-		{ key: "active", label: "Active" },
-		{ key: "done", label: "Done" },
-		{ key: "closed", label: "Closed" },
-	] as const;
+		{ key: "notStarted" as const, label: "Not started" },
+		{ key: "active" as const, label: "Active" },
+		{ key: "done" as const, label: "Done" },
+		{ key: "closed" as const, label: "Closed" },
+	];
+
+	const pointerSensorOptions = useMemo(
+		() => ({ activationConstraint: { distance: 5 } }),
+		[],
+	);
+	const sensors = useSensors(useSensor(PointerSensor, pointerSensorOptions));
+
+	const [activeItem, setActiveItem] = useState<
+		{ category: StatusCategory; item: string } | undefined
+	>(undefined);
+
+	const onDragStart = useCallback((event: DragStartEvent) => {
+		const parsed = parseItemId(event.active.id);
+		setActiveItem({ category: parsed.category, item: parsed.item });
+	}, [setActiveItem]);
+
+	const onDragEnd = useCallback(
+		(event: DragEndEvent) => {
+			setActiveItem(undefined);
+			const { active, over } = event;
+			if (!over) return;
+			if (active.id === over.id) return;
+
+			const activeParsed = parseItemId(active.id);
+			const overParsed = parseItemId(over.id);
+
+			if (activeParsed.category !== overParsed.category) return;
+
+			handleReorder(
+				activeParsed.category,
+				activeParsed.fromIndex,
+				overParsed.fromIndex,
+			);
+		},
+		[handleReorder, setActiveItem],
+	);
 
 	return (
 		<BaseModal
 			opened={opened}
 			onClose={onClose}
 			width={500}
-			title="Task Statuses"
+			title={
+				<div className="flex items-center gap-2">
+					<button
+						type="button"
+						onClick={onBack ?? onClose}
+						className="rounded-lg p-1 hover:bg-gray-100 transition dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+					>
+						<ArrowLeft size={20} />
+					</button>
+					<span>Task Statuses</span>
+				</div>
+			}
 			footer={
 				<button
 					type="button"
@@ -61,61 +224,69 @@ export default function CustomStatus({
 			}
 		>
 			<div className="space-y-6">
-				{categories.map(({ key, label }) => (
-					<div key={key} className="space-y-2">
-						<div className="flex items-center justify-between">
-							<span className="text-xs font-semibold tracking-wider text-gray-500">
-								{label}
-							</span>
-							<button
-								type="button"
-								onClick={() => addPrompted(key, label)}
-								className="text-gray-100 hover:text-white"
-							>
-								<Plus size={16} />
-							</button>
-						</div>
-
-						<div className="space-y-2">
-							{status[key].map((item: string, index: number) => (
-								<div
-									key={index}
-									className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-300 px-4 py-2.5 shadow-xs"
-								>
-									<div className="flex items-center gap-3">
-										<span className="text-gray-600">⠿</span>
-										{key === "done" || key === "closed" ? (
-											<CheckCircle2 size={16} className="text-emerald-500" />
-										) : (
-											<CircleDot size={16} className="text-indigo-400" />
-										)}
-										<span className="text-xs font-bold tracking-wide text-gray uppercase">
-											{item}
-										</span>
-									</div>
-									<div className="flex items-center gap-2">
-										<button
-											type="button"
-											onClick={() => handleRemove(key, index)}
-											className="text-gray-500 hover:text-red-400"
-										>
-											<Trash2 size={14} />
-										</button>
-										<MoreHorizontal size={16} className="text-gray-500" />
-									</div>
+				<DndContext
+					sensors={sensors}
+					collisionDetection={closestCenter}
+					onDragStart={onDragStart}
+					onDragEnd={onDragEnd}
+				>
+					{categories.map(({ key, label }) => {
+						const items = status[key];
+						const itemIds = items.map(
+							(item, index) => `${key}:${index}:${item}`,
+						);
+						return (
+							<div key={key} className="space-y-2">
+								<div className="flex items-center justify-between">
+									<span className="text-xs font-semibold tracking-wider text-gray-500">
+										{label}
+									</span>
+									<button
+										type="button"
+										onClick={() => addPrompted(key, label)}
+										className="text-gray-100 hover:text-white"
+									>
+										<Plus size={16} />
+									</button>
 								</div>
-							))}
 
-							<button
-								type="button"
-								onClick={() => addPrompted(key, label)}
-								className="w-full rounded-lg border border-dashed border-gray-700 bg-transparent py-2 text-center text-xs text-gray-400 hover:border-gray-500 hover:text-gray-200 transition"
-							>
-								+ Add status
-							</button>
-						</div>
-					</div>
-				))}
+								<div className="space-y-2">
+									<SortableContext
+										items={itemIds}
+										strategy={verticalListSortingStrategy}
+									>
+										{items.map((item: string, index: number) => (
+											<SortableStatusItem
+												key={`${key}:${index}:${item}`}
+												category={key}
+												index={index}
+												item={item}
+												onRemove={() => handleRemove(key, index)}
+											/>
+										))}
+									</SortableContext>
+
+									<button
+										type="button"
+										onClick={() => addPrompted(key, label)}
+										className="w-full rounded-lg border border-dashed border-gray-700 bg-transparent py-2 text-center text-xs text-gray-400 hover:border-gray-500 hover:text-gray-200 transition"
+									>
+										+ Add status
+									</button>
+								</div>
+							</div>
+						);
+					})}
+
+					{activeItem && (
+						<DragOverlay>
+							<StatusItemDisplay
+								category={activeItem.category}
+								item={activeItem.item}
+							/>
+						</DragOverlay>
+					)}
+				</DndContext>
 			</div>
 		</BaseModal>
 	);

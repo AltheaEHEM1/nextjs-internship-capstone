@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 import BaseModal from "@/components/layout/BaseModal";
@@ -9,6 +10,7 @@ import { useCustomViewStore } from "../../../stores/custom-view-store";
 interface CustomViewProps {
 	opened: boolean;
 	onClose: () => void;
+	onBack?: () => void;
 	selectedViews: string[];
 	onChangeViews: (views: string[]) => void;
 }
@@ -16,6 +18,7 @@ interface CustomViewProps {
 export default function CustomView({
 	opened,
 	onClose,
+	onBack,
 	selectedViews,
 	onChangeViews,
 }: CustomViewProps) {
@@ -36,7 +39,18 @@ export default function CustomView({
 			opened={opened}
 			onClose={onClose}
 			width={500}
-			title="Default settings for views"
+			title={
+				<div className="flex items-center gap-2">
+					<button
+						type="button"
+						onClick={onBack ?? onClose}
+						className="rounded-lg p-1 hover:bg-gray-100 transition dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+					>
+						<ArrowLeft size={20} />
+					</button>
+					<span>Default settings for views</span>
+				</div>
+			}
 			footer={
 				<button
 					type="button"
