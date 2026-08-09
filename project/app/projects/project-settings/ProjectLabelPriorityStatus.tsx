@@ -1,23 +1,19 @@
 import { Flag, Layers, Tag, Trash2, X } from "lucide-react";
-import { useProjectSettingsStore } from "@/stores/project/project-settings-store";
-import type { ProjectLabel, ProjectPriority, ProjectStatus } from "./page";
+import { useProjectSettings } from "@/hooks/project/project-settings/useProjectSettings";
 
 /**
  * Component rendering project statuses, labels, and priorities.
- * All state and actions are sourced from the global Zustand store.
+ * All state and actions are sourced through the central hook file.
  */
 function ProjectLabelPriority() {
 	const {
 		labels,
-		priorities,
 		statuses,
 		setIsLabelModalOpen,
-		setIsPriorityModalOpen,
 		setIsStatusModalOpen,
 		handleDeleteLabel,
-		handleDeletePriority,
 		handleDeleteStatus,
-	} = useProjectSettingsStore();
+	} = useProjectSettings();
 
 	return (
 		<>
@@ -90,55 +86,11 @@ function ProjectLabelPriority() {
 							<button
 								type="button"
 								onClick={() => handleDeleteLabel(idx)}
-								className="ml-1 hover:text-red-600 transition-colors"
+								className="hover:opacity-75"
 							>
 								<X size={12} />
 							</button>
 						</span>
-					))}
-				</div>
-			</div>
-
-			{/* Project Priorities Section */}
-			<div className="rounded-2xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-700 dark:bg-outer_space-900 space-y-4">
-				<div className="flex items-center justify-between">
-					<h2 className="text-sm font-bold text-outer_space-800 dark:text-platinum-100 uppercase tracking-wider">
-						Task Priorities
-					</h2>
-					<button
-						type="button"
-						onClick={() => setIsPriorityModalOpen(true)}
-						className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue_munsell-600 dark:text-blue_munsell-400 hover:underline"
-					>
-						<Flag size={14} /> Add Priority
-					</button>
-				</div>
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					{priorities.map((pri, idx) => (
-						<div
-							key={idx}
-							className="flex items-center justify-between p-3 rounded-xl border border-french_gray-200 dark:border-payne's_gray-700 bg-french_gray-50 dark:bg-outer_space-800"
-						>
-							<div>
-								<div className="flex items-center gap-2">
-									<span
-										className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${pri.color}`}
-									>
-										{pri.name}
-									</span>
-								</div>
-								<p className="text-xs text-outer_space-600 dark:text-platinum-300 mt-1">
-									{pri.description}
-								</p>
-							</div>
-							<button
-								type="button"
-								onClick={() => handleDeletePriority(idx)}
-								className="text-red-500 hover:text-red-700 p-1"
-							>
-								<Trash2 size={14} />
-							</button>
-						</div>
 					))}
 				</div>
 			</div>

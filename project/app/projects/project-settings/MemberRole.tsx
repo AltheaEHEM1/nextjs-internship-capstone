@@ -1,16 +1,6 @@
 "use client";
-
-import {
-	Award,
-	Check,
-	Edit,
-	Mail,
-	Shield,
-	Trash2,
-	User,
-	X,
-} from "lucide-react";
-import { useState } from "react";
+import { Award, Check, Edit, Mail, Shield, Trash2, User, X } from "lucide-react";
+import { useMemberRoleState } from "@/hooks/project/project-settings/useProjectSettings";
 import type { AccessRole, TeamMember } from "./page";
 
 interface MemberRoleProps {
@@ -38,7 +28,7 @@ export default function MemberRole({
 	handleEditMemberStart,
 	handleDeleteMember,
 }: MemberRoleProps) {
-	const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+	const { confirmDeleteId, setConfirmDeleteId } = useMemberRoleState();
 
 	const getAccessBadgeStyle = (access: AccessRole) => {
 		switch (access) {
@@ -69,7 +59,6 @@ export default function MemberRole({
 					{members.length} Active
 				</span>
 			</div>
-
 			{/* Members List */}
 			<div className="divide-y divide-french_gray-100 dark:divide-payne's_gray-800">
 				{members.length === 0 ? (
@@ -80,15 +69,13 @@ export default function MemberRole({
 					members.map((member) => {
 						const isEditing = editingMemberId === member.id;
 						const isDeleting = confirmDeleteId === member.id;
-
 						return (
 							<div
 								key={member.id}
-								className={`py-4 transition-all rounded-xl px-3 -mx-3 ${
-									isEditing
-										? "bg-blue_munsell-50/50 dark:bg-blue_munsell-950/20 border border-blue_munsell-200 dark:border-blue_munsell-900/50 my-2 shadow-xs"
-										: "hover:bg-french_gray-50/60 dark:hover:bg-outer_space-800/50"
-								}`}
+								className={`py-4 transition-all rounded-xl px-3 -mx-3 ${isEditing
+									? "bg-blue_munsell-50/50 dark:bg-blue_munsell-950/20 border border-blue_munsell-200 dark:border-blue_munsell-900/50 my-2 shadow-xs"
+									: "hover:bg-french_gray-50/60 dark:hover:bg-outer_space-800/50"
+									}`}
 							>
 								<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 									{/* Member Info */}
@@ -106,7 +93,6 @@ export default function MemberRole({
 											</p>
 										</div>
 									</div>
-
 									{/* Edit State and View State */}
 									{isEditing ? (
 										<div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-french_gray-200 dark:border-payne's_gray-700">
@@ -123,7 +109,6 @@ export default function MemberRole({
 													placeholder="Role Title (e.g. Lead Dev)"
 												/>
 											</div>
-
 											<div className="relative flex-1 md:w-36">
 												<Shield
 													size={13}
@@ -141,7 +126,6 @@ export default function MemberRole({
 													<option value="viewer">Viewer</option>
 												</select>
 											</div>
-
 											<div className="flex items-center gap-1.5 ml-auto md:ml-0">
 												<button
 													type="button"
@@ -169,13 +153,14 @@ export default function MemberRole({
 												</span>
 												<div>
 													<span
-														className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border mt-1 ${getAccessBadgeStyle(member.access)}`}
+														className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border mt-1 ${getAccessBadgeStyle(
+															member.access
+														)}`}
 													>
 														<Shield size={10} /> {member.access}
 													</span>
 												</div>
 											</div>
-
 											{/* Action Buttons */}
 											<div className="flex items-center gap-1 border-l border-french_gray-200 dark:border-payne's_gray-700 pl-3">
 												{isDeleting ? (

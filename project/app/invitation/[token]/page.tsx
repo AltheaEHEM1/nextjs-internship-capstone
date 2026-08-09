@@ -3,10 +3,7 @@
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-	getInvitationByTokenAction,
-	respondToInvitation,
-} from "@/actions/team/Invitation";
+import { getInvitationByTokenAction, respondToInvitation,} from "@/actions/team/Invitation";
 import { useToast } from "@/hooks/toast/use-toast";
 
 export default function InvitationPage() {

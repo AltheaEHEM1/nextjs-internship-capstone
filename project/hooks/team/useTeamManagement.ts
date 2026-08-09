@@ -1,4 +1,4 @@
-// hooks/team/useTeamManagement.ts
+
 import { useEffect, useState } from "react";
 import { createTeamWithMembersAction } from "@/actions/team/CreateTeam";
 import { getUserTeamsAction } from "@/actions/team/Team";

@@ -103,11 +103,10 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 			<div className="space-y-4">
 				{feedback && (
 					<div
-						className={`p-3 rounded-xl text-xs font-medium ${
-							feedback.type === "success"
+						className={`p-3 rounded-xl text-xs font-medium ${feedback.type === "success"
 								? "bg-emerald-50 text-emerald-700"
 								: "bg-rose-50 text-rose-700"
-						}`}
+							}`}
 					>
 						{feedback.text}
 					</div>

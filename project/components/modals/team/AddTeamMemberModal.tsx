@@ -84,9 +84,9 @@ export function AddTeamMemberModal({
 	const selectedPerson = people.find((p) => p.email === email);
 	const isAlreadyInTeam = Boolean(
 		teamId &&
-			email &&
-			(existingEmails.has(email.toLowerCase()) ||
-				(selectedPerson && existingUserIds.has(selectedPerson.id))),
+		email &&
+		(existingEmails.has(email.toLowerCase()) ||
+			(selectedPerson && existingUserIds.has(selectedPerson.id))),
 	);
 
 	const handleSubmit = async (e: React.FormEvent) => {

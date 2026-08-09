@@ -1,18 +1,15 @@
 "use client";
-
 import { ArrowLeft, Check, Edit, Save, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
 import { AddLabelModal } from "@/components/modals/project-settings/AddLabelModal";
 import { AddPriorityModal } from "@/components/modals/project-settings/AddPriorityModal";
 import { AddStatusModal } from "@/components/modals/project-settings/AddStatusModal";
 import { PageHeader } from "@/components/page-header/PageHeader";
-import { useProjectSettingsStore } from "@/stores/project/project-settings-store";
+import { useInitializeProjectSettings, useProjectSettings } from "@/hooks/project/project-settings/useProjectSettings";
 import MemberRole from "./MemberRole";
 import ProjectLabelPriority from "./ProjectLabelPriorityStatus";
 
 export type AccessRole = "administrator" | "member" | "viewer";
-
 export interface TeamMember {
 	id: string;
 	name: string;
@@ -20,19 +17,16 @@ export interface TeamMember {
 	role: string;
 	access: AccessRole;
 }
-
 export interface ProjectLabel {
 	name: string;
 	color: string;
 }
-
 export interface ProjectPriority {
 	name: string;
 	description: string;
 	color: string;
 	level: number;
 }
-
 export interface ProjectStatus {
 	name: string;
 	description: string;
@@ -156,29 +150,22 @@ export default function ProjectSettingsPage({
 	onSave,
 	onDelete,
 }: ProjectSettingsPageProps) {
-	// Initialise global store with props received from the page
-	useEffect(() => {
-		useProjectSettingsStore.getState().initialize({
-			title: initialTitle,
-			description: initialDescription,
-			team: initialTeam,
-			access: initialAccess,
-			members: initialMembers,
-			labels: initialLabels,
-			priorities: initialPriorities,
-			statuses: initialStatuses,
-		});
-	}, []);
+	useInitializeProjectSettings({
+		initialTitle,
+		initialDescription,
+		initialTeam,
+		initialAccess,
+		initialMembers,
+		initialLabels,
+		initialPriorities,
+		initialStatuses,
+	});
 
 	const {
 		title,
 		description,
 		team,
 		access,
-		setTitle,
-		setDescription,
-		setTeam,
-		setAccess,
 		isEditingGeneral,
 		setIsEditingGeneral,
 		tempTitle,
@@ -187,8 +174,6 @@ export default function ProjectSettingsPage({
 		setTempDescription,
 		handleSaveGeneral,
 		handleCancelGeneral,
-
-		// Labels, priorities, statuses
 		labels,
 		priorities,
 		statuses,
@@ -199,13 +184,8 @@ export default function ProjectSettingsPage({
 		setIsPriorityModalOpen,
 		setIsStatusModalOpen,
 		handleAddLabel,
-		handleDeleteLabel,
 		handleAddPriority,
-		handleDeletePriority,
 		handleAddStatus,
-		handleDeleteStatus,
-
-		// Members
 		members,
 		editingMemberId,
 		editMemberRole,
@@ -216,7 +196,7 @@ export default function ProjectSettingsPage({
 		handleEditMemberStart,
 		handleEditMemberSave,
 		handleDeleteMember,
-	} = useProjectSettingsStore();
+	} = useProjectSettings();
 
 	const handleSave = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -247,7 +227,6 @@ export default function ProjectSettingsPage({
 				title="Projects"
 				description="Manage and organize your team projects"
 			/>
-
 			{/* Settings Form Container */}
 			<form onSubmit={handleSave} className="space-y-6">
 				{/* General Settings Section */}
@@ -283,7 +262,6 @@ export default function ProjectSettingsPage({
 							</div>
 						)}
 					</div>
-
 					{isEditingGeneral ? (
 						<div className="space-y-4 pt-1 animate-fadeIn">
 							{/* Project Title */}
@@ -303,7 +281,6 @@ export default function ProjectSettingsPage({
 									className="w-full rounded-xl border border-french_gray-300 dark:border-payne's_gray-600 bg-white dark:bg-outer_space-800 px-3.5 py-2.5 text-sm text-outer_space-900 dark:text-platinum-100 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500/50"
 								/>
 							</div>
-
 							{/* Description */}
 							<div>
 								<label
@@ -342,7 +319,6 @@ export default function ProjectSettingsPage({
 						</div>
 					)}
 				</div>
-
 				<MemberRole
 					members={members}
 					editingMemberId={editingMemberId}
@@ -355,9 +331,7 @@ export default function ProjectSettingsPage({
 					handleEditMemberStart={handleEditMemberStart}
 					handleDeleteMember={handleDeleteMember}
 				/>
-
 				<ProjectLabelPriority />
-
 				{/* Actions Footer */}
 				<div className="flex items-center justify-between pt-2">
 					<button
@@ -365,7 +339,7 @@ export default function ProjectSettingsPage({
 						onClick={() => {
 							if (
 								window.confirm(
-									"Are you sure you want to delete this project? This action cannot be undone.",
+									"Are you sure you want to delete this project? This action cannot be undone."
 								)
 							) {
 								onDelete?.();
@@ -376,7 +350,6 @@ export default function ProjectSettingsPage({
 						<Trash2 size={16} />
 						Delete Project
 					</button>
-
 					<button
 						type="submit"
 						className="inline-flex items-center gap-2 rounded-xl bg-blue_munsell-500 hover:bg-blue_munsell-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all"
@@ -386,20 +359,17 @@ export default function ProjectSettingsPage({
 					</button>
 				</div>
 			</form>
-
 			{/* Modals */}
 			<AddLabelModal
 				isOpen={isLabelModalOpen}
 				onClose={() => setIsLabelModalOpen(false)}
 				onSave={handleAddLabel}
 			/>
-
 			<AddPriorityModal
 				isOpen={isPriorityModalOpen}
 				onClose={() => setIsPriorityModalOpen(false)}
 				onSave={handleAddPriority}
 			/>
-
 			<AddStatusModal
 				isOpen={isStatusModalOpen}
 				onClose={() => setIsStatusModalOpen(false)}

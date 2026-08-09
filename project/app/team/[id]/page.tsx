@@ -1,21 +1,11 @@
 "use client";
 
-import {
-	AlertCircle,
-	ArrowLeft,
-	MoreHorizontal,
-	Pencil,
-	Trash2,
-	UserPlus,
-} from "lucide-react";
+import { AlertCircle, ArrowLeft, MoreHorizontal, Pencil, Trash2, UserPlus,} from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { deleteTeamAction, getTeamDetailAction } from "@/actions/team/Team";
-import {
-	removeTeamMemberAction,
-	updateTeamMemberAction,
-} from "@/actions/team/TeamMember";
+import { removeTeamMemberAction, updateTeamMemberAction,} from "@/actions/team/TeamMember";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import { useToast } from "@/hooks/toast/use-toast";

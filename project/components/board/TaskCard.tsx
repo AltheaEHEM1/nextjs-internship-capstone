@@ -22,26 +22,20 @@ interface TaskCardProps {
 	isOverlay?: boolean;
 }
 
-export function TaskCard({ taskData, onClick, isOverlay }: TaskCardProps) {
-	const { setNodeRef, attributes, listeners, isDragging, style } =
-		useSortableItem({
-			id: taskData.id,
-			data: {
-				type: "Task",
-				task: taskData,
-			},
-		});
-
-	if (isDragging) {
-		return (
-			<div
-				ref={setNodeRef}
-				style={style}
-				className="h-24 rounded-lg border border-dashed border-blue_munsell-400 bg-white p-4 opacity-40 dark:bg-outer_space-400"
-			/>
-		);
-	}
-
+export function TaskCardDisplay({
+	taskData,
+	onClick,
+	isOverlay,
+	setNodeRef,
+	style,
+	attributes,
+	listeners,
+}: TaskCardProps & {
+	setNodeRef?: any;
+	style?: any;
+	attributes?: any;
+	listeners?: any;
+}) {
 	return (
 		<div
 			ref={setNodeRef}
@@ -68,5 +62,38 @@ export function TaskCard({ taskData, onClick, isOverlay }: TaskCardProps) {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export function TaskCard({ taskData, onClick, isOverlay }: TaskCardProps) {
+	const { setNodeRef, attributes, listeners, isDragging, style } =
+		useSortableItem({
+			id: taskData.id,
+			data: {
+				type: "Task",
+				task: taskData,
+			},
+		});
+
+	if (isDragging) {
+		return (
+			<div
+				ref={setNodeRef}
+				style={style}
+				className="h-24 rounded-lg border border-dashed border-blue_munsell-400 bg-white p-4 opacity-40 dark:bg-outer_space-400"
+			/>
+		);
+	}
+
+	return (
+		<TaskCardDisplay
+			taskData={taskData}
+			onClick={onClick}
+			isOverlay={isOverlay}
+			setNodeRef={setNodeRef}
+			style={style}
+			attributes={attributes}
+			listeners={listeners}
+		/>
 	);
 }

@@ -3,15 +3,16 @@ import BaseProject from "@/components/layout/BaseProject";
 
 interface ProjectLayoutProps {
 	children: ReactNode;
-	params: { id: string };
+	params: Promise<{ id: string }>;
 }
 
-export default function ProjectLayout({
+export default async function ProjectLayout({
 	children,
 	params,
 }: ProjectLayoutProps) {
+	const resolvedParams = await params;
 	return (
-		<BaseProject params={params}>
+		<BaseProject params={resolvedParams}>
 			<div className="py-3">{children}</div>
 		</BaseProject>
 	);

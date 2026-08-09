@@ -11,14 +11,16 @@ export default function BaseProject({ children, params }: BaseProjectProps) {
 	const { id } = params;
 
 	return (
-		<div className="mx-4 my-5 sm:mx-6 lg:mx-8">
-			<div className="sticky top-0 z-40 bg-white dark:bg-outer_space-950/90 dark:shadow-black/20">
-				<div className=" border-french_gray-200 dark:border-payne's_gray-700">
+		<div className="flex h-full flex-col">
+			<div className="sticky top-0 z-40 bg-white px-4 pt-5 sm:px-6 lg:px-8 dark:bg-outer_space-950/90 dark:shadow-black/20">
+				<div className="border-french_gray-200 dark:border-payne's_gray-700">
 					<ProjectHeader title="Website Redesign" projectId={id} />
 				</div>
 				<ProjectNav />
 			</div>
-			{children}
+			<div className="flex-1 px-4 pb-5 sm:px-6 lg:px-8">
+				{children}
+			</div>
 		</div>
 	);
 }

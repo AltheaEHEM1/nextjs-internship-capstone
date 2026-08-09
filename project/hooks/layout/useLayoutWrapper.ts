@@ -6,8 +6,9 @@ import { usePathname } from "next/navigation";
 const AUTH_PREFIXES = ["/login", "/register", "/forgot-password"];
 const ADMIN_PREFIXES = [
 	"/dashboard",
-	"/projects",
-	"/project",
+	"/projects", // for navigation
+	"/project", // this is for the main page of the project
+	"/notification",
 	"/team",
 	"/task",
 	"/settings",
@@ -24,9 +25,14 @@ export function useLayoutWrapper() {
 
 	const isAuthPath = AUTH_PREFIXES.some((p) => pathname.startsWith(p));
 	const isAdminPath = ADMIN_PREFIXES.some((p) => pathname.startsWith(p));
-	const disableAdminPadding = NO_PADDING_PREFIXES.some((p) =>
+	
+	// Disable padding for /projects/[id] but keep it for /projects
+	let disableAdminPadding = NO_PADDING_PREFIXES.some((p) =>
 		pathname.startsWith(p),
 	);
+	if (pathname.startsWith("/projects/") && pathname !== "/projects") {
+		disableAdminPadding = true;
+	}
 
 	return { isAdminPath, isAuthPath, disableAdminPadding };
 }

@@ -1,28 +1,11 @@
-//modified
-
-import {
-	ArrowRight,
-	CheckCircle2,
-	Flame,
-	Kanban,
-	Sparkles,
-	Users,
-} from "lucide-react";
 import Link from "next/link";
-// import { DashboardStats } from "@/components/dashboard-stats";
-// import { Features } from "@/components/features";
-// import { KanbanBoard } from "@/components/kanban-board";
-// import { ProjectCard } from "@/components/project-card";
-// import { ProjectGrid } from "@/components/project-grid";
-// import { ProjectHeader } from "@/components/project-header";
-// import { RecentProjects } from "@/components/recent-projects";
-// import { TaskCard } from "@/components/task-card";
-// import { TaskOverview } from "@/components/task-overview";
+import { ArrowRight, CheckCircle2, Kanban, Sparkles, Users, Flame } from "lucide-react";
 
 export default function HomePage() {
 	return (
 		<div className="min-h-screen w-full max-w-full overflow-x-hidden bg-gradient-to-br from-platinum-900 to-platinum-800 dark:from-outer_space-500 dark:to-payne's_gray-500">
 			<section className="relative px-4 py-12 sm:py-16 sm:px-6 lg:px-8 overflow-hidden bg-slate-50 text-slate-900 font-sans">
+
 				{/* Subtle high-tech background grid */}
 				<div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
 
@@ -31,8 +14,10 @@ export default function HomePage() {
 				<div className="absolute bottom-10 right-4 w-48 h-48 sm:w-96 sm:h-96 bg-indigo-500/10 rounded-full blur-[80px] sm:blur-[100px] pointer-events-none sm:right-10" />
 
 				<div className="container relative z-10 mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
+
 					{/* LEFT COLUMN */}
 					<div className="lg:col-span-6 text-left space-y-4 sm:space-y-6">
+
 						{/* Top Badge */}
 						<div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 shadow-sm backdrop-blur-md">
 							<Sparkles size={15} className="text-cyan-600 shrink-0" />
@@ -51,9 +36,7 @@ export default function HomePage() {
 
 						{/* Subtitle */}
 						<p className="text-sm sm:text-lg text-slate-600 max-w-xl leading-relaxed">
-							Organize tasks, collaborate with your team, track progress, and
-							deliver projects on time with our intuitive drag-and-drop
-							Kanban-style platform.
+							Organize tasks, collaborate with your team, track progress, and deliver projects on time with our intuitive drag-and-drop Kanban-style platform.
 						</p>
 
 						{/* CTA Buttons */}
@@ -71,6 +54,7 @@ export default function HomePage() {
 					{/* --- RIGHT COLUMN: STACKED CARDS --- */}
 					<div className="lg:col-span-6 relative flex items-center justify-center pt-4 lg:pt-0">
 						<div className="relative w-full max-w-md flex flex-col gap-4 z-20">
+
 							{/* Card 1: Kanban Feature */}
 							<div className="w-full bg-white/80 p-4 sm:p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 group">
 								<div className="flex items-center justify-between mb-3 gap-2">
@@ -79,17 +63,11 @@ export default function HomePage() {
 											<Kanban size={20} />
 										</div>
 										<div>
-											<h3 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-emerald-600 transition-colors">
-												Drag & Drop Boards
-											</h3>
-											<p className="text-[11px] text-slate-500 font-medium">
-												Workflow Engine
-											</p>
+											<h3 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-emerald-600 transition-colors">Drag & Drop Boards</h3>
+											<p className="text-[11px] text-slate-500 font-medium">Workflow Engine</p>
 										</div>
 									</div>
-									<span className="text-[10px] font-bold text-emerald-700 bg-emerald-500/10 px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-500/20 shrink-0">
-										Active
-									</span>
+									<span className="text-[10px] font-bold text-emerald-700 bg-emerald-500/10 px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-500/20 shrink-0">Active</span>
 								</div>
 
 								<div className="space-y-1.5 mb-3">
@@ -101,9 +79,7 @@ export default function HomePage() {
 										<div className="h-full w-[85%] bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full"></div>
 									</div>
 								</div>
-								<p className="text-xs text-slate-600 leading-relaxed">
-									Seamless workflow organization and rapid card reordering.
-								</p>
+								<p className="text-xs text-slate-600 leading-relaxed">Seamless workflow organization and rapid card reordering.</p>
 							</div>
 
 							{/* Card 2: Team Collaboration */}
@@ -114,30 +90,17 @@ export default function HomePage() {
 											<Users size={18} />
 										</div>
 										<div>
-											<h4 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-cyan-600 transition-colors">
-												Team Sync
-											</h4>
-											<p className="text-[10px] text-slate-500 font-medium">
-												Real-time collaboration
-											</p>
+											<h4 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-cyan-600 transition-colors">Team Sync</h4>
+											<p className="text-[10px] text-slate-500 font-medium">Real-time collaboration</p>
 										</div>
 									</div>
 									<div className="flex -space-x-2 shrink-0">
-										<div className="w-6 h-6 rounded-full bg-cyan-600 border-2 border-white text-[9px] font-bold text-white flex items-center justify-center shadow-sm">
-											JD
-										</div>
-										<div className="w-6 h-6 rounded-full bg-indigo-600 border-2 border-white text-[9px] font-bold text-white flex items-center justify-center shadow-sm">
-											AS
-										</div>
-										<div className="w-6 h-6 rounded-full bg-emerald-600 border-2 border-white text-[9px] font-bold text-white flex items-center justify-center shadow-sm">
-											+2
-										</div>
+										<div className="w-6 h-6 rounded-full bg-cyan-600 border-2 border-white text-[9px] font-bold text-white flex items-center justify-center shadow-sm">JD</div>
+										<div className="w-6 h-6 rounded-full bg-indigo-600 border-2 border-white text-[9px] font-bold text-white flex items-center justify-center shadow-sm">AS</div>
+										<div className="w-6 h-6 rounded-full bg-emerald-600 border-2 border-white text-[9px] font-bold text-white flex items-center justify-center shadow-sm">+2</div>
 									</div>
 								</div>
-								<p className="text-xs text-slate-600 leading-relaxed">
-									Work together effortlessly with live updates and team
-									channels.
-								</p>
+								<p className="text-xs text-slate-600 leading-relaxed">Work together effortlessly with live updates and team channels.</p>
 							</div>
 
 							{/* Card 3: Goal Tracking */}
@@ -148,12 +111,8 @@ export default function HomePage() {
 											<CheckCircle2 size={18} />
 										</div>
 										<div>
-											<h5 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-indigo-600 transition-colors">
-												Goal Tracking
-											</h5>
-											<p className="text-[10px] text-slate-500 font-medium">
-												Milestones
-											</p>
+											<h5 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-indigo-600 transition-colors">Goal Tracking</h5>
+											<p className="text-[10px] text-slate-500 font-medium">Milestones</p>
 										</div>
 									</div>
 									<div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20 shrink-0">
@@ -161,44 +120,14 @@ export default function HomePage() {
 										<span>Streak</span>
 									</div>
 								</div>
-								<p className="text-xs text-slate-600 leading-relaxed">
-									Keep track of every objective efficiently and never miss
-									deadlines.
-								</p>
+								<p className="text-xs text-slate-600 leading-relaxed">Keep track of every objective efficiently and never miss deadlines.</p>
 							</div>
+
 						</div>
 					</div>
+
 				</div>
 			</section>
-
-			{/* <section className="px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
-				<div className="container mx-auto flex flex-col items-center gap-6">
-					<DashboardStats />
-				</div>
-			</section>
-
-			<section className="px-4 py-8 sm:py-16 sm:px-6 lg:px-8">
-				<div className="container mx-auto space-y-6 sm:space-y-8">
-					<div className="rounded-2xl border border-french_gray-300 bg-white/80 p-4 shadow-sm dark:border-payne's_gray-400 dark:bg-outer_space-400/80">
-						<ProjectHeader projectId="1" />
-					</div>
-
-					<div className="grid gap-6 xl:grid-cols-[2fr_1fr] overflow-x-auto">
-						<KanbanBoard projectId="1" />
-						<TaskOverview />
-					</div>
-
-					<ProjectGrid />
-
-					<div className="grid gap-6 lg:grid-cols-2">
-						<RecentProjects />
-						<div className="space-y-6">
-							<ProjectCard />
-							<TaskCard />
-						</div>
-					</div>
-				</div>
-			</section> */}
 
 			{/* Navigation Demo Section */}
 			<section className="bg-white/50 px-4 py-12 sm:py-16 dark:bg-outer_space-400/50 sm:px-6 lg:px-8">
@@ -262,8 +191,6 @@ export default function HomePage() {
 					</div>
 				</div>
 			</section>
-
-			{/* <Features /> */}
 
 			{/* Task Implementation Status */}
 			<section className="px-4 py-12 sm:py-16 sm:px-6 lg:px-8">
