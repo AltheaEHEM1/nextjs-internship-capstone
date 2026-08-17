@@ -1,113 +1,26 @@
 "use client";
 
-import {
-	AlertCircle,
-	ArrowLeft,
-	Briefcase,
-	Folder,
-	Mail,
-	Trash2,
-	Users,
-} from "lucide-react";
+import { AlertCircle, ArrowLeft, Briefcase, Folder, Mail, Trash2, Users, } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import {
-	getPersonDetailAction,
-	removePersonAction,
-} from "@/actions/team/TeamMember";
+import { useParams } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
-import { useToast } from "@/hooks/toast/use-toast";
-import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
-import { useTeamStore } from "@/stores/team/useTeamStore";
-
-interface PersonDetail {
-	id: string;
-	name: string;
-	email: string;
-	avatar?: string | null;
-	role?: string;
-	teams: { id: string; name: string; icon: string; coverUrl?: string | null; role?: string }[];
-	projects: {
-		id: string | number;
-		name: string;
-		role: string;
-		status: string;
-	}[];
-}
+import { usePersonManagement } from "@/hooks/team/useTeamManagement";
 
 export default function PersonDetailPage() {
 	const params = useParams();
-	const router = useRouter();
 	const personId = params.id as string;
 
-	const removePersonFromStore = useTeamStore((s) => s.removePerson);
-	const setBreadcrumbMapping = useBreadcrumbStore((s) => s.setMapping);
-	const { toast } = useToast();
-
-	const [person, setPerson] = useState<PersonDetail | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [isDeleting, setIsDeleting] = useState(false);
-
-	// Confirm dialog state
-	const [confirmOpen, setConfirmOpen] = useState(false);
-
-	useEffect(() => {
-		let isMounted = true;
-		async function fetchPersonDetail() {
-			if (!personId) return;
-			setIsLoading(true);
-			setError(null);
-			const res = await getPersonDetailAction(personId);
-			if (!isMounted) return;
-
-			if (res.success && res.data) {
-				setPerson(res.data);
-				setBreadcrumbMapping(personId, res.data.name);
-			} else {
-				setError(res.error || "Person not found.");
-			}
-			setIsLoading(false);
-		}
-
-		fetchPersonDetail();
-
-		return () => {
-			isMounted = false;
-		};
-	}, [personId, setBreadcrumbMapping]);
-
-	const handleDeleteClick = () => {
-		setConfirmOpen(true);
-	};
-
-	const handleDeleteConfirm = async () => {
-		if (!person) return;
-		setIsDeleting(true);
-		const res = await removePersonAction(person.id);
-		if (res.success) {
-			if (removePersonFromStore) {
-				removePersonFromStore(person.id);
-			}
-			toast({
-				title: "Member removed",
-				description: `${person.name} has been successfully removed.`,
-				variant: "destructive",
-			});
-			setConfirmOpen(false);
-			router.push("/team");
-		} else {
-			toast({
-				title: "Error",
-				description: res.error || "Failed to remove member.",
-				variant: "destructive",
-			});
-			setIsDeleting(false);
-			setConfirmOpen(false);
-		}
-	};
+	const {
+		personDetail: person,
+		isLoading,
+		error,
+		isDeleting,
+		confirmOpen,
+		setConfirmOpen,
+		handleDeleteClick,
+		handleDeleteConfirm,
+	} = usePersonManagement(personId);
 
 	if (isLoading) {
 		return (

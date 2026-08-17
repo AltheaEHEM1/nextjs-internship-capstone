@@ -41,6 +41,21 @@ export interface TeamDetail extends TeamItem {
 	}>;
 }
 
+export interface PersonDetail {
+	id: string;
+	name: string;
+	email: string;
+	avatar?: string | null;
+	role?: string;
+	teams: { id: string; name: string; icon: string; coverUrl?: string | null; role?: string }[];
+	projects: {
+		id: string | number;
+		name: string;
+		role: string;
+		status: string;
+	}[];
+}
+
 export interface TeamState {
 	// tab + lists
 	activeTab: "people" | "teams";
@@ -64,6 +79,31 @@ export interface TeamState {
 	// Specific team page
 	isMenuOpen: boolean;
 	isAddMemberOpen: boolean;
+	isTeamDetailLoading: boolean;
+	teamDetailError: string | null;
+	teamConfirmState: {
+		opened: boolean;
+		title: string;
+		description: string;
+		confirmLabel: string;
+		onConfirm: () => void;
+		loading: boolean;
+	};
+	teamEditRoleState: {
+		opened: boolean;
+		userId: string;
+		memberName: string;
+		currentRole: string;
+		currentPermission: string;
+		loading: boolean;
+	};
+
+	// Person Detail
+	personDetail: PersonDetail | null;
+	isPersonLoading: boolean;
+	personError: string | null;
+	isPersonDeleting: boolean;
+	isPersonConfirmOpen: boolean;
 
 	// setters
 	setActiveTab: (tab: "people" | "teams") => void;
@@ -87,6 +127,16 @@ export interface TeamState {
 	toggleMenu: () => void;
 	openAddMemberModal: () => void;
 	closeAddMemberModal: () => void;
+	setIsTeamDetailLoading: (v: boolean) => void;
+	setTeamDetailError: (v: string | null) => void;
+	setTeamConfirmState: (state: Partial<TeamState["teamConfirmState"]>) => void;
+	setTeamEditRoleState: (state: Partial<TeamState["teamEditRoleState"]>) => void;
+
+	setPersonDetail: (p: PersonDetail | null) => void;
+	setIsPersonLoading: (v: boolean) => void;
+	setPersonError: (v: string | null) => void;
+	setIsPersonDeleting: (v: boolean) => void;
+	setIsPersonConfirmOpen: (v: boolean) => void;
 }
 
 const formDefaults = {
@@ -109,6 +159,29 @@ export const useTeamStore = create<TeamState>((set, _get) => ({
 	...formDefaults,
 	isMenuOpen: false,
 	isAddMemberOpen: false,
+	isTeamDetailLoading: true,
+	teamDetailError: null,
+	teamConfirmState: {
+		opened: false,
+		title: "",
+		description: "",
+		confirmLabel: "",
+		onConfirm: () => { },
+		loading: false,
+	},
+	teamEditRoleState: {
+		opened: false,
+		userId: "",
+		memberName: "",
+		currentRole: "",
+		currentPermission: "member",
+		loading: false,
+	},
+	personDetail: null,
+	isPersonLoading: true,
+	personError: null,
+	isPersonDeleting: false,
+	isPersonConfirmOpen: false,
 
 	setActiveTab: (tab) => set({ activeTab: tab }),
 	setPeople: (people) => set({ people }),
@@ -146,4 +219,14 @@ export const useTeamStore = create<TeamState>((set, _get) => ({
 	toggleMenu: () => set((s) => ({ isMenuOpen: !s.isMenuOpen })),
 	openAddMemberModal: () => set({ isAddMemberOpen: true, isMenuOpen: false }),
 	closeAddMemberModal: () => set({ isAddMemberOpen: false }),
+	setIsTeamDetailLoading: (v) => set({ isTeamDetailLoading: v }),
+	setTeamDetailError: (v) => set({ teamDetailError: v }),
+	setTeamConfirmState: (state) => set((s) => ({ teamConfirmState: { ...s.teamConfirmState, ...state } })),
+	setTeamEditRoleState: (state) => set((s) => ({ teamEditRoleState: { ...s.teamEditRoleState, ...state } })),
+
+	setPersonDetail: (p) => set({ personDetail: p }),
+	setIsPersonLoading: (v) => set({ isPersonLoading: v }),
+	setPersonError: (v) => set({ personError: v }),
+	setIsPersonDeleting: (v) => set({ isPersonDeleting: v }),
+	setIsPersonConfirmOpen: (v) => set({ isPersonConfirmOpen: v }),
 }));

@@ -2,213 +2,35 @@
 
 import { AlertCircle, ArrowLeft, MoreHorizontal, Pencil, Trash2, UserPlus, } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { deleteTeamAction, getTeamDetailAction } from "@/actions/team/Team";
-import { removeTeamMemberAction, updateTeamMemberAction, } from "@/actions/team/TeamMember";
+import { useParams } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import EditRoleModal from "@/components/modals/team/EditRoleModal";
 import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
-import { useToast } from "@/hooks/toast/use-toast";
-import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
-import { useTeamStore } from "@/stores/team/useTeamStore";
+import { useTeamDetailManagement } from "@/hooks/team/useTeamManagement";
 
 export default function SpecificTeam() {
 	const params = useParams();
-	const router = useRouter();
 	const teamId = params.id as string;
 
-	const teamDetail = useTeamStore((s) => s.teamDetail);
-	const setTeamDetail = useTeamStore((s) => s.setTeamDetail);
-	const isMenuOpen = useTeamStore((s) => s.isMenuOpen);
-	const isAddMemberOpen = useTeamStore((s) => s.isAddMemberOpen);
-	const toggleMenu = useTeamStore((s) => s.toggleMenu);
-	const openAddMemberModal = useTeamStore((s) => s.openAddMemberModal);
-	const closeAddMemberModal = useTeamStore((s) => s.closeAddMemberModal);
-	const setBreadcrumbMapping = useBreadcrumbStore((s) => s.setMapping);
-	const { toast } = useToast();
-
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-
-	// Confirm dialog state
-	const [confirmState, setConfirmState] = useState<{
-		opened: boolean;
-		title: string;
-		description: string;
-		confirmLabel: string;
-		onConfirm: () => void;
-		loading: boolean;
-	}>({
-		opened: false,
-		title: "",
-		description: "",
-		confirmLabel: "",
-		onConfirm: () => { },
-		loading: false,
-	});
-
-	// Edit Role Modal state
-	const [editRoleState, setEditRoleState] = useState<{
-		opened: boolean;
-		userId: string;
-		memberName: string;
-		currentRole: string;
-		currentPermission: string;
-		loading: boolean;
-	}>({
-		opened: false,
-		userId: "",
-		memberName: "",
-		currentRole: "",
-		currentPermission: "member",
-		loading: false,
-	});
-
-	const closeConfirm = () =>
-		setConfirmState((prev) => ({ ...prev, opened: false, loading: false }));
-
-	const closeEditRole = () =>
-		setEditRoleState((prev) => ({ ...prev, opened: false, loading: false }));
-
-	const handleDeleteTeam = () => {
-		setConfirmState({
-			opened: true,
-			title: "Delete Team",
-			description:
-				"Are you sure you want to delete this team? This action cannot be undone and all members will be removed.",
-			confirmLabel: "Delete Team",
-			loading: false,
-			onConfirm: async () => {
-				setConfirmState((prev) => ({ ...prev, loading: true }));
-				const res = await deleteTeamAction(teamId);
-				if (res.success) {
-					toast({
-						title: "Team deleted",
-						description: "The team has been successfully deleted.",
-						variant: "destructive",
-					});
-					closeConfirm();
-					router.push("/team");
-				} else {
-					toast({
-						title: "Error",
-						description: res.error || "Failed to delete team.",
-						variant: "destructive",
-					});
-					closeConfirm();
-				}
-			},
-		});
-	};
-
-	const handleDeleteMember = (userId: string, memberName?: string) => {
-		setConfirmState({
-			opened: true,
-			title: "Remove Member",
-			description: `Are you sure you want to remove ${memberName || "this member"} from the team? They will lose access to this team.`,
-			confirmLabel: "Remove Member",
-			loading: false,
-			onConfirm: async () => {
-				setConfirmState((prev) => ({ ...prev, loading: true }));
-				const res = await removeTeamMemberAction(teamId, userId);
-				if (res.success) {
-					toast({
-						title: "Member removed",
-						description: `${memberName || "The member"} has been successfully removed.`,
-						variant: "destructive",
-					});
-					closeConfirm();
-					// Refresh team detail in store
-					const refreshed = await getTeamDetailAction(teamId);
-					if (refreshed.success && refreshed.data) {
-						setTeamDetail(refreshed.data as any);
-					}
-				} else {
-					toast({
-						title: "Error",
-						description: res.error || "Failed to remove member.",
-						variant: "destructive",
-					});
-					closeConfirm();
-				}
-			},
-		});
-	};
-
-	const handleEditMemberClick = (userId: string, memberName: string, currentRole: string, currentPermission: string) => {
-		setEditRoleState({
-			opened: true,
-			userId,
-			memberName,
-			currentRole,
-			currentPermission,
-			loading: false,
-		});
-	};
-
-	const submitEditRole = async (newRole: string, newPermission: string) => {
-		if ((newRole && newRole !== editRoleState.currentRole) || newPermission !== editRoleState.currentPermission) {
-			setEditRoleState((prev) => ({ ...prev, loading: true }));
-			const res = await updateTeamMemberAction({
-				teamId,
-				userId: editRoleState.userId,
-				role: newRole,
-				permission: newPermission as "administrator" | "member" | "viewer",
-			});
-			if (res.success) {
-				toast({
-					title: "Role updated",
-					description: "The member's role has been successfully updated.",
-					variant: "success",
-				});
-				const refreshed = await getTeamDetailAction(teamId);
-				if (refreshed.success && refreshed.data) {
-					setTeamDetail(refreshed.data as any);
-				}
-				closeEditRole();
-			} else {
-				toast({
-					title: "Error",
-					description: res.error || "Failed to update member role.",
-					variant: "destructive",
-				});
-				setEditRoleState((prev) => ({ ...prev, loading: false }));
-			}
-		} else {
-			closeEditRole();
-		}
-	};
-
-	// Fetch the team + its members from the DB whenever the id changes.
-	// Without this, `teamDetail` in the store never gets populated and
-	// the page falls through to `return null` forever.
-	useEffect(() => {
-		let cancelled = false;
-
-		async function loadTeamDetail() {
-			setLoading(true);
-			setError(null);
-			const res = await getTeamDetailAction(teamId);
-			if (cancelled) return;
-
-			if (res.success && res.data) {
-				setTeamDetail(res.data as any);
-				setBreadcrumbMapping(teamId, (res.data as any).name);
-			} else {
-				setError(res.error ?? "Failed to load team.");
-				setTeamDetail(null);
-			}
-			setLoading(false);
-		}
-
-		if (teamId) loadTeamDetail();
-
-		return () => {
-			cancelled = true;
-		};
-	}, [teamId, setTeamDetail, setBreadcrumbMapping]);
+	const {
+		teamDetail,
+		loading,
+		error,
+		confirmState,
+		editRoleState,
+		isMenuOpen,
+		isAddMemberOpen,
+		toggleMenu,
+		openAddMemberModal,
+		closeAddMemberModal,
+		closeConfirm,
+		closeEditRole,
+		handleDeleteTeam,
+		handleDeleteMember,
+		handleEditMemberClick,
+		submitEditRole,
+	} = useTeamDetailManagement(teamId);
 
 	if (loading) {
 		return (
