@@ -17,6 +17,7 @@ import {
 	removePersonAction,
 } from "@/actions/team/TeamMember";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
+import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import { useToast } from "@/hooks/toast/use-toast";
 import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
 import { useTeamStore } from "@/stores/team/useTeamStore";
@@ -50,6 +51,9 @@ export default function PersonDetailPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [isDeleting, setIsDeleting] = useState(false);
 
+	// Confirm dialog state
+	const [confirmOpen, setConfirmOpen] = useState(false);
+
 	useEffect(() => {
 		let isMounted = true;
 		async function fetchPersonDetail() {
@@ -75,28 +79,33 @@ export default function PersonDetailPage() {
 		};
 	}, [personId, setBreadcrumbMapping]);
 
-	const handleDelete = async () => {
+	const handleDeleteClick = () => {
+		setConfirmOpen(true);
+	};
+
+	const handleDeleteConfirm = async () => {
 		if (!person) return;
-		if (confirm(`Are you sure you want to remove ${person.name}?`)) {
-			setIsDeleting(true);
-			const res = await removePersonAction(person.id);
-			if (res.success) {
-				if (removePersonFromStore) {
-					removePersonFromStore(person.id);
-				}
-				toast({
-					title: "Member removed",
-					description: "The member has been successfully removed.",
-				});
-				router.push("/team");
-			} else {
-				toast({
-					title: "Error",
-					description: res.error || "Failed to remove member.",
-					variant: "destructive",
-				});
-				setIsDeleting(false);
+		setIsDeleting(true);
+		const res = await removePersonAction(person.id);
+		if (res.success) {
+			if (removePersonFromStore) {
+				removePersonFromStore(person.id);
 			}
+			toast({
+				title: "Member removed",
+				description: `${person.name} has been successfully removed.`,
+				variant: "destructive",
+			});
+			setConfirmOpen(false);
+			router.push("/team");
+		} else {
+			toast({
+				title: "Error",
+				description: res.error || "Failed to remove member.",
+				variant: "destructive",
+			});
+			setIsDeleting(false);
+			setConfirmOpen(false);
 		}
 	};
 
@@ -152,7 +161,7 @@ export default function PersonDetailPage() {
 
 				<button
 					type="button"
-					onClick={handleDelete}
+					onClick={handleDeleteClick}
 					disabled={isDeleting}
 					className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition-colors cursor-pointer disabled:opacity-50"
 				>
@@ -164,8 +173,14 @@ export default function PersonDetailPage() {
 			{/* Profile Header */}
 			<div className="rounded-2xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-paynes_gray-600 dark:bg-outer_space-500">
 				<div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-					<div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-blue_munsell-500 font-bold text-white text-2xl shadow-md">
-						{person.avatar}
+					<div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-blue_munsell-500 text-2xl font-bold text-white shadow-md">
+						{person.avatar && (person.avatar.startsWith("http") || person.avatar.startsWith("data:")) ? (
+							<img src={person.avatar} alt={person.name} className="h-full w-full object-cover" />
+						) : (
+							(person.avatar && person.avatar.length <= 3) 
+								? person.avatar 
+								: (person.name?.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() || "U")
+						)}
 					</div>
 					<div className="space-y-1">
 						<h2 className="text-2xl font-bold text-outer_space-800 dark:text-platinum-100">
@@ -201,7 +216,7 @@ export default function PersonDetailPage() {
 							{person.teams.map((team) => (
 								<Link
 									key={team.id}
-									href={`/team/${team.id}`}
+									href={`/team/team/${team.id}`}
 									className="py-3 flex items-center justify-between first:pt-0 last:pb-0 hover:opacity-80 transition-opacity"
 								>
 									<div className="flex items-center gap-3">
@@ -254,6 +269,17 @@ export default function PersonDetailPage() {
 					)}
 				</div>
 			</div>
+
+			<ConfirmDialog
+				opened={confirmOpen}
+				onClose={() => setConfirmOpen(false)}
+				onConfirm={handleDeleteConfirm}
+				title="Remove Member"
+				description={`Are you sure you want to remove ${person.name}? This will revoke their access to all associated teams.`}
+				confirmLabel="Remove Member"
+				variant="danger"
+				loading={isDeleting}
+			/>
 		</div>
 	);
 }

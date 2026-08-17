@@ -6,6 +6,7 @@ import {
 	addMemberToTeamAction,
 	getAcceptedInvitesAction,
 } from "@/actions/team/TeamMember";
+import { useToast } from "@/hooks/toast/use-toast";
 import { useTeamStore } from "@/stores/team/useTeamStore";
 
 interface AddTeamMemberModalProps {
@@ -22,6 +23,7 @@ export function AddTeamMemberModal({
 	const storePeople = useTeamStore((s) => s.people);
 	const teamDetail = useTeamStore((s) => s.teamDetail);
 	const setTeamDetail = useTeamStore((s) => s.setTeamDetail);
+	const { toast } = useToast();
 
 	const [people, setPeople] = useState<
 		Array<{ id: string; name: string; email: string }>
@@ -37,12 +39,9 @@ export function AddTeamMemberModal({
 		"administrator" | "member" | "viewer"
 	>("member");
 	const [loading, setLoading] = useState(false);
-	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (isOpen) {
-			setErrorMsg(null);
-
 			if (storePeople && storePeople.length > 0) {
 				setPeople(storePeople);
 			}
@@ -94,12 +93,15 @@ export function AddTeamMemberModal({
 		if (!email) return;
 
 		if (isAlreadyInTeam) {
-			setErrorMsg("This person is already a member of this team.");
+			toast({
+				title: "Already a member",
+				description: "This person is already a member of this team.",
+				variant: "warning",
+			});
 			return;
 		}
 
 		setLoading(true);
-		setErrorMsg(null);
 		try {
 			if (teamId) {
 				const res = await addMemberToTeamAction({
@@ -111,9 +113,19 @@ export function AddTeamMemberModal({
 				});
 
 				if (!res.success) {
-					setErrorMsg(res.error || "Failed to add member to team.");
+					toast({
+						title: "Error",
+						description: res.error || "Failed to add member to team.",
+						variant: "destructive",
+					});
 					return;
 				}
+
+				toast({
+					title: "Member added",
+					description: `${selectedPerson?.name || email} has been successfully added to the team.`,
+					variant: "success",
+				});
 
 				// Refresh team detail in store
 				const refreshed = await getTeamDetailAction(teamId);
@@ -125,7 +137,11 @@ export function AddTeamMemberModal({
 			setEmail("");
 			onClose();
 		} catch (error) {
-			setErrorMsg((error as Error).message || "Failed to add team member");
+			toast({
+				title: "Error",
+				description: (error as Error).message || "Failed to add team member.",
+				variant: "destructive",
+			});
 		} finally {
 			setLoading(false);
 		}
@@ -137,11 +153,6 @@ export function AddTeamMemberModal({
 				<h3 className="text-lg font-bold text-outer_space-800 dark:text-platinum-100">
 					Add Team Member
 				</h3>
-				{errorMsg && (
-					<div className="mt-3 rounded-xl bg-rose-50 p-3 text-xs font-medium text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
-						{errorMsg}
-					</div>
-				)}
 				<form onSubmit={handleSubmit} className="mt-4 space-y-4">
 					<div>
 						<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
@@ -152,7 +163,6 @@ export function AddTeamMemberModal({
 							value={email}
 							onChange={(e) => {
 								setEmail(e.target.value);
-								setErrorMsg(null);
 							}}
 							className="mt-1 w-full rounded-xl border border-french_gray-200 p-2.5 text-sm dark:border-paynes_gray-600 dark:bg-outer_space-400 dark:text-platinum-100"
 						>

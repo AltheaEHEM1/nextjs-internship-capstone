@@ -4,6 +4,7 @@ import { UserPlus } from "lucide-react";
 import { useState } from "react";
 import { sendUserInvitationAction } from "@/actions/team/Invitation";
 import BaseModal from "@/components/layout/BaseModal";
+import { useToast } from "@/hooks/toast/use-toast";
 
 interface AddMemberProps {
 	opened: boolean;
@@ -14,14 +15,15 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 	const [addPeopleContact, setAddPeopleContact] = useState("");
 	const [notes, setNotes] = useState("");
 	const [loading, setLoading] = useState(false);
-	const [feedback, setFeedback] = useState<{
-		type: "success" | "error";
-		text: string;
-	} | null>(null);
+	const { toast } = useToast();
 
 	const handleSendInvites = async () => {
 		if (!addPeopleContact.trim()) {
-			setFeedback({ type: "error", text: "Please enter a valid email." });
+			toast({
+				title: "Validation Error",
+				description: "Please enter a valid email address.",
+				variant: "warning",
+			});
 			return;
 		}
 
@@ -31,15 +33,15 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 			.filter((e: string) => e.includes("@"));
 
 		if (emails.length === 0) {
-			setFeedback({
-				type: "error",
-				text: "No valid email addresses detected.",
+			toast({
+				title: "Invalid Email",
+				description: "No valid email addresses detected.",
+				variant: "warning",
 			});
 			return;
 		}
 
 		setLoading(true);
-		setFeedback(null);
 		try {
 			// Pass both email and the optional notes string to the action
 			await Promise.all(
@@ -48,20 +50,22 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 				),
 			);
 
-			setFeedback({
-				type: "success",
-				text: `Successfully sent ${emails.length} invitation(s).`,
+			toast({
+				title: "Invitations Sent",
+				description: `Successfully sent ${emails.length} invitation(s).`,
+				variant: "success",
 			});
 			setAddPeopleContact("");
 			setNotes("");
 			setTimeout(() => {
-				setFeedback(null);
 				onClose();
-			}, 1500);
+			}, 800);
 		} catch (error) {
-			setFeedback({
-				type: "error",
-				text: (error as Error).message || "Failed to send invitations.",
+			toast({
+				title: "Error",
+				description:
+					(error as Error).message || "Failed to send invitations.",
+				variant: "destructive",
 			});
 		} finally {
 			setLoading(false);
@@ -101,16 +105,6 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 			}
 		>
 			<div className="space-y-4">
-				{feedback && (
-					<div
-						className={`p-3 rounded-xl text-xs font-medium ${feedback.type === "success"
-								? "bg-emerald-50 text-emerald-700"
-								: "bg-rose-50 text-rose-700"
-							}`}
-					>
-						{feedback.text}
-					</div>
-				)}
 				<div>
 					<label className="text-xs font-medium text-outer_space-500">
 						Email Address (comma-separated)

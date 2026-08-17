@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { deleteTeamAction, getTeamDetailAction } from "@/actions/team/Team";
 import { removeTeamMemberAction, updateTeamMemberAction,} from "@/actions/team/TeamMember";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
+import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import { useToast } from "@/hooks/toast/use-toast";
 import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
@@ -30,42 +31,89 @@ export default function SpecificTeam() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const handleDeleteTeam = async () => {
-		if (confirm("Are you sure you want to delete this team?")) {
-			const res = await deleteTeamAction(teamId);
-			if (res.success) {
-				toast({
-					title: "Team deleted",
-					description: "The team has been successfully deleted.",
-				});
-				router.push("/team");
-			} else {
-				toast({
-					title: "Error",
-					description: res.error || "Failed to delete team.",
-					variant: "destructive",
-				});
-			}
-		}
+	// Confirm dialog state
+	const [confirmState, setConfirmState] = useState<{
+		opened: boolean;
+		title: string;
+		description: string;
+		confirmLabel: string;
+		onConfirm: () => void;
+		loading: boolean;
+	}>({
+		opened: false,
+		title: "",
+		description: "",
+		confirmLabel: "",
+		onConfirm: () => {},
+		loading: false,
+	});
+
+	const closeConfirm = () =>
+		setConfirmState((prev) => ({ ...prev, opened: false, loading: false }));
+
+	const handleDeleteTeam = () => {
+		setConfirmState({
+			opened: true,
+			title: "Delete Team",
+			description:
+				"Are you sure you want to delete this team? This action cannot be undone and all members will be removed.",
+			confirmLabel: "Delete Team",
+			loading: false,
+			onConfirm: async () => {
+				setConfirmState((prev) => ({ ...prev, loading: true }));
+				const res = await deleteTeamAction(teamId);
+				if (res.success) {
+					toast({
+						title: "Team deleted",
+						description: "The team has been successfully deleted.",
+						variant: "destructive",
+					});
+					closeConfirm();
+					router.push("/team");
+				} else {
+					toast({
+						title: "Error",
+						description: res.error || "Failed to delete team.",
+						variant: "destructive",
+					});
+					closeConfirm();
+				}
+			},
+		});
 	};
 
-	const handleDeleteMember = async (userId: string) => {
-		if (confirm("Are you sure you want to remove this member?")) {
-			const res = await removeTeamMemberAction(teamId, userId);
-			if (res.success) {
-				toast({
-					title: "Member removed",
-					description: "The member has been successfully removed.",
-				});
-				router.refresh();
-			} else {
-				toast({
-					title: "Error",
-					description: res.error || "Failed to remove member.",
-					variant: "destructive",
-				});
-			}
-		}
+	const handleDeleteMember = (userId: string, memberName?: string) => {
+		setConfirmState({
+			opened: true,
+			title: "Remove Member",
+			description: `Are you sure you want to remove ${memberName || "this member"} from the team? They will lose access to this team.`,
+			confirmLabel: "Remove Member",
+			loading: false,
+			onConfirm: async () => {
+				setConfirmState((prev) => ({ ...prev, loading: true }));
+				const res = await removeTeamMemberAction(teamId, userId);
+				if (res.success) {
+					toast({
+						title: "Member removed",
+						description: `${memberName || "The member"} has been successfully removed.`,
+						variant: "destructive",
+					});
+					closeConfirm();
+					// Refresh team detail in store
+					const refreshed = await getTeamDetailAction(teamId);
+					if (refreshed.success && refreshed.data) {
+						setTeamDetail(refreshed.data as any);
+					}
+				} else {
+					toast({
+						title: "Error",
+						description: res.error || "Failed to remove member.",
+						variant: "destructive",
+					});
+					closeConfirm();
+				}
+			},
+		});
 	};
 
 	const handleEditMember = async (userId: string, currentRole: string) => {
@@ -80,8 +128,13 @@ export default function SpecificTeam() {
 				toast({
 					title: "Role updated",
 					description: "The member's role has been successfully updated.",
+					variant: "success",
 				});
-				router.refresh();
+				// Refresh team detail in store
+				const refreshed = await getTeamDetailAction(teamId);
+				if (refreshed.success && refreshed.data) {
+					setTeamDetail(refreshed.data as any);
+				}
 			} else {
 				toast({
 					title: "Error",
@@ -164,8 +217,8 @@ export default function SpecificTeam() {
 
 			<div className="relative rounded-2xl border border-french_gray-200 bg-white shadow-xs dark:border-paynes_gray-600 dark:bg-outer_space-500">
 				<div
-					className="h-40 w-full bg-cover bg-center rounded-t-2xl overflow-hidden"
-					style={{ backgroundImage: `url(${teamDetail.coverUrl})` }}
+					className={`h-40 w-full bg-cover bg-center rounded-t-2xl overflow-hidden ${!teamDetail.coverUrl ? 'bg-gradient-to-r from-blue_munsell-400 via-blue_munsell-500 to-indigo-500' : ''}`}
+					style={teamDetail.coverUrl ? { backgroundImage: `url(${teamDetail.coverUrl})` } : {}}
 				/>
 				<div className="px-6 pb-6 pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
 					<div className="flex items-center gap-4 -mt-12 sm:-mt-14">
@@ -254,7 +307,7 @@ export default function SpecificTeam() {
 								</button>
 								<button
 									type="button"
-									onClick={() => handleDeleteMember(m.userId)}
+									onClick={() => handleDeleteMember(m.userId, m.name)}
 									className="p-1.5 text-outer_space-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md transition-colors"
 									title="Remove Member"
 								>
@@ -270,6 +323,17 @@ export default function SpecificTeam() {
 				teamId={teamDetail.id}
 				isOpen={isAddMemberOpen}
 				onClose={closeAddMemberModal}
+			/>
+
+			<ConfirmDialog
+				opened={confirmState.opened}
+				onClose={closeConfirm}
+				onConfirm={confirmState.onConfirm}
+				title={confirmState.title}
+				description={confirmState.description}
+				confirmLabel={confirmState.confirmLabel}
+				variant="danger"
+				loading={confirmState.loading}
 			/>
 		</div>
 	);

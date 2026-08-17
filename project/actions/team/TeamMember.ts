@@ -236,7 +236,7 @@ export async function addMemberToTeamAction(data: {
 			permission: data.permission || "member",
 		});
 
-		revalidatePath(`/team/${data.teamId}`);
+		revalidatePath(`/team/team/${data.teamId}`);
 		revalidatePath("/team");
 
 		return { success: true };
@@ -303,7 +303,7 @@ export async function updateTeamMemberAction(data: {
 					),
 				);
 
-			revalidatePath(`/team/${data.teamId}`);
+			revalidatePath(`/team/team/${data.teamId}`);
 			revalidatePath("/team");
 		}
 
@@ -348,7 +348,7 @@ export async function removeTeamMemberAction(
 				and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)),
 			);
 
-		revalidatePath(`/team/${teamId}`);
+		revalidatePath(`/team/team/${teamId}`);
 		revalidatePath("/team");
 
 		return { success: true };

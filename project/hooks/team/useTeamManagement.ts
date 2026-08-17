@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { createTeamWithMembersAction } from "@/actions/team/CreateTeam";
 import { getUserTeamsAction } from "@/actions/team/Team";
 import { getAcceptedInvitesAction } from "@/actions/team/TeamMember";
+import { useToast } from "@/hooks/toast/use-toast";
 import { type TeamItem, useTeamStore } from "@/stores/team/useTeamStore";
 
 export function useTeamManagement(initialTab?: "people" | "teams") {
@@ -10,6 +11,7 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 	const setActiveTab = useTeamStore((s) => s.setActiveTab);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [loadError, setLoadError] = useState<string | null>(null);
+	const { toast } = useToast();
 
 	useEffect(() => {
 		if (initialTab) {
@@ -85,6 +87,11 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 
 			if (!result.success) {
 				setLoadError(result.error ?? "Failed to create team.");
+				toast({
+					title: "Error",
+					description: result.error ?? "Failed to create team.",
+					variant: "destructive",
+				});
 				return;
 			}
 
@@ -93,8 +100,20 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 				useTeamStore.setState({ teams: refreshed.data as TeamItem[] });
 			}
 
+			toast({
+				title: "Team created",
+				description: `"${store.teamName}" has been successfully created.`,
+				variant: "success",
+			});
+
 			store.closeTeamModal();
 			store.resetTeamForm();
+		} catch {
+			toast({
+				title: "Error",
+				description: "An unexpected error occurred while creating the team.",
+				variant: "destructive",
+			});
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -110,3 +129,4 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 		handleTeamStep2Submit,
 	};
 }
+
