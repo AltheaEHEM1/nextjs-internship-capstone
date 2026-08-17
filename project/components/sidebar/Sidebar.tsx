@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight, Copyright, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import React, { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useCustomSidebarStore } from "../../stores/components/custom-sidebar-store";
@@ -29,6 +29,7 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 	} = useCustomSidebarStore();
 
 	const pathname = usePathname();
+	const searchParams = useSearchParams();
 	React.useEffect(() => {
 		const checkMobile = () => setIsMobile(window.innerWidth < 1024);
 		checkMobile();
@@ -60,34 +61,56 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 	}, [role]);
 
 	const isActive = (path: string) => {
-		const normalizedPath = pathname.replace(/\/$/, "");
-		const targetPath = (path.startsWith("/") ? path : `/${path}`).replace(
-			/\/$/,
-			"",
-		);
-		if (
-			(targetPath === "/dashboard" || targetPath === "/dashboard") &&
-			(normalizedPath === "" || normalizedPath === "/")
-		) {
+		try {
+			const url = new URL(path.startsWith("/") ? path : `/${path}`, "http://localhost");
+			const targetPath = url.pathname.replace(/\/$/, "") || "/";
+			const targetQuery = url.searchParams;
+			const normalizedPath = pathname.replace(/\/$/, "") || "/";
+
+			if (targetPath === "/dashboard" && normalizedPath === "/") {
+				return true;
+			}
+			
+			if (normalizedPath !== targetPath && !normalizedPath.startsWith(`${targetPath}/`)) {
+				return false;
+			}
+
+			// Special handling for Team deep links so the correct sub-tab stays active
+			if (normalizedPath.startsWith("/team/team")) {
+				return targetQuery.get("tab") === "teams";
+			}
+			if (normalizedPath.startsWith("/team/person")) {
+				return targetQuery.get("tab") === "people";
+			}
+
+			for (const [key, value] of targetQuery.entries()) {
+				if (searchParams.get(key) !== value) {
+					// Special fallback case: if tab=people is expected but not in URL, it's the default tab
+					if (key === 'tab' && value === 'people' && !searchParams.get('tab')) {
+						continue;
+					}
+					return false;
+				}
+			}
 			return true;
+		} catch (e) {
+			return false;
 		}
-		return normalizedPath === targetPath;
 	};
 
 	// Auto-open parent nav when the current pathname matches a sub-route and clear it otherwise
 	React.useEffect(() => {
-		const normalize = (p: string) => {
-			if (!p) return "";
-			const s = p.replace(/\/$/, "");
-			return s.startsWith("/") ? s : `/${s}`;
-		};
-
-		const current = normalize(pathname || "");
+		const current = pathname.replace(/\/$/, "") || "/";
 		const parent = NAV_CONFIG.find((item) => {
 			if (!item.links) return false;
 			return item.links.some((sub) => {
-				const subPath = normalize(sub.link || "");
-				return current === subPath || current.startsWith(`${subPath}/`);
+				try {
+					const url = new URL(sub.link?.startsWith("/") ? sub.link : `/${sub.link}`, "http://localhost");
+					const subPath = url.pathname.replace(/\/$/, "") || "/";
+					return current === subPath || current.startsWith(`${subPath}/`);
+				} catch (e) {
+					return false;
+				}
 			});
 		});
 

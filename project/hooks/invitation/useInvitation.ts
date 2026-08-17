@@ -1,12 +1,12 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import {
 	getInvitationByTokenAction,
 	respondToInvitation,
 } from "@/actions/team/Invitation";
+import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/hooks/toast/use-toast";
 import {
 	type InvitationData,
@@ -17,6 +17,8 @@ export function useInvitation(token: string) {
 	const router = useRouter();
 	const { toast } = useToast();
 	const { isSignedIn, isLoaded: isUserLoaded } = useUser();
+  const searchParams = useSearchParams();
+  const [autoAccepted, setAutoAccepted] = useState(false);
 
 	const invitationData = useInvitationStore((s) => s.invitationData);
 	const loading = useInvitationStore((s) => s.loading);
@@ -69,7 +71,7 @@ export function useInvitation(token: string) {
 				variant: "destructive",
 			});
 			router.push(
-				`/sign-in?redirect_url=${encodeURIComponent(`/invitation/${token}`)}`,
+				`/sign-in?redirect_url=${encodeURIComponent(`/invitation/${token}?accept=1`)}`,
 			);
 			return;
 		}
@@ -119,7 +121,20 @@ export function useInvitation(token: string) {
 		}
 	};
 
-	return {
+	  // Auto‑accept after login if the URL contains ?accept=1
+  useEffect(() => {
+    if (!isSignedIn || !invitationData) return;
+    const accept = searchParams.get('accept');
+    if (accept === '1' && !autoAccepted && actionLoading === null) {
+      setAutoAccepted(true);
+      // Trigger accept automatically
+      handleResponse('accept');
+      // Clean the query param to avoid re‑triggering
+      router.replace(`/invitation/${token}`);
+    }
+  }, [isSignedIn, invitationData, searchParams, autoAccepted, actionLoading]);
+
+  return {
 		invitationData,
 		loading,
 		actionLoading,

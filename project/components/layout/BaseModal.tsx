@@ -43,7 +43,7 @@ export default function BaseModal({
 				{/* Header */}
 				<div className="flex shrink-0 items-center justify-between p-4 pb-1">
 					{typeof title === "string" ? (
-						<h2 className="text-xl font-semibold text-outer_space-500 dark:text-platinum-300">
+						<h2 className="text-xl font-semibold dark:text-platinum-40">
 							{title}
 						</h2>
 					) : (

@@ -28,7 +28,7 @@ interface PersonDetail {
 	email: string;
 	avatar?: string | null;
 	role?: string;
-	teams: { id: string; name: string; icon: string; role?: string }[];
+	teams: { id: string; name: string; icon: string; coverUrl?: string | null; role?: string }[];
 	projects: {
 		id: string | number;
 		name: string;
@@ -114,7 +114,7 @@ export default function PersonDetailPage() {
 			<div className="space-y-6 pb-12">
 				<Link
 					href="/team"
-					className="inline-flex items-center gap-2 rounded-xl border border-french_gray-200 bg-white px-3 py-2 text-sm font-medium text-outer_space-700 shadow-xs transition-colors hover:bg-platinum-100 dark:border-paynes_gray-600 dark:bg-outer_space-500 dark:text-platinum-200 dark:hover:bg-outer_space-400"
+					className="inline-flex items-center px-3 text-sm font-medium text-outer_space-700"
 				>
 					<ArrowLeft size={16} />
 					Back to Team Management
@@ -133,7 +133,7 @@ export default function PersonDetailPage() {
 			<div className="space-y-6 pb-12">
 				<Link
 					href="/team"
-					className="inline-flex items-center gap-2 rounded-xl border border-french_gray-200 bg-white px-3 py-2 text-sm font-medium text-outer_space-700 shadow-xs transition-colors hover:bg-platinum-100 dark:border-paynes_gray-600 dark:bg-outer_space-500 dark:text-platinum-200 dark:hover:bg-outer_space-400"
+					className="inline-flex items-center px-3 text-sm font-medium text-outer_space-700"
 				>
 					<ArrowLeft size={16} />
 					Back to Team Management
@@ -177,8 +177,8 @@ export default function PersonDetailPage() {
 						{person.avatar && (person.avatar.startsWith("http") || person.avatar.startsWith("data:")) ? (
 							<img src={person.avatar} alt={person.name} className="h-full w-full object-cover" />
 						) : (
-							(person.avatar && person.avatar.length <= 3) 
-								? person.avatar 
+							(person.avatar && person.avatar.length <= 3)
+								? person.avatar
 								: (person.name?.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() || "U")
 						)}
 					</div>
@@ -220,7 +220,17 @@ export default function PersonDetailPage() {
 									className="py-3 flex items-center justify-between first:pt-0 last:pb-0 hover:opacity-80 transition-opacity"
 								>
 									<div className="flex items-center gap-3">
-										<span className="text-xl">{team.icon}</span>
+										{team.coverUrl ? (
+											<div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md shadow-sm">
+												<img src={team.coverUrl} alt={team.name} className="absolute inset-0 h-full w-full object-cover" />
+												<div className="absolute inset-0 bg-black/30" />
+												<span className="relative text-lg z-10">{team.icon}</span>
+											</div>
+										) : (
+											<div className="flex h-10 w-10 items-center justify-center rounded-md bg-platinum-100 text-lg dark:bg-paynes_gray-500">
+												{team.icon}
+											</div>
+										)}
 										<span className="font-semibold text-xs text-outer_space-800 dark:text-platinum-100">
 											{team.name}
 										</span>

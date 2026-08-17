@@ -10,28 +10,26 @@ import nodemailer from "nodemailer";
 import React from "react";
 import { InviteEmail } from "@/components/emails/InviteEmail";
 import { db } from "@/lib/db";
-import { invitations, teamMembers, teams } from "@/lib/db/schema";
+import { invitations, teamMembers } from "@/lib/db/schema";
 import type { Transporter } from "nodemailer";
-
-
 
 let transporter: Transporter;
 try {
-  transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
-    },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
-  });
+	transporter = nodemailer.createTransport({
+		host: "smtp.gmail.com",
+		port: 465,
+		secure: true,
+		auth: {
+			user: process.env.GMAIL_USER,
+			pass: process.env.GMAIL_APP_PASSWORD,
+		},
+		connectionTimeout: 15000,
+		greetingTimeout: 15000,
+		socketTimeout: 15000,
+	});
 } catch (e) {
-  console.error("Failed to create email transporter:", e);
-  throw new Error("Failed to configure email transport. Please contact support.");
+	console.error("Failed to create email transporter:", e);
+	throw new Error("Failed to configure email transport. Please contact support.");
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,7 +39,6 @@ import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 export async function sendUserInvitationAction(
 	email: string,
 	notes?: string,
-	teamId?: string,
 ) {
 	try {
 		const normalizedEmail = email.trim().toLowerCase();
@@ -88,7 +85,6 @@ export async function sendUserInvitationAction(
 				.update(invitations)
 				.set({
 					notes: sanitizedNotes,
-					teamId: teamId || existingPending.teamId,
 					invitedById: dbUser.id,
 					expiresAt,
 					token,
@@ -99,7 +95,6 @@ export async function sendUserInvitationAction(
 			await db.insert(invitations).values({
 				email: normalizedEmail,
 				notes: sanitizedNotes,
-				teamId: teamId || null,
 				invitedById: dbUser.id,
 				token,
 				expiresAt,
@@ -108,14 +103,6 @@ export async function sendUserInvitationAction(
 		}
 
 		let teamName = "Projectnify";
-		if (teamId) {
-			const team = await db.query.teams.findFirst({
-				where: eq(teams.id, teamId),
-			});
-			if (team?.name) {
-				teamName = team.name;
-			}
-		}
 
 		const rawAppUrl =
 			process.env.NEXT_PUBLIC_APP_URL ||
@@ -163,7 +150,6 @@ export async function getInvitationByTokenAction(token: string) {
 			where: eq(invitations.token, token),
 			with: {
 				invitedBy: true,
-				team: true,
 			},
 		});
 
@@ -242,24 +228,6 @@ export async function respondToInvitation(
 			.update(invitations)
 			.set({ status: "accepted" })
 			.where(eq(invitations.id, invite.id));
-
-		if (invite.teamId) {
-			const existingMember = await db.query.teamMembers.findFirst({
-				where: and(
-					eq(teamMembers.teamId, invite.teamId),
-					eq(teamMembers.userId, dbUser.id),
-				),
-			});
-
-			if (!existingMember) {
-				await db.insert(teamMembers).values({
-					teamId: invite.teamId,
-					userId: dbUser.id,
-					role: "Member",
-					permission: "member",
-				});
-			}
-		}
 
 		revalidatePath("/team");
 		return { success: true, status: "accepted" };

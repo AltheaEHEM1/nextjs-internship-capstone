@@ -5,7 +5,6 @@ import { useState, useRef } from "react";
 import { ImagePlus, X, UserPlus } from "lucide-react";
 import BaseModal from "@/components/layout/BaseModal";
 import { useTeamStore } from "@/stores/team/useTeamStore";
-import { useToast } from "@/hooks/toast/use-toast";
 
 export interface AddTeam1Props {
 	opened: boolean;
@@ -26,19 +25,11 @@ export default function AddTeamModal1({
 	const setCoverUrl = useTeamStore((s) => s.setCoverUrl);
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-	const { toast } = useToast();
 
 	if (!opened) return null;
 
 	const handleNextClick = () => {
-		if (!teamName.trim()) {
-			toast({
-				title: "Required Field",
-				description: "Team name is required.",
-				variant: "warning",
-			});
-			return;
-		}
+		if (!teamName.trim()) return;
 		onNext();
 	};
 
@@ -57,11 +48,12 @@ export default function AddTeamModal1({
 			<div className="space-y-4">
 				<div>
 					<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
-						Team Name
+						Team Name <span className="text-red-500">*</span>
 					</label>
 					<input
 						type="text"
 						value={teamName}
+						required
 						onChange={(e) => setTeamName(e.target.value)}
 						placeholder="e.g. Core Engineering"
 						className="mt-1 w-full rounded-xl border border-french_gray-200 p-2.5 text-sm dark:border-paynes_gray-600 dark:bg-outer_space-400 dark:text-platinum-100"
@@ -97,8 +89,13 @@ export default function AddTeamModal1({
 								onChange={(e) => {
 									const file = e.target.files?.[0];
 									if (file) {
-										const url = URL.createObjectURL(file);
-										setCoverUrl(url);
+										const reader = new FileReader();
+										reader.onloadend = () => {
+											if (typeof reader.result === 'string') {
+												setCoverUrl(reader.result);
+											}
+										};
+										reader.readAsDataURL(file);
 									}
 								}}
 							/>

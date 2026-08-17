@@ -1,13 +1,14 @@
 "use client";
 
-import { AlertCircle, ArrowLeft, MoreHorizontal, Pencil, Trash2, UserPlus,} from "lucide-react";
+import { AlertCircle, ArrowLeft, MoreHorizontal, Pencil, Trash2, UserPlus, } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { deleteTeamAction, getTeamDetailAction } from "@/actions/team/Team";
-import { removeTeamMemberAction, updateTeamMemberAction,} from "@/actions/team/TeamMember";
+import { removeTeamMemberAction, updateTeamMemberAction, } from "@/actions/team/TeamMember";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
+import EditRoleModal from "@/components/modals/team/EditRoleModal";
 import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import { useToast } from "@/hooks/toast/use-toast";
 import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
@@ -44,12 +45,32 @@ export default function SpecificTeam() {
 		title: "",
 		description: "",
 		confirmLabel: "",
-		onConfirm: () => {},
+		onConfirm: () => { },
+		loading: false,
+	});
+
+	// Edit Role Modal state
+	const [editRoleState, setEditRoleState] = useState<{
+		opened: boolean;
+		userId: string;
+		memberName: string;
+		currentRole: string;
+		currentPermission: string;
+		loading: boolean;
+	}>({
+		opened: false,
+		userId: "",
+		memberName: "",
+		currentRole: "",
+		currentPermission: "member",
 		loading: false,
 	});
 
 	const closeConfirm = () =>
 		setConfirmState((prev) => ({ ...prev, opened: false, loading: false }));
+
+	const closeEditRole = () =>
+		setEditRoleState((prev) => ({ ...prev, opened: false, loading: false }));
 
 	const handleDeleteTeam = () => {
 		setConfirmState({
@@ -116,13 +137,25 @@ export default function SpecificTeam() {
 		});
 	};
 
-	const handleEditMember = async (userId: string, currentRole: string) => {
-		const newRole = prompt("Enter new role:", currentRole);
-		if (newRole && newRole !== currentRole) {
+	const handleEditMemberClick = (userId: string, memberName: string, currentRole: string, currentPermission: string) => {
+		setEditRoleState({
+			opened: true,
+			userId,
+			memberName,
+			currentRole,
+			currentPermission,
+			loading: false,
+		});
+	};
+
+	const submitEditRole = async (newRole: string, newPermission: string) => {
+		if ((newRole && newRole !== editRoleState.currentRole) || newPermission !== editRoleState.currentPermission) {
+			setEditRoleState((prev) => ({ ...prev, loading: true }));
 			const res = await updateTeamMemberAction({
 				teamId,
-				userId,
+				userId: editRoleState.userId,
 				role: newRole,
+				permission: newPermission as "administrator" | "member" | "viewer",
 			});
 			if (res.success) {
 				toast({
@@ -130,18 +163,21 @@ export default function SpecificTeam() {
 					description: "The member's role has been successfully updated.",
 					variant: "success",
 				});
-				// Refresh team detail in store
 				const refreshed = await getTeamDetailAction(teamId);
 				if (refreshed.success && refreshed.data) {
 					setTeamDetail(refreshed.data as any);
 				}
+				closeEditRole();
 			} else {
 				toast({
 					title: "Error",
 					description: res.error || "Failed to update member role.",
 					variant: "destructive",
 				});
+				setEditRoleState((prev) => ({ ...prev, loading: false }));
 			}
+		} else {
+			closeEditRole();
 		}
 	};
 
@@ -188,8 +224,8 @@ export default function SpecificTeam() {
 		return (
 			<div className="space-y-6 pb-12">
 				<Link
-					href="/team"
-					className="inline-flex items-center gap-2 rounded-xl border border-french_gray-200 bg-white px-3 py-2 text-sm font-medium text-outer_space-700 shadow-xs transition-colors hover:bg-platinum-100 dark:border-paynes_gray-600 dark:bg-outer_space-500 dark:text-platinum-200 dark:hover:bg-outer_space-400"
+					href="/team?tab=teams"
+					className="inline-flex items-center px-3 py-2 text-sm font-medium text-outer_space-700"
 				>
 					<ArrowLeft size={16} />
 					Back to Teams
@@ -204,11 +240,11 @@ export default function SpecificTeam() {
 	}
 
 	return (
-		<div className="space-y-6 pb-12">
+		<div className="space-y-6">
 			<div className="flex items-center">
 				<Link
-					href="/team"
-					className="inline-flex items-center gap-2 rounded-xl border border-french_gray-200 bg-white px-3 py-2 text-sm font-medium text-outer_space-700 shadow-xs transition-colors hover:bg-platinum-100 dark:border-paynes_gray-600 dark:bg-outer_space-500 dark:text-platinum-200 dark:hover:bg-outer_space-400"
+					href="/team?tab=teams"
+					className="inline-flex items-center px-3 text-sm font-medium text-outer_space-700"
 				>
 					<ArrowLeft size={16} />
 					Back to Teams
@@ -255,12 +291,6 @@ export default function SpecificTeam() {
 								<div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1 z-10">
 									<button
 										type="button"
-										className="flex w-full items-center gap-2 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-									>
-										Edit Team
-									</button>
-									<button
-										type="button"
 										onClick={handleDeleteTeam}
 										className="flex w-full items-center gap-2 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
 									>
@@ -297,22 +327,26 @@ export default function SpecificTeam() {
 								</div>
 							</div>
 							<div className="flex items-center gap-2">
-								<button
-									type="button"
-									onClick={() => handleEditMember(m.userId, m.role || "Member")}
-									className="p-1.5 text-outer_space-400 hover:text-blue_munsell-500 hover:bg-blue_munsell-50 dark:hover:bg-outer_space-600 rounded-md transition-colors"
-									title="Edit Member Role"
-								>
-									<Pencil size={14} />
-								</button>
-								<button
-									type="button"
-									onClick={() => handleDeleteMember(m.userId, m.name)}
-									className="p-1.5 text-outer_space-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md transition-colors"
-									title="Remove Member"
-								>
-									<Trash2 size={14} />
-								</button>
+								{m.role !== "Owner" && (
+									<>
+										<button
+											type="button"
+											onClick={() => handleEditMemberClick(m.userId, m.name, m.role || "Member", m.permission || "member")}
+											className="p-1.5 text-outer_space-400 hover:text-blue_munsell-500 hover:bg-blue_munsell-50 dark:hover:bg-outer_space-600 rounded-md transition-colors"
+											title="Edit Member Role"
+										>
+											<Pencil size={14} />
+										</button>
+										<button
+											type="button"
+											onClick={() => handleDeleteMember(m.userId, m.name)}
+											className="p-1.5 text-outer_space-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md transition-colors"
+											title="Remove Member"
+										>
+											<Trash2 size={14} />
+										</button>
+									</>
+								)}
 							</div>
 						</div>
 					))}
@@ -334,6 +368,16 @@ export default function SpecificTeam() {
 				confirmLabel={confirmState.confirmLabel}
 				variant="danger"
 				loading={confirmState.loading}
+			/>
+
+			<EditRoleModal
+				opened={editRoleState.opened}
+				memberName={editRoleState.memberName}
+				currentRole={editRoleState.currentRole}
+				currentPermission={editRoleState.currentPermission}
+				loading={editRoleState.loading}
+				onClose={closeEditRole}
+				onSubmit={submitEditRole}
 			/>
 		</div>
 	);

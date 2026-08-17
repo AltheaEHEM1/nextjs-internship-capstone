@@ -71,6 +71,7 @@ export async function getPersonDetailAction(personId: string) {
 				id: teams.id,
 				name: teams.name,
 				icon: teams.icon,
+				coverUrl: teams.coverUrl,
 				role: teamMembers.role,
 			})
 			.from(teamMembers)
@@ -141,6 +142,7 @@ export async function getPersonDetailAction(personId: string) {
 					id: t.id,
 					name: t.name,
 					icon: t.icon || "💻",
+					coverUrl: t.coverUrl,
 					role: t.role || "Member",
 				})),
 				projects: personProjects,
@@ -212,7 +214,6 @@ export async function addMemberToTeamAction(data: {
 				const inviteRes = await sendUserInvitationAction(
 					data.email,
 					undefined,
-					data.teamId,
 				);
 				return {
 					success: inviteRes.success,

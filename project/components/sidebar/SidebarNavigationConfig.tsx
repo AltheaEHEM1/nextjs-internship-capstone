@@ -42,13 +42,13 @@ export const NAV_CONFIG: NavItem[] = [
 		current: false,
 		links: [
 			{
-				link: "team",
+				link: "team?tab=people",
 				label: "People",
 				description: "View all people",
 				icon: FaUsers,
 			},
 			{
-				link: "team/your-teams",
+				link: "team?tab=teams",
 				label: "Your Teams",
 				description: "View your specific teams",
 				icon: FaFolderOpen,

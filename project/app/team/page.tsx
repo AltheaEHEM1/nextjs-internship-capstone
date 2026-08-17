@@ -48,7 +48,6 @@ export function TeamPageContent({ initialTab }: { initialTab: "people" | "teams"
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{people.map((person: PersonItem) => (
 						<Link key={person.id} href={`/team/person/${person.id}`}>
-
 							<div className="group flex cursor-pointer items-center justify-between rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs transition-all duration-300 hover:border-blue_munsell-400 hover:shadow-md hover:-translate-y-0.5 dark:border-paynes_gray-600 dark:bg-outer_space-500">
 								<div className="flex min-w-0 items-center gap-4">
 									<div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue_munsell-500 text-xs font-bold text-white shadow-sm">
