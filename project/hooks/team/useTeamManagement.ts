@@ -324,23 +324,27 @@ export function useTeamDetailManagement(teamId: string) {
 		}
 	};
 
+	const setIsTeamDetailLoading = store.setIsTeamDetailLoading;
+	const setTeamDetailError = store.setTeamDetailError;
+	const setTeamDetail = store.setTeamDetail;
+
 	useEffect(() => {
 		let cancelled = false;
 
 		async function loadTeamDetail() {
-			store.setIsTeamDetailLoading(true);
-			store.setTeamDetailError(null);
+			setIsTeamDetailLoading(true);
+			setTeamDetailError(null);
 			const res = await getTeamDetailAction(teamId);
 			if (cancelled) return;
 
 			if (res.success && res.data) {
-				store.setTeamDetail(res.data as any);
+				setTeamDetail(res.data as any);
 				setBreadcrumbMapping(teamId, (res.data as any).name);
 			} else {
-				store.setTeamDetailError(res.error ?? "Failed to load team.");
-				store.setTeamDetail(null);
+				setTeamDetailError(res.error ?? "Failed to load team.");
+				setTeamDetail(null);
 			}
-			store.setIsTeamDetailLoading(false);
+			setIsTeamDetailLoading(false);
 		}
 
 		if (teamId) loadTeamDetail();
@@ -348,7 +352,7 @@ export function useTeamDetailManagement(teamId: string) {
 		return () => {
 			cancelled = true;
 		};
-	}, [teamId, store, setBreadcrumbMapping]);
+	}, [teamId, setBreadcrumbMapping, setIsTeamDetailLoading, setTeamDetailError, setTeamDetail]);
 
 	return {
 		teamDetail: store.teamDetail,

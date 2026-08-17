@@ -17,8 +17,10 @@ import { useCustomProjectNavigationStore } from "../../stores/project/custom-pro
 
 export default function ProjectNavigation({
 	projectId,
+	projectViews,
 }: {
 	projectId?: string;
+	projectViews?: string[];
 }) {
 	const params = useParams() as { id?: string } | undefined;
 	const id = projectId ?? params?.id;
@@ -26,16 +28,22 @@ export default function ProjectNavigation({
 
 	if (pathname?.includes("/project-settings")) return null;
 
-	const navItems = [
-		{ label: "Summary", icon: User, slug: "summary" },
+	const allNavItems = [
+		{ label: "Dashboard", icon: User, slug: "summary" },
 		{ label: "List", icon: ListTodo, slug: "list" },
 		{ label: "Board", icon: Kanban, slug: "" },
 		{ label: "Calendar", icon: Calendar, slug: "calendar" },
 		{ label: "Whiteboard", icon: FileText, slug: "whiteboard" },
 		{ label: "Gantt Chart", icon: GanttChart, slug: "gantt-chart" },
 		{ label: "Timeline", icon: Clock, slug: "timeline" },
-		{ label: "GitHub", icon: Code2, slug: "github" },
 	];
+
+	const navItems = projectViews
+		? allNavItems.filter(item =>
+			item.label === "Dashboard" ||
+			projectViews.some(v => v.toLowerCase() === item.label.toLowerCase())
+		)
+		: allNavItems;
 
 	const buildHref = (slug: string) => {
 		if (id) return `/projects/${id}${slug ? `/${slug}` : ""}`;
@@ -56,19 +64,18 @@ export default function ProjectNavigation({
 						item.slug === ""
 							? current === target
 							: current === target ||
-								(current.startsWith(target) &&
-									(current.length === target.length ||
-										current.charAt(target.length) === "/"));
+							(current.startsWith(target) &&
+								(current.length === target.length ||
+									current.charAt(target.length) === "/"));
 
 					return (
 						<Link
 							key={item.label}
 							href={href}
-							className={`flex whitespace-nowrap items-center border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
-								isActive
-									? "border-blue_munsell-600 text-blue_munsell-700 dark:border-blue_munsell-400 dark:text-blue_munsell-300"
-									: "border-transparent text-outer_space-500 hover:border-french_gray-400 hover:text-outer_space-700 dark:text-platinum-500 dark:hover:border-payne's_gray-300 dark:hover:text-platinum-300"
-							}`}
+							className={`flex whitespace-nowrap items-center border-b-2 px-1 py-3 text-sm font-medium transition-colors ${isActive
+								? "border-blue_munsell-600 text-blue_munsell-700 dark:border-blue_munsell-400 dark:text-blue_munsell-300"
+								: "border-transparent text-outer_space-500 hover:border-french_gray-400 hover:text-outer_space-700 dark:text-platinum-500 dark:hover:border-payne's_gray-300 dark:hover:text-platinum-300"
+								}`}
 						>
 							<item.icon className="mr-2" size={16} />
 							{item.label}

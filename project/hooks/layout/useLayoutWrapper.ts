@@ -12,6 +12,7 @@ const ADMIN_PREFIXES = [
     "/team",
     "/task",
     "/settings",
+    "/project-settings"
 ];
 
 /** Routes where the admin <main> padding should be suppressed. */
@@ -30,11 +31,17 @@ export function useLayoutWrapper() {
     const isAdminPath = ADMIN_PREFIXES.some((p) => pathname.startsWith(p));
     const isStandalonePath = STANDALONE_PREFIXES.some((p) => pathname.startsWith(p));
 
-    // Disable padding for /projects/[id] but keep it for /projects
+    // Disable padding for /projects/[id] but keep it for /projects, /projects/project-settings,
+    // and /projects/[id]/project-settings
     let disableAdminPadding = NO_PADDING_PREFIXES.some((p) =>
         pathname.startsWith(p)
     );
-    if (pathname.startsWith("/projects/") && pathname !== "/projects") {
+    if (
+        pathname.startsWith("/projects/") &&
+        pathname !== "/projects" &&
+        !pathname.startsWith("/projects/project-settings") &&
+        !pathname.endsWith("/project-settings")
+    ) {
         disableAdminPadding = true;
     }
 

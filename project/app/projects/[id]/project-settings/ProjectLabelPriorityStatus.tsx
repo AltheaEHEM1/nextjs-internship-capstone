@@ -1,8 +1,8 @@
-import { Flag, Layers, Tag, Trash2, X } from "lucide-react";
+import { Layers, Tag, Trash2, X } from "lucide-react";
 import { useProjectSettings } from "@/hooks/project/project-settings/useProjectSettings";
 
 /**
- * Component rendering project statuses, labels, and priorities.
+ * Component rendering project statuses and labels.
  * All state and actions are sourced through the central hook file.
  */
 function ProjectLabelPriority() {
@@ -32,7 +32,7 @@ function ProjectLabelPriority() {
 					</button>
 				</div>
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					{statuses.map((status, idx) => (
+					{statuses.map((status: any, idx: number) => (
 						<div
 							key={idx}
 							className="flex items-center justify-between p-3 rounded-xl border border-french_gray-200 dark:border-payne's_gray-700 bg-french_gray-50 dark:bg-outer_space-800"
@@ -76,7 +76,7 @@ function ProjectLabelPriority() {
 					</button>
 				</div>
 				<div className="flex flex-wrap gap-2">
-					{labels.map((lbl, idx) => (
+					{labels.map((lbl: any, idx: number) => (
 						<span
 							key={idx}
 							className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${lbl.color}`}

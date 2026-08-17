@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { horizontalListSortingStrategy, SortableContext, } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
@@ -9,13 +9,35 @@ import type { Task } from "@/components/board/TaskCard";
 import { TaskCardDisplay } from "@/components/board/TaskCard";
 import ViewTaskModal from "@/components/modals/task/view-task-modal/ViewTaskModal";
 import { useProjectBoard } from "@/hooks/project/(tabs)/useProjectBoard";
+import { getProjectDetailAction } from "@/actions/project/Project";
+import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
 
-export default function BoardPage() {
+export default function BoardPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const [isMounted, setIsMounted] = useState(false);
+    const setKanbanColumns = useProjectBoardStore((state) => state.setKanbanColumns);
+    const setTasks = useProjectBoardStore((state) => state.setTasks);
 
     useEffect(() => {
         setIsMounted(true);
-    }, []);
+        
+        getProjectDetailAction(id).then((res: any) => {
+            if (res.success && res.data?.lists && res.data.lists.length > 0) {
+                setKanbanColumns(res.data.lists.map((l: any) => l.name));
+                const allTasks = res.data.lists.flatMap((l: any) => 
+                    (l.tasks || []).map((t: any) => ({
+                        ...t,
+                        status: l.name
+                    }))
+                );
+                
+                // Only overwrite dummy tasks if we actually have tasks from the database
+                if (allTasks.length > 0) {
+                    setTasks(allTasks);
+                }
+            }
+        });
+    }, [id, setKanbanColumns, setTasks]);
 
     const {
         kanbanColumns,

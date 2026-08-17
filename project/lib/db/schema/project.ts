@@ -7,6 +7,7 @@ import {
 	timestamp,
 	uniqueIndex,
 	uuid,
+	jsonb,
 } from "drizzle-orm/pg-core";
 import { priorityEnum, roleEnum } from "./enums";
 import { teams, users } from "./index";
@@ -15,13 +16,18 @@ export const projects = pgTable(
 	"projects",
 	{
 		id: uuid("id").defaultRandom().primaryKey(),
-		name: text("name").notNull(),
+		name: text("name").notNull().unique(),
 		description: text("description"),
 		ownerId: uuid("owner_id")
 			.references(() => users.id, { onDelete: "cascade" })
 			.notNull(),
-		teamId: uuid("team_id").references(() => teams.id, { onDelete: "cascade" }),
-		dueDate: timestamp("due_date"),
+		teamId: uuid("team_id")
+			.references(() => teams.id, { onDelete: "cascade" })
+			.notNull(),
+		dueDate: timestamp("due_date").notNull(),
+		views: jsonb("views")
+			.default(["List", "Board", "Gantt Chart"])
+			.notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
 			.defaultNow()

@@ -160,6 +160,39 @@ export default function CustomStatus({
 		{ key: "closed" as const, label: "Closed" },
 	];
 
+	// Modal state for adding a new status
+	const [addModal, setAddModal] = useState<{
+		isOpen: boolean;
+		category: StatusCategory | null;
+		label: string;
+		inputValue: string;
+	}>({
+		isOpen: false,
+		category: null,
+		label: "",
+		inputValue: "",
+	});
+
+	const openAddModal = (category: StatusCategory, label: string) => {
+		setAddModal({ isOpen: true, category, label, inputValue: "" });
+	};
+
+	const closeAddModal = () => {
+		setAddModal((prev) => ({ ...prev, isOpen: false }));
+	};
+
+	const handleAddStatusSubmit = () => {
+		const val = addModal.inputValue.trim();
+		if (val && addModal.category) {
+			const currentStatusList = status[addModal.category];
+			onChangeStatus({
+				...status,
+				[addModal.category]: [...currentStatusList, val],
+			});
+		}
+		closeAddModal();
+	};
+
 	const pointerSensorOptions = useMemo(
 		() => ({ activationConstraint: { distance: 5 } }),
 		[],
@@ -243,7 +276,7 @@ export default function CustomStatus({
 									</span>
 									<button
 										type="button"
-										onClick={() => addPrompted(key, label)}
+										onClick={() => openAddModal(key, label)}
 										className="text-gray-100 hover:text-white"
 									>
 										<Plus size={16} />
@@ -268,7 +301,7 @@ export default function CustomStatus({
 
 									<button
 										type="button"
-										onClick={() => addPrompted(key, label)}
+										onClick={() => openAddModal(key, label)}
 										className="w-full rounded-lg border border-dashed border-gray-700 bg-transparent py-2 text-center text-xs text-gray-400 hover:border-gray-500 hover:text-gray-200 transition"
 									>
 										+ Add status
@@ -288,6 +321,64 @@ export default function CustomStatus({
 					)}
 				</DndContext>
 			</div>
+
+			{/* Add Status Modal */}
+			<BaseModal
+				opened={addModal.isOpen}
+				onClose={closeAddModal}
+				width={400}
+				title={
+					<div className="flex items-center gap-2">
+						<Plus size={18} className="text-[#1e9b65]" />
+						<span>Add {addModal.label} Status</span>
+					</div>
+				}
+				footer={
+					<>
+						<button
+							type="button"
+							onClick={closeAddModal}
+							className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-gray-800"
+						>
+							Cancel
+						</button>
+						<button
+							type="button"
+							onClick={handleAddStatusSubmit}
+							disabled={!addModal.inputValue.trim()}
+							className="rounded-lg bg-[#1e9b65] px-4 py-2 text-sm font-medium text-white shadow hover:opacity-95 disabled:opacity-50 transition"
+						>
+							Add Status
+						</button>
+					</>
+				}
+			>
+				<div>
+					<label
+						htmlFor="statusName"
+						className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+					>
+						Status Name
+					</label>
+					<input
+						type="text"
+						id="statusName"
+						value={addModal.inputValue}
+						onChange={(e) =>
+							setAddModal((prev) => ({ ...prev, inputValue: e.target.value }))
+						}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" && addModal.inputValue.trim()) {
+								e.preventDefault();
+								handleAddStatusSubmit();
+							}
+						}}
+						placeholder="e.g. In Review"
+						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1e9b65] focus:outline-none focus:ring-1 focus:ring-[#1e9b65] dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+						autoFocus
+					/>
+				</div>
+			</BaseModal>
 		</BaseModal>
 	);
 }

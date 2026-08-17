@@ -2,12 +2,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export interface UseProjectHeaderParams {
+	projectId?: string;
 	onOpenSettings?: () => void;
 	onOpenAddPriority?: () => void;
 	onOpenAddLabel?: () => void;
 }
 
 export function useProjectHeader({
+	projectId,
 	onOpenSettings,
 	onOpenAddPriority,
 	onOpenAddLabel,
@@ -34,8 +36,8 @@ export function useProjectHeader({
 	const handleSettings = () => {
 		if (onOpenSettings) {
 			onOpenSettings();
-		} else {
-			router.push(`/projects/project-settings`);
+		} else if (projectId) {
+			router.push(`/projects/${projectId}/project-settings`);
 		}
 	};
 

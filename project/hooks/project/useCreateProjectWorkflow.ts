@@ -10,12 +10,17 @@ export interface StatusGroup {
 }
 
 type SubView = "main" | "views" | "statuses";
-type Workflow = "starter" | "project_management";
 
 /* ── Default data per workflow ────────────────────────────── */
 
-const STARTER_VIEWS = ["List", "Board"];
-const PM_VIEWS = ["List", "Board", "Calendar", "Gantt", "Team"];
+const AVAILABLE_VIEWS = [
+	"Dashboard",
+	"List",
+	"Board",
+	"Whiteboard",
+	"Gantt chart",
+	"Timeline",
+];
 
 const DEFAULT_STATUSES: StatusGroup = {
 	notStarted: ["To Do"],
@@ -31,30 +36,22 @@ const DEFAULT_STATUSES: StatusGroup = {
  * (workflow selection, default views, and task statuses).
  */
 export function useCreateProjectWorkflow() {
-	const [workflow, setWorkflow] = useState<Workflow>("starter");
 	const [activeSubView, setActiveSubView] = useState<SubView>("main");
-	const [views, setViews] = useState<string[]>(STARTER_VIEWS);
+	const [views] = useState<string[]>(AVAILABLE_VIEWS);
 	const [statuses, setStatuses] = useState<StatusGroup>(DEFAULT_STATUSES);
-
-	const handleWorkflowChange = useCallback((w: Workflow) => {
-		setWorkflow(w);
-		setViews(w === "starter" ? STARTER_VIEWS : PM_VIEWS);
-	}, []);
 
 	/** Collects all form data and returns the final payload. */
 	const handleFinalCreate = useCallback(
-		() => ({ workflow, views, statuses }),
-		[workflow, views, statuses],
+		() => ({ views, statuses }),
+		[views, statuses],
 	);
 
 	return {
-		workflow,
 		activeSubView,
 		views,
 		statuses,
-		setViews,
+		AVAILABLE_VIEWS,
 		setStatuses,
-		handleWorkflowChange,
 		setActiveSubView,
 		handleFinalCreate,
 	};

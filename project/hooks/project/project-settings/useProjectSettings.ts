@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useProjectSettingsStore } from "@/stores/project/project-settings/ProjectSettingsStore";
-import type { AccessRole, TeamMember, ProjectLabel, ProjectPriority, ProjectStatus } from "@/app/projects/project-settings/page";
+import type { AccessRole, TeamMember, ProjectLabel, ProjectPriority, ProjectStatus } from "@/stores/project/project-settings/ProjectSettingsStore";
 
 /**
  * Combined custom hooks containing all Hook logic (useState, useEffect, Zustand consumption)
@@ -22,6 +22,8 @@ export function useInitializeProjectSettings(initialData: {
     initialTitle: string;
     initialDescription: string;
     initialTeam: string;
+    initialTeamId: string;
+    availableTeams: { id: string; name: string }[];
     initialAccess: AccessRole;
     initialMembers: TeamMember[];
     initialLabels: ProjectLabel[];
@@ -33,6 +35,8 @@ export function useInitializeProjectSettings(initialData: {
             title: initialData.initialTitle,
             description: initialData.initialDescription,
             team: initialData.initialTeam,
+            teamId: initialData.initialTeamId,
+            availableTeams: initialData.availableTeams,
             access: initialData.initialAccess,
             members: initialData.initialMembers,
             labels: initialData.initialLabels,
