@@ -12,7 +12,12 @@ export default function LayoutWrapper({
 }: {
 	children: React.ReactNode;
 }) {
-	const { isAdminPath, isAuthPath, disableAdminPadding } = useLayoutWrapper();
+	const { isAdminPath, isAuthPath, isStandalonePath, disableAdminPadding } =
+		useLayoutWrapper();
+
+	if (isStandalonePath) {
+		return <>{children}</>;
+	}
 
 	if (isAuthPath) {
 		return <BaseAuth>{children}</BaseAuth>;

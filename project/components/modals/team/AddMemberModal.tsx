@@ -44,27 +44,52 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 		setLoading(true);
 		try {
 			// Pass both email and the optional notes string to the action
-			await Promise.all(
+			const results = await Promise.all(
 				emails.map((email: string) =>
 					sendUserInvitationAction(email, notes.trim() || undefined),
 				),
 			);
 
-			toast({
-				title: "Invitations Sent",
-				description: `Successfully sent ${emails.length} invitation(s).`,
-				variant: "success",
-			});
-			setAddPeopleContact("");
-			setNotes("");
-			setTimeout(() => {
-				onClose();
-			}, 800);
+			const failed = results.filter((r) => !r.success);
+			const succeeded = results.filter((r) => r.success);
+
+			if (failed.length > 0) {
+				const errorMsg =
+					failed
+						.map((f) => f.error)
+						.filter(Boolean)
+						.join("; ") || "Failed to send email.";
+
+				toast({
+					title:
+						failed.length === emails.length
+							? "Failed to send invitation"
+							: "Partial Invitation Failure",
+					description: errorMsg,
+					variant: "destructive",
+				});
+
+				if (failed.length === emails.length) {
+					return;
+				}
+			}
+
+			if (succeeded.length > 0) {
+				toast({
+					title: "Invitations Sent",
+					description: `Successfully sent ${succeeded.length} invitation(s).`,
+					variant: "success",
+				});
+				setAddPeopleContact("");
+				setNotes("");
+				setTimeout(() => {
+					onClose();
+				}, 800);
+			}
 		} catch (error) {
 			toast({
 				title: "Error",
-				description:
-					(error as Error).message || "Failed to send invitations.",
+				description: (error as Error).message || "Failed to send invitations.",
 				variant: "destructive",
 			});
 		} finally {
@@ -106,10 +131,14 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 		>
 			<div className="space-y-4">
 				<div>
-					<label className="text-xs font-medium text-outer_space-500">
+					<label
+						htmlFor="invite-email-input"
+						className="text-xs font-medium text-outer_space-500"
+					>
 						Email Address (comma-separated)
 					</label>
 					<input
+						id="invite-email-input"
 						type="text"
 						placeholder="colleague@example.com"
 						value={addPeopleContact}
@@ -120,7 +149,10 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 
 				<div>
 					<div className="flex justify-between items-center">
-						<label className="text-xs font-medium text-outer_space-500">
+						<label
+							htmlFor="invite-notes-input"
+							className="text-xs font-medium text-outer_space-500"
+						>
 							Personal Note <span className="text-gray-400">(Optional)</span>
 						</label>
 						<span className="text-[10px] text-gray-400">
@@ -128,6 +160,7 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 						</span>
 					</div>
 					<textarea
+						id="invite-notes-input"
 						maxLength={100}
 						rows={3}
 						placeholder="Add a personal message to your invitation..."

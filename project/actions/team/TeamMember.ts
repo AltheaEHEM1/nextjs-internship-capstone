@@ -209,7 +209,11 @@ export async function addMemberToTeamAction(data: {
 
 		if (!targetUserId) {
 			if (data.email) {
-				const inviteRes = await sendUserInvitationAction(data.email);
+				const inviteRes = await sendUserInvitationAction(
+					data.email,
+					undefined,
+					data.teamId,
+				);
 				return {
 					success: inviteRes.success,
 					error: inviteRes.error,
