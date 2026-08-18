@@ -1,8 +1,8 @@
 "use client";
 
+import { arrayMove } from "@dnd-kit/sortable";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { arrayMove } from "@dnd-kit/sortable";
 
 type StatusShape = {
 	notStarted: string[];
@@ -21,7 +21,11 @@ export interface CustomStatusState {
 	// Actions
 	handleAdd: (category: keyof StatusShape) => void;
 	handleRemove: (category: keyof StatusShape, index: number) => void;
-	handleReorder: (category: keyof StatusShape, fromIndex: number, toIndex: number) => void;
+	handleReorder: (
+		category: keyof StatusShape,
+		fromIndex: number,
+		toIndex: number,
+	) => void;
 	addPrompted: (category: keyof StatusShape, label: string) => void;
 	// Initializer – called from component when props become available
 	initialize: (status: StatusShape, onChange: (s: StatusShape) => void) => void;

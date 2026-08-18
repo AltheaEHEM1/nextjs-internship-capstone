@@ -10,7 +10,7 @@ export interface UseViewTaskModalRightParams {
 		startDate: string;
 		reporter: string;
 	};
-	onUpdateTask?: (updatedFields: Record<string, any>) => void;
+	onUpdateTask?: (updatedFields: Record<string, unknown>) => void;
 }
 
 export function useViewTaskModalRight({
@@ -24,7 +24,7 @@ export function useViewTaskModalRight({
 	const [label, setLabel] = useState(taskData.label);
 	const [startDate, setStartDate] = useState(taskData.startDate);
 
-	const handleFieldChange = (field: string, value: any) => {
+	const handleFieldChange = (field: string, value: unknown) => {
 		if (onUpdateTask) onUpdateTask({ [field]: value });
 	};
 

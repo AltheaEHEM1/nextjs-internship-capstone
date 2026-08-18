@@ -35,7 +35,7 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 		checkMobile();
 		window.addEventListener("resize", checkMobile);
 		return () => window.removeEventListener("resize", checkMobile);
-	}, []);
+	}, [setIsMobile]);
 
 	const isNarrow = collapsed && !isHovered && !isMobile;
 
@@ -62,7 +62,10 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 
 	const isActive = (path: string) => {
 		try {
-			const url = new URL(path.startsWith("/") ? path : `/${path}`, "http://localhost");
+			const url = new URL(
+				path.startsWith("/") ? path : `/${path}`,
+				"http://localhost",
+			);
 			const targetPath = url.pathname.replace(/\/$/, "") || "/";
 			const targetQuery = url.searchParams;
 			const normalizedPath = pathname.replace(/\/$/, "") || "/";
@@ -70,8 +73,11 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 			if (targetPath === "/dashboard" && normalizedPath === "/") {
 				return true;
 			}
-			
-			if (normalizedPath !== targetPath && !normalizedPath.startsWith(`${targetPath}/`)) {
+
+			if (
+				normalizedPath !== targetPath &&
+				!normalizedPath.startsWith(`${targetPath}/`)
+			) {
 				return false;
 			}
 
@@ -86,14 +92,14 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 			for (const [key, value] of targetQuery.entries()) {
 				if (searchParams.get(key) !== value) {
 					// Special fallback case: if tab=people is expected but not in URL, it's the default tab
-					if (key === 'tab' && value === 'people' && !searchParams.get('tab')) {
+					if (key === "tab" && value === "people" && !searchParams.get("tab")) {
 						continue;
 					}
 					return false;
 				}
 			}
 			return true;
-		} catch (e) {
+		} catch (_e) {
 			return false;
 		}
 	};
@@ -105,17 +111,20 @@ export default function Sidebar({ opened, close, role }: SidebarProps) {
 			if (!item.links) return false;
 			return item.links.some((sub) => {
 				try {
-					const url = new URL(sub.link?.startsWith("/") ? sub.link : `/${sub.link}`, "http://localhost");
+					const url = new URL(
+						sub.link?.startsWith("/") ? sub.link : `/${sub.link}`,
+						"http://localhost",
+					);
 					const subPath = url.pathname.replace(/\/$/, "") || "/";
 					return current === subPath || current.startsWith(`${subPath}/`);
-				} catch (e) {
+				} catch (_e) {
 					return false;
 				}
 			});
 		});
 
 		setOpenDropdown(parent ? parent.label : null);
-	}, [pathname]);
+	}, [pathname, setOpenDropdown]);
 
 	const NavContent = (
 		<div

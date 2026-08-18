@@ -1,17 +1,21 @@
 "use client";
-import { useState } from "react";
 import { Mail, Shield, User } from "lucide-react";
+import { useState } from "react";
+import { getTeamDetailAction } from "@/actions/team/Team";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import { useProjectSettings } from "@/hooks/project/project-settings/useProjectSettings";
-import { getTeamDetailAction } from "@/actions/team/Team";
-import type { AccessRole, TeamMember } from "@/stores/project/project-settings/ProjectSettingsStore";
+import type {
+	AccessRole,
+	TeamMember,
+} from "@/stores/project/project-settings/ProjectSettingsStore";
 
 interface MemberRoleProps {
 	members: TeamMember[];
 }
 
 export default function MemberRole({ members }: MemberRoleProps) {
-	const { team, teamId, availableTeams, setTeamId, setTeam, setMembers } = useProjectSettings();
+	const { team, teamId, availableTeams, setTeamId, setTeam, setMembers } =
+		useProjectSettings();
 	const [pendingTeamId, setPendingTeamId] = useState<string | null>(null);
 
 	const getAccessBadgeStyle = (access: AccessRole) => {
@@ -72,13 +76,21 @@ export default function MemberRole({ members }: MemberRoleProps) {
 
 						const res = await getTeamDetailAction(newTeamId);
 						if (res.success && res.data?.members) {
-							const newMembers: TeamMember[] = res.data.members.map((m: any) => ({
-								id: m.id,
-								name: m.name || "Unknown",
-								email: m.email || "",
-								role: m.role || "Member",
-								access: (m.permission as AccessRole) || "member",
-							}));
+							const newMembers: TeamMember[] = res.data.members.map(
+								(m: {
+									id: string;
+									name: string | null;
+									email: string | null;
+									role: string | null;
+									permission: string | null;
+								}) => ({
+									id: m.id,
+									name: m.name || "Unknown",
+									email: m.email || "",
+									role: m.role || "Member",
+									access: (m.permission as AccessRole) || "member",
+								}),
+							);
 							setMembers(newMembers);
 						}
 					}
@@ -126,7 +138,7 @@ export default function MemberRole({ members }: MemberRoleProps) {
 										<div>
 											<span
 												className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border mt-1 ${getAccessBadgeStyle(
-													member.access
+													member.access,
 												)}`}
 											>
 												<Shield size={10} /> {member.access}

@@ -5,59 +5,56 @@ import { useEffect, useRef } from "react";
 import { useTimeline } from "@/hooks/project/(tabs)/useTimeline";
 
 export default function Timeline() {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const { items: timelineItems, options: storeOptions } = useTimeline();
+	const containerRef = useRef<HTMLDivElement>(null);
+	const { items: timelineItems, options: storeOptions } = useTimeline();
 
-    useEffect(() => {
-        if (!containerRef.current) return;
+	useEffect(() => {
+		if (!containerRef.current) return;
 
-        let timeline: { destroy: () => void } | null = null;
+		let timeline: { destroy: () => void } | null = null;
 
-        Promise.all([import("vis-timeline/peer"), import("vis-data")]).then(
-            ([{ Timeline: VisTimeline }, { DataSet }]) => {
-                if (!containerRef.current) return;
+		Promise.all([import("vis-timeline/peer"), import("vis-data")]).then(
+			([{ Timeline: VisTimeline }, { DataSet }]) => {
+				const container = containerRef.current;
+				if (!container) return;
 
-                const items = new DataSet(timelineItems);
+				const items = new DataSet(timelineItems);
 
-                const mergedOptions = {
-                    orientation: "top" as const,
-                    stack: false,
-                    showMajorLabels: true,
-                    showCurrentTime: true,
-                    ...storeOptions,
-                };
+				const mergedOptions = {
+					orientation: "top" as const,
+					stack: false,
+					showMajorLabels: true,
+					showCurrentTime: true,
+					...storeOptions,
+				};
 
-                timeline = new VisTimeline(
-                    containerRef.current!,
-                    items,
-                    mergedOptions,
-                );
-            },
-        );
+				timeline = new VisTimeline(container, items, mergedOptions);
+			},
+		);
 
-        return () => {
-            timeline?.destroy();
-        };
-    }, [timelineItems, storeOptions]);
+		return () => {
+			timeline?.destroy();
+		};
+	}, [timelineItems, storeOptions]);
 
-    return (
-        <div className="space-y-4 pb-12">
-            {/* Header Info */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
-                        Project Roadmap Timeline
-                    </h2>
-                    <p className="text-sm text-outer_space-500 dark:text-platinum-400">
-                        Track sequential product phases, feature rollouts, and major project
-                        milestones over time.
-                    </p>
-                </div>
-            </div>
+	return (
+		<div className="space-y-4 pb-12">
+			{/* Header Info */}
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div>
+					<h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
+						Project Roadmap Timeline
+					</h2>
+					<p className="text-sm text-outer_space-500 dark:text-platinum-400">
+						Track sequential product phases, feature rollouts, and major project
+						milestones over time.
+					</p>
+				</div>
+			</div>
 
-            {/* Timeline Container Box */}
-            <div className="overflow-hidden rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-100">
-                <style jsx global>{`
+			{/* Timeline Container Box */}
+			<div className="overflow-hidden rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-100">
+				<style jsx global>{`
                     .vis-timeline {
                         border: none !important;
                         font-family: inherit;
@@ -90,8 +87,8 @@ export default function Timeline() {
                     }
                 `}</style>
 
-                <div ref={containerRef} className="w-full" />
-            </div>
-        </div>
-    );
+				<div ref={containerRef} className="w-full" />
+			</div>
+		</div>
+	);
 }

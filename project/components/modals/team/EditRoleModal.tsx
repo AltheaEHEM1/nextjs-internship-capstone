@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import BaseModal from "@/components/layout/BaseModal";
 import { Pencil } from "lucide-react";
+import { useEffect, useState } from "react";
+import BaseModal from "@/components/layout/BaseModal";
 
 interface EditRoleModalProps {
 	opened: boolean;
@@ -53,24 +53,31 @@ export default function EditRoleModal({
 		>
 			<form onSubmit={handleSubmit} className="space-y-4 pt-2">
 				<div>
-					<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+					<label
+						htmlFor="role"
+						className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+					>
 						Role
 					</label>
 					<input
+						id="role"
 						type="text"
 						value={role}
 						onChange={(e) => setRole(e.target.value)}
 						disabled={loading}
-						autoFocus
 						placeholder="e.g. Developer, Designer..."
 						className="mt-1 w-full rounded-xl border border-french_gray-200 p-2.5 text-sm outline-hidden focus:border-blue_munsell-400 dark:border-paynes_gray-600 dark:bg-outer_space-400 dark:text-platinum-100"
 					/>
 				</div>
 				<div>
-					<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+					<label
+						htmlFor="permission"
+						className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+					>
 						Permission
 					</label>
 					<select
+						id="permission"
 						value={permission}
 						onChange={(e) => setPermission(e.target.value)}
 						disabled={loading}

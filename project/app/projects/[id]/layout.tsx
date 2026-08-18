@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import BaseProject from "@/components/layout/BaseProject";
 import { getProjectDetailAction } from "@/actions/project/Project";
+import BaseProject from "@/components/layout/BaseProject";
 
 interface ProjectLayoutProps {
 	children: ReactNode;

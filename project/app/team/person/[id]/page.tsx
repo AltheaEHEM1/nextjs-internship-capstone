@@ -1,6 +1,15 @@
 "use client";
 
-import { AlertCircle, ArrowLeft, Briefcase, Folder, Mail, Trash2, Users, } from "lucide-react";
+import {
+	AlertCircle,
+	ArrowLeft,
+	Briefcase,
+	Folder,
+	Mail,
+	Trash2,
+	Users,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
@@ -91,12 +100,26 @@ export default function PersonDetailPage() {
 			<div className="rounded-2xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-paynes_gray-600 dark:bg-outer_space-500">
 				<div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
 					<div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-blue_munsell-500 text-2xl font-bold text-white shadow-md">
-						{person.avatar && (person.avatar.startsWith("http") || person.avatar.startsWith("data:")) ? (
-							<img src={person.avatar} alt={person.name} className="h-full w-full object-cover" />
+						{person.avatar &&
+						(person.avatar.startsWith("http") ||
+							person.avatar.startsWith("data:")) ? (
+							<Image
+								src={person.avatar}
+								alt={person.name}
+								width={80}
+								height={80}
+								className="h-full w-full object-cover"
+								unoptimized
+							/>
+						) : person.avatar && person.avatar.length <= 3 ? (
+							person.avatar
 						) : (
-							(person.avatar && person.avatar.length <= 3)
-								? person.avatar
-								: (person.name?.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() || "U")
+							person.name
+								?.split(" ")
+								.map((n) => n[0])
+								.join("")
+								.substring(0, 2)
+								.toUpperCase() || "U"
 						)}
 					</div>
 					<div className="space-y-1">
@@ -139,9 +162,18 @@ export default function PersonDetailPage() {
 									<div className="flex items-center gap-3">
 										{team.coverUrl ? (
 											<div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md shadow-sm">
-												<img src={team.coverUrl} alt={team.name} className="absolute inset-0 h-full w-full object-cover" />
+												<Image
+													src={team.coverUrl}
+													alt={team.name}
+													width={40}
+													height={40}
+													className="absolute inset-0 h-full w-full object-cover"
+													unoptimized
+												/>
 												<div className="absolute inset-0 bg-black/30" />
-												<span className="relative text-lg z-10">{team.icon}</span>
+												<span className="relative text-lg z-10">
+													{team.icon}
+												</span>
 											</div>
 										) : (
 											<div className="flex h-10 w-10 items-center justify-center rounded-md bg-platinum-100 text-lg dark:bg-paynes_gray-500">

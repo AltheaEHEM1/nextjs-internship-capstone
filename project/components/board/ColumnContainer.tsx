@@ -58,7 +58,6 @@ export function ColumnContainer({
 						{tasks.length}
 					</span>
 				</h3>
-
 			</div>
 
 			{/* Task Cards Container */}

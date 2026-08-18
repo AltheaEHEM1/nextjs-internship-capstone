@@ -3,9 +3,9 @@
 import { Layers } from "lucide-react";
 import { useEffect } from "react";
 import BaseModal from "@/components/layout/BaseModal";
+import { useToast } from "@/hooks/toast/use-toast";
 import { cn } from "@/lib/utils";
 import { useCustomAddStatusStore } from "@/stores/custom-add-status-store";
-import { useToast } from "@/hooks/toast/use-toast";
 
 interface AddStatusProps {
 	isOpen: boolean;
@@ -47,15 +47,8 @@ const PRESET_COLORS = [
 
 export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 	const { toast } = useToast();
-	const {
-		name,
-		setName,
-		description,
-		setDescription,
-		color,
-		setColor,
-		handleSubmit,
-	} = useCustomAddStatusStore();
+	const { name, setName, color, setColor, handleSubmit } =
+		useCustomAddStatusStore();
 
 	const onFormSubmit = (e: React.FormEvent) => {
 		handleSubmit(e);
@@ -96,10 +89,14 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 			{/* Form */}
 			<form onSubmit={onFormSubmit} className="p-6 space-y-5">
 				<div className="space-y-1.5">
-					<label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+					<label
+						htmlFor="statusName"
+						className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider"
+					>
 						Status Name
 					</label>
 					<input
+						id="statusName"
 						type="text"
 						value={name}
 						onChange={(e) => setName(e.target.value)}
@@ -109,9 +106,9 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 					/>
 				</div>
 				<div className="space-y-2">
-					<label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+					<div className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
 						Theme Color
-					</label>
+					</div>
 					<div className="flex items-center gap-2.5 pt-0.5">
 						{PRESET_COLORS.map((c) => (
 							<button

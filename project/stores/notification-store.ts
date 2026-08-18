@@ -1,6 +1,5 @@
 // Notification Zustand store
 
-import type { LucideIcon } from "lucide-react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -33,7 +32,7 @@ export interface NotificationState {
 }
 
 export const useNotificationStore = create<NotificationState>()(
-	devtools((set, get) => ({
+	devtools((set, _get) => ({
 		settings: {
 			emailAssigned: true,
 			emailMentions: true,

@@ -4,9 +4,9 @@ import { Tag } from "lucide-react";
 import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 import BaseModal from "@/components/layout/BaseModal";
+import { useToast } from "@/hooks/toast/use-toast";
 import { cn } from "@/lib/utils";
 import { useCustomLabelStore } from "../../../stores/custom-label-store";
-import { useToast } from "@/hooks/toast/use-toast";
 
 interface AddLabelProps {
 	isOpen: boolean;
@@ -74,9 +74,9 @@ export function AddLabelModal({ isOpen, onClose, onSave }: AddLabelProps) {
 	}, [onSave, onClose]);
 
 	return (
-		<BaseModal 
-			opened={isOpen} 
-			onClose={onClose} 
+		<BaseModal
+			opened={isOpen}
+			onClose={onClose}
 			width={448}
 			title={
 				<div className="flex items-center gap-3">

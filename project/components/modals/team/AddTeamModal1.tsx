@@ -1,8 +1,9 @@
 "use client";
 
 import EmojiPicker, { Theme } from "emoji-picker-react";
-import { useState, useRef } from "react";
-import { ImagePlus, X, UserPlus } from "lucide-react";
+import { ImagePlus, UserPlus, X } from "lucide-react";
+import Image from "next/image";
+import { useRef, useState } from "react";
 import BaseModal from "@/components/layout/BaseModal";
 import { useTeamStore } from "@/stores/team/useTeamStore";
 
@@ -47,10 +48,14 @@ export default function AddTeamModal1({
 		>
 			<div className="space-y-4">
 				<div>
-					<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+					<label
+						htmlFor="teamName"
+						className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+					>
 						Team Name <span className="text-red-500">*</span>
 					</label>
 					<input
+						id="teamName"
 						type="text"
 						value={teamName}
 						required
@@ -60,12 +65,21 @@ export default function AddTeamModal1({
 					/>
 				</div>
 				<div>
-					<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+					<label
+						htmlFor="coverPhoto"
+						className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+					>
 						Cover Photo
 					</label>
 					{coverUrl ? (
 						<div className="relative mt-2 h-32 w-full rounded-xl border border-french_gray-200 overflow-hidden dark:border-paynes_gray-600">
-							<img src={coverUrl} alt="Cover" className="h-full w-full object-cover" />
+							<Image
+								src={coverUrl}
+								alt="Cover"
+								fill
+								unoptimized
+								className="object-cover"
+							/>
 							<button
 								type="button"
 								onClick={() => setCoverUrl("")}
@@ -75,12 +89,15 @@ export default function AddTeamModal1({
 							</button>
 						</div>
 					) : (
-						<div
+						<button
+							type="button"
 							onClick={() => fileInputRef.current?.click()}
 							className="mt-2 flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-french_gray-200 bg-gray-50 hover:bg-gray-100 dark:border-paynes_gray-600 dark:bg-outer_space-400 dark:hover:bg-outer_space-300 transition-colors"
 						>
 							<ImagePlus className="mb-2 h-6 w-6 text-gray-400" />
-							<span className="text-xs text-gray-500">Click to upload a cover photo</span>
+							<span className="text-xs text-gray-500">
+								Click to upload a cover photo
+							</span>
 							<input
 								type="file"
 								ref={fileInputRef}
@@ -91,7 +108,7 @@ export default function AddTeamModal1({
 									if (file) {
 										const reader = new FileReader();
 										reader.onloadend = () => {
-											if (typeof reader.result === 'string') {
+											if (typeof reader.result === "string") {
 												setCoverUrl(reader.result);
 											}
 										};
@@ -99,11 +116,14 @@ export default function AddTeamModal1({
 									}
 								}}
 							/>
-						</div>
+						</button>
 					)}
 				</div>
 				<div>
-					<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+					<label
+						htmlFor="teamIcon"
+						className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+					>
 						Team Icon / Emoji
 					</label>
 					<div className="flex items-center gap-3 mt-1">

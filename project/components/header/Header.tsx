@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useHeader } from "../../hooks/header/useHeader";
 
 export function Header() {
-	const { isOpen, setIsOpen, toggle, close, navLinks, pathname, isActive } =
-		useHeader();
+	const { isOpen, toggle, close, navLinks, isActive } = useHeader();
 	const navLinkClass =
 		"text-sm text-slate-300 font-medium transition-colors hover:text-cyan-400";
 

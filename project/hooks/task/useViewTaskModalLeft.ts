@@ -6,7 +6,7 @@ export interface ViewTaskLeftProps {
 		description: string;
 		status: string;
 	};
-	onUpdateTask?: (updatedFields: Record<string, any>) => void;
+	onUpdateTask?: (updatedFields: Record<string, unknown>) => void;
 }
 
 export interface ViewTaskLeftHookResult {

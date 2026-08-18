@@ -47,8 +47,13 @@ export function AddTeamMemberModal({
 			}
 
 			getAcceptedInvitesAction()
-				.then((res: any) => {
-					if (res?.success && Array.isArray(res.data)) {
+				.then((res: Record<string, unknown> | unknown[]) => {
+					if (
+						res &&
+						!Array.isArray(res) &&
+						res.success &&
+						Array.isArray(res.data)
+					) {
 						setPeople(res.data);
 					} else if (Array.isArray(res)) {
 						setPeople(res);
@@ -83,9 +88,9 @@ export function AddTeamMemberModal({
 	const selectedPerson = people.find((p) => p.email === email);
 	const isAlreadyInTeam = Boolean(
 		teamId &&
-		email &&
-		(existingEmails.has(email.toLowerCase()) ||
-			(selectedPerson && existingUserIds.has(selectedPerson.id))),
+			email &&
+			(existingEmails.has(email.toLowerCase()) ||
+				(selectedPerson && existingUserIds.has(selectedPerson.id))),
 	);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -130,7 +135,7 @@ export function AddTeamMemberModal({
 				// Refresh team detail in store
 				const refreshed = await getTeamDetailAction(teamId);
 				if (refreshed.success && refreshed.data) {
-					setTeamDetail(refreshed.data as any);
+					setTeamDetail(refreshed.data as Parameters<typeof setTeamDetail>[0]);
 				}
 			}
 
@@ -155,10 +160,14 @@ export function AddTeamMemberModal({
 				</h3>
 				<form onSubmit={handleSubmit} className="mt-4 space-y-4">
 					<div>
-						<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+						<label
+							htmlFor="email"
+							className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+						>
 							Email Address
 						</label>
 						<select
+							id="email"
 							required
 							value={email}
 							onChange={(e) => {
@@ -187,10 +196,14 @@ export function AddTeamMemberModal({
 					</div>
 
 					<div>
-						<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+						<label
+							htmlFor="role"
+							className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+						>
 							Role Title
 						</label>
 						<input
+							id="role"
 							type="text"
 							value={role}
 							onChange={(e) => setRole(e.target.value)}
@@ -200,10 +213,14 @@ export function AddTeamMemberModal({
 					</div>
 
 					<div>
-						<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+						<label
+							htmlFor="permission"
+							className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+						>
 							Permission Level
 						</label>
 						<select
+							id="permission"
 							value={permission}
 							onChange={(e) =>
 								setPermission(

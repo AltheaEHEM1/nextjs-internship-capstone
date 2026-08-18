@@ -1,12 +1,21 @@
-
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createTeamWithMembersAction } from "@/actions/team/CreateTeam";
-import { getUserTeamsAction, deleteTeamAction, getTeamDetailAction } from "@/actions/team/Team";
-import { getAcceptedInvitesAction, getPersonDetailAction, removePersonAction, removeTeamMemberAction, updateTeamMemberAction } from "@/actions/team/TeamMember";
+import {
+	deleteTeamAction,
+	getTeamDetailAction,
+	getUserTeamsAction,
+} from "@/actions/team/Team";
+import {
+	getAcceptedInvitesAction,
+	getPersonDetailAction,
+	removePersonAction,
+	removeTeamMemberAction,
+	updateTeamMemberAction,
+} from "@/actions/team/TeamMember";
 import { useToast } from "@/hooks/toast/use-toast";
-import { type TeamItem, useTeamStore } from "@/stores/team/useTeamStore";
 import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
-import { useRouter } from "next/navigation";
+import { type TeamItem, useTeamStore } from "@/stores/team/useTeamStore";
 
 export function useTeamManagement(initialTab?: "people" | "teams") {
 	const store = useTeamStore();
@@ -38,7 +47,7 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 		async function loadPeople() {
 			const res = await getAcceptedInvitesAction();
 			if (!cancelled && res.success) {
-				useTeamStore.setState({ people: res.data as any });
+				useTeamStore.setState({ people: res.data as never });
 			} else if (!cancelled && !res.success) {
 				setLoadError(res.error ?? "Failed to load people.");
 			}
@@ -165,7 +174,13 @@ export function usePersonManagement(personId: string) {
 		return () => {
 			isMounted = false;
 		};
-	}, [personId, setBreadcrumbMapping, setIsPersonLoading, setPersonError, setPersonDetail]);
+	}, [
+		personId,
+		setBreadcrumbMapping,
+		setIsPersonLoading,
+		setPersonError,
+		setPersonDetail,
+	]);
 
 	const handleDeleteClick = () => {
 		store.setIsPersonConfirmOpen(true);
@@ -270,7 +285,7 @@ export function useTeamDetailManagement(teamId: string) {
 					// Refresh team detail in store
 					const refreshed = await getTeamDetailAction(teamId);
 					if (refreshed.success && refreshed.data) {
-						store.setTeamDetail(refreshed.data as any);
+						store.setTeamDetail(refreshed.data as never);
 					}
 				} else {
 					toast({
@@ -284,7 +299,12 @@ export function useTeamDetailManagement(teamId: string) {
 		});
 	};
 
-	const handleEditMemberClick = (userId: string, memberName: string, currentRole: string, currentPermission: string) => {
+	const handleEditMemberClick = (
+		userId: string,
+		memberName: string,
+		currentRole: string,
+		currentPermission: string,
+	) => {
 		store.setTeamEditRoleState({
 			opened: true,
 			userId,
@@ -296,7 +316,10 @@ export function useTeamDetailManagement(teamId: string) {
 	};
 
 	const submitEditRole = async (newRole: string, newPermission: string) => {
-		if ((newRole && newRole !== store.teamEditRoleState.currentRole) || newPermission !== store.teamEditRoleState.currentPermission) {
+		if (
+			(newRole && newRole !== store.teamEditRoleState.currentRole) ||
+			newPermission !== store.teamEditRoleState.currentPermission
+		) {
 			store.setTeamEditRoleState({ loading: true });
 			const res = await updateTeamMemberAction({
 				teamId,
@@ -312,7 +335,7 @@ export function useTeamDetailManagement(teamId: string) {
 				});
 				const refreshed = await getTeamDetailAction(teamId);
 				if (refreshed.success && refreshed.data) {
-					store.setTeamDetail(refreshed.data as any);
+					store.setTeamDetail(refreshed.data as never);
 				}
 				closeEditRole();
 			} else {
@@ -342,8 +365,8 @@ export function useTeamDetailManagement(teamId: string) {
 			if (cancelled) return;
 
 			if (res.success && res.data) {
-				setTeamDetail(res.data as any);
-				setBreadcrumbMapping(teamId, (res.data as any).name);
+				setTeamDetail(res.data as never);
+				setBreadcrumbMapping(teamId, (res.data as { name: string }).name);
 			} else {
 				setTeamDetailError(res.error ?? "Failed to load team.");
 				setTeamDetail(null);
@@ -356,7 +379,13 @@ export function useTeamDetailManagement(teamId: string) {
 		return () => {
 			cancelled = true;
 		};
-	}, [teamId, setBreadcrumbMapping, setIsTeamDetailLoading, setTeamDetailError, setTeamDetail]);
+	}, [
+		teamId,
+		setBreadcrumbMapping,
+		setIsTeamDetailLoading,
+		setTeamDetailError,
+		setTeamDetail,
+	]);
 
 	return {
 		teamDetail: store.teamDetail,
@@ -377,4 +406,3 @@ export function useTeamDetailManagement(teamId: string) {
 		submitEditRole,
 	};
 }
-

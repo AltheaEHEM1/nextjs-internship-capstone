@@ -4,12 +4,6 @@ import BaseModal from "@/components/layout/BaseModal";
 import ViewTaskModalLeft from "./ViewTaskModalLeft";
 import ViewTaskModalRight from "./ViewTaskModalRight";
 
-interface Subtask {
-	id: string;
-	title: string;
-	completed: boolean;
-}
-
 interface ViewTaskProps {
 	opened: boolean;
 	onClose: () => void;
@@ -25,7 +19,7 @@ interface ViewTaskProps {
 		startDate: string;
 		reporter: string;
 	};
-	onUpdateTask?: (updatedFields: Record<string, any>) => void;
+	onUpdateTask?: (updatedFields: Record<string, unknown>) => void;
 }
 
 export default function ViewTask({

@@ -1,27 +1,38 @@
 "use client";
-import { ArrowLeft, Check, Edit, Save, Trash2, X, Settings, AlertCircle } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
+import {
+	AlertCircle,
+	ArrowLeft,
+	Check,
+	Edit,
+	Save,
+	Settings,
+	Trash2,
+	X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { updateProjectSettingsAction } from "@/actions/project/Project";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import { AddLabelModal } from "@/components/modals/project-settings/AddLabelModal";
 import { AddStatusModal } from "@/components/modals/project-settings/AddStatusModal";
-import { updateProjectSettingsAction } from "@/actions/project/Project";
-import { useToast } from "@/hooks/toast/use-toast";
-
 import {
 	useInitializeProjectSettings,
 	useProjectSettings,
 } from "@/hooks/project/project-settings/useProjectSettings";
-import MemberRole from "./MemberRole";
-import { TaskStatusesWidget, TaskPrioritiesWidget, ProjectLabelsWidget, TaskSizesWidget } from "./ProjectLabelPriorityStatus";
-
+import { useToast } from "@/hooks/toast/use-toast";
 import type {
 	AccessRole,
-	TeamMember,
 	ProjectLabel,
 	ProjectStatus,
+	TeamMember,
 } from "@/stores/project/project-settings/ProjectSettingsStore";
+import MemberRole from "./MemberRole";
+import {
+	ProjectLabelsWidget,
+	TaskPrioritiesWidget,
+	TaskSizesWidget,
+	TaskStatusesWidget,
+} from "./ProjectLabelPriorityStatus";
 
 interface ProjectSettingsFormProps {
 	projectId: string;
@@ -100,9 +111,6 @@ export default function ProjectSettingsForm({
 		setTempTitle,
 		tempDescription,
 		setTempDescription,
-		tempTeamId,
-		setTempTeamId,
-		availableTeams: storeAvailableTeams,
 		handleSaveGeneral,
 		handleCancelGeneral,
 		labels,
@@ -114,15 +122,6 @@ export default function ProjectSettingsForm({
 		handleAddLabel,
 		handleAddStatus,
 		members,
-		editingMemberId,
-		editMemberRole,
-		editMemberAccess,
-		setEditMemberRole,
-		setEditMemberAccess,
-		setEditingMemberId,
-		handleEditMemberStart,
-		handleEditMemberSave,
-		handleDeleteMember,
 	} = useProjectSettings();
 	const { toast } = useToast();
 	const router = useRouter();
@@ -144,7 +143,7 @@ export default function ProjectSettingsForm({
 			name: finalTitle,
 			description: finalDescription,
 			teamId: teamId,
-			statuses: statuses
+			statuses: statuses,
 		});
 
 		if (result.success) {
@@ -216,11 +215,14 @@ export default function ProjectSettingsForm({
 									type="button"
 									onClick={async () => {
 										// Save to DB immediately when clicking Done
-										const result = await updateProjectSettingsAction(projectId, {
-											name: tempTitle,
-											description: tempDescription,
-											teamId: teamId
-										});
+										const result = await updateProjectSettingsAction(
+											projectId,
+											{
+												name: tempTitle,
+												description: tempDescription,
+												teamId: teamId,
+											},
+										);
 
 										if (result.success) {
 											toast({
@@ -231,7 +233,8 @@ export default function ProjectSettingsForm({
 										} else {
 											toast({
 												title: "Error",
-												description: result.error || "Failed to update project details.",
+												description:
+													result.error || "Failed to update project details.",
 												variant: "destructive",
 											});
 										}
@@ -319,11 +322,15 @@ export default function ProjectSettingsForm({
 
 				{/* Delete Alert & Actions Footer */}
 				{showDeleteAlert && (
-					<Alert variant="destructive" className="bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50">
+					<Alert
+						variant="destructive"
+						className="bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50"
+					>
 						<AlertCircle className="h-4 w-4" />
 						<AlertTitle>Confirm Deletion</AlertTitle>
 						<AlertDescription>
-							Are you sure you want to delete this project? This action cannot be undone.
+							Are you sure you want to delete this project? This action cannot
+							be undone.
 							<div className="flex justify-end gap-3 mt-4">
 								<button
 									type="button"

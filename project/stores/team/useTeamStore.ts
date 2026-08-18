@@ -47,7 +47,13 @@ export interface PersonDetail {
 	email: string;
 	avatar?: string | null;
 	role?: string;
-	teams: { id: string; name: string; icon: string; coverUrl?: string | null; role?: string }[];
+	teams: {
+		id: string;
+		name: string;
+		icon: string;
+		coverUrl?: string | null;
+		role?: string;
+	}[];
 	projects: {
 		id: string | number;
 		name: string;
@@ -130,7 +136,9 @@ export interface TeamState {
 	setIsTeamDetailLoading: (v: boolean) => void;
 	setTeamDetailError: (v: string | null) => void;
 	setTeamConfirmState: (state: Partial<TeamState["teamConfirmState"]>) => void;
-	setTeamEditRoleState: (state: Partial<TeamState["teamEditRoleState"]>) => void;
+	setTeamEditRoleState: (
+		state: Partial<TeamState["teamEditRoleState"]>,
+	) => void;
 
 	setPersonDetail: (p: PersonDetail | null) => void;
 	setIsPersonLoading: (v: boolean) => void;
@@ -166,7 +174,7 @@ export const useTeamStore = create<TeamState>((set, _get) => ({
 		title: "",
 		description: "",
 		confirmLabel: "",
-		onConfirm: () => { },
+		onConfirm: () => {},
 		loading: false,
 	},
 	teamEditRoleState: {
@@ -221,8 +229,10 @@ export const useTeamStore = create<TeamState>((set, _get) => ({
 	closeAddMemberModal: () => set({ isAddMemberOpen: false }),
 	setIsTeamDetailLoading: (v) => set({ isTeamDetailLoading: v }),
 	setTeamDetailError: (v) => set({ teamDetailError: v }),
-	setTeamConfirmState: (state) => set((s) => ({ teamConfirmState: { ...s.teamConfirmState, ...state } })),
-	setTeamEditRoleState: (state) => set((s) => ({ teamEditRoleState: { ...s.teamEditRoleState, ...state } })),
+	setTeamConfirmState: (state) =>
+		set((s) => ({ teamConfirmState: { ...s.teamConfirmState, ...state } })),
+	setTeamEditRoleState: (state) =>
+		set((s) => ({ teamEditRoleState: { ...s.teamEditRoleState, ...state } })),
 
 	setPersonDetail: (p) => set({ personDetail: p }),
 	setIsPersonLoading: (v) => set({ isPersonLoading: v }),

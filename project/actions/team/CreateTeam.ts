@@ -52,11 +52,11 @@ export async function createTeamWithMembersAction(data: {
 			revalidatePath("/team");
 			return { success: true as const, teamId: newTeam.id };
 		});
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("createTeamWithMembersAction Error:", err);
 		return {
-			success: false as const,
-			error: err?.message || "Failed to create team.",
+			success: false,
+			error: err instanceof Error ? err.message : "Failed to create team.",
 		};
 	}
 }

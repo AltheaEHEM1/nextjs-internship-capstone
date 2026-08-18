@@ -33,11 +33,11 @@ export async function getUserTeamsAction() {
 		);
 
 		return { success: true, data: teamsWithCount };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("getUserTeamsAction Error:", err);
 		return {
 			success: false,
-			error: err?.message || "Failed to fetch user teams.",
+			error: err instanceof Error ? err.message : "Failed to fetch user teams.",
 		};
 	}
 }
@@ -69,11 +69,12 @@ export async function getTeamDetailAction(teamId: string) {
 			success: true,
 			data: { ...targetTeam, members },
 		};
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("getTeamDetailAction Error:", err);
 		return {
 			success: false,
-			error: err?.message || "Failed to fetch team details.",
+			error:
+				err instanceof Error ? err.message : "Failed to fetch team details.",
 		};
 	}
 }
@@ -103,8 +104,11 @@ export async function deleteTeamAction(teamId: string) {
 		revalidatePath("/team");
 
 		return { success: true };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("deleteTeamAction Error:", err);
-		return { success: false, error: err?.message || "Failed to delete team." };
+		return {
+			success: false,
+			error: err instanceof Error ? err.message : "Failed to delete team.",
+		};
 	}
 }

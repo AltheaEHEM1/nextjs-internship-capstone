@@ -1,12 +1,18 @@
 "use client";
 
-import { AlertCircle, ArrowLeft, MoreHorizontal, Pencil, Trash2, UserPlus, } from "lucide-react";
-import Link from "next/link";
+import {
+	AlertCircle,
+	ArrowLeft,
+	MoreHorizontal,
+	Pencil,
+	Trash2,
+	UserPlus,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
+import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import EditRoleModal from "@/components/modals/team/EditRoleModal";
-import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import { useTeamDetailManagement } from "@/hooks/team/useTeamManagement";
 
 export default function SpecificTeam() {
@@ -78,8 +84,12 @@ export default function SpecificTeam() {
 
 			<div className="relative rounded-2xl border border-french_gray-200 bg-white shadow-xs dark:border-paynes_gray-600 dark:bg-outer_space-500">
 				<div
-					className={`h-40 w-full bg-cover bg-center rounded-t-2xl overflow-hidden ${!teamDetail.coverUrl ? 'bg-gradient-to-r from-blue_munsell-400 via-blue_munsell-500 to-indigo-500' : ''}`}
-					style={teamDetail.coverUrl ? { backgroundImage: `url(${teamDetail.coverUrl})` } : {}}
+					className={`h-40 w-full bg-cover bg-center rounded-t-2xl overflow-hidden ${!teamDetail.coverUrl ? "bg-gradient-to-r from-blue_munsell-400 via-blue_munsell-500 to-indigo-500" : ""}`}
+					style={
+						teamDetail.coverUrl
+							? { backgroundImage: `url(${teamDetail.coverUrl})` }
+							: {}
+					}
 				/>
 				<div className="px-6 pb-6 pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
 					<div className="flex items-center gap-4 -mt-12 sm:-mt-14">
@@ -156,7 +166,14 @@ export default function SpecificTeam() {
 									<>
 										<button
 											type="button"
-											onClick={() => handleEditMemberClick(m.userId, m.name, m.role || "Member", m.permission || "member")}
+											onClick={() =>
+												handleEditMemberClick(
+													m.userId,
+													m.name,
+													m.role || "Member",
+													m.permission || "member",
+												)
+											}
 											className="p-1.5 text-outer_space-400 hover:text-blue_munsell-500 hover:bg-blue_munsell-50 dark:hover:bg-outer_space-600 rounded-md transition-colors"
 											title="Edit Member Role"
 										>

@@ -11,8 +11,6 @@ export interface UseProjectHeaderParams {
 export function useProjectHeader({
 	projectId,
 	onOpenSettings,
-	onOpenAddPriority,
-	onOpenAddLabel,
 }: UseProjectHeaderParams) {
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);

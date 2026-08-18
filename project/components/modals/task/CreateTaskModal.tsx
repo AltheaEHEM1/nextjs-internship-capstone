@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Flag, Plus, Tag, Users } from "lucide-react";
+import { Flag, Plus, Tag } from "lucide-react";
 import { useEffect } from "react";
 import BaseModal from "@/components/layout/BaseModal";
 import type { Status, WorkType } from "@/stores/task/custom-create-task-store";
@@ -72,7 +72,7 @@ export default function CreateTaskModal({
 		if (opened) {
 			reset();
 		}
-	}, [opened]);
+	}, [opened, reset]);
 
 	return (
 		<BaseModal
@@ -115,10 +115,14 @@ export default function CreateTaskModal({
 			>
 				{/* Task Title */}
 				<div>
-					<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+					<label
+						htmlFor="taskSummary"
+						className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
+					>
 						Task Summary / Title <span className="text-red-500">*</span>
 					</label>
 					<input
+						id="taskSummary"
 						type="text"
 						required
 						value={taskName}
@@ -131,10 +135,14 @@ export default function CreateTaskModal({
 				{/* Project & Work Type Row */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
-						<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+						<label
+							htmlFor="project"
+							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
+						>
 							Project
 						</label>
 						<select
+							id="project"
 							value={project}
 							onChange={(e) => setProject(e.target.value)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
@@ -147,10 +155,14 @@ export default function CreateTaskModal({
 					</div>
 
 					<div>
-						<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+						<label
+							htmlFor="workType"
+							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
+						>
 							Work Type
 						</label>
 						<select
+							id="workType"
 							value={workType}
 							onChange={(e) => setWorkType(e.target.value as WorkType)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
@@ -167,10 +179,14 @@ export default function CreateTaskModal({
 				{/* Status & Team Row */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
-						<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+						<label
+							htmlFor="status"
+							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
+						>
 							Status
 						</label>
 						<select
+							id="status"
 							value={status}
 							onChange={(e) => setStatus(e.target.value as Status)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
@@ -183,10 +199,14 @@ export default function CreateTaskModal({
 					</div>
 
 					<div>
-						<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+						<label
+							htmlFor="team"
+							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
+						>
 							Team
 						</label>
 						<select
+							id="team"
 							value={team}
 							onChange={(e) => setTeam(e.target.value)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
@@ -201,7 +221,10 @@ export default function CreateTaskModal({
 
 				{/* Description (Rich Editor Simulation) */}
 				<div>
-					<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+					<label
+						htmlFor="description"
+						className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
+					>
 						Description
 					</label>
 					<div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden">
@@ -240,6 +263,7 @@ export default function CreateTaskModal({
 							</button>
 						</div>
 						<textarea
+							id="description"
 							value={description}
 							onChange={(e) => setDescription(e.target.value)}
 							placeholder="Provide detailed description, requirements, or acceptance criteria..."
@@ -252,10 +276,14 @@ export default function CreateTaskModal({
 				{/* Assignee & Priority Row */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
-						<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+						<label
+							htmlFor="assignee"
+							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
+						>
 							Assignee
 						</label>
 						<select
+							id="assignee"
 							value={assignee}
 							onChange={(e) => setAssignee(e.target.value)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
@@ -269,7 +297,10 @@ export default function CreateTaskModal({
 
 					<div>
 						<div className="flex items-center justify-between mb-1.5">
-							<label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+							<label
+								htmlFor="priority"
+								className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider"
+							>
 								Priority
 							</label>
 							{onOpenAddPriority && (
@@ -283,6 +314,7 @@ export default function CreateTaskModal({
 							)}
 						</div>
 						<select
+							id="priority"
 							value={priority}
 							onChange={(e) =>
 								setPriority(e.target.value as "High" | "Medium" | "Low")
@@ -299,10 +331,14 @@ export default function CreateTaskModal({
 				{/* Start Date & Due Date Row */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
-						<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+						<label
+							htmlFor="startDate"
+							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
+						>
 							Start Date
 						</label>
 						<input
+							id="startDate"
 							type="date"
 							value={startDate}
 							onChange={(e) => setStartDate(e.target.value)}
@@ -311,10 +347,14 @@ export default function CreateTaskModal({
 					</div>
 
 					<div>
-						<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+						<label
+							htmlFor="dueDate"
+							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
+						>
 							Due Date
 						</label>
 						<input
+							id="dueDate"
 							type="date"
 							value={dueDate}
 							onChange={(e) => setDueDate(e.target.value)}
@@ -327,7 +367,10 @@ export default function CreateTaskModal({
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
 						<div className="flex items-center justify-between mb-1.5">
-							<label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+							<label
+								htmlFor="labels"
+								className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider"
+							>
 								Labels
 							</label>
 							{onOpenAddLabel && (
@@ -341,6 +384,7 @@ export default function CreateTaskModal({
 							)}
 						</div>
 						<select
+							id="labels"
 							value={labels}
 							onChange={(e) => setLabels(e.target.value)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
@@ -354,10 +398,14 @@ export default function CreateTaskModal({
 					</div>
 
 					<div>
-						<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+						<label
+							htmlFor="reporter"
+							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
+						>
 							Reporter
 						</label>
 						<select
+							id="reporter"
 							value={reporter}
 							onChange={(e) => setReporter(e.target.value)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"

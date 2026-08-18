@@ -1,14 +1,6 @@
 "use client";
 
-import {
-	CheckSquare,
-	EllipsisVertical,
-	Flag,
-	FolderKanban,
-	Settings,
-	Tag,
-	UserCheck,
-} from "lucide-react";
+import { CheckSquare, FolderKanban, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import CreateTaskModal from "@/components/modals/task/CreateTaskModal";
@@ -25,19 +17,12 @@ export interface ProjectHeaderProps {
 export default function ProjectHeader({
 	title,
 	projectId,
-	onOpenSettings,
 	onOpenAddPriority,
 	onOpenAddLabel,
 }: ProjectHeaderProps) {
 	const router = useRouter();
-	const {
-		dropdownOpen,
-		setDropdownOpen,
-		isCreateTaskOpen,
-		setIsCreateTaskOpen,
-		handleSettings,
-		setNavigate,
-	} = useCustomProjectHeaderStore();
+	const { isCreateTaskOpen, setIsCreateTaskOpen, handleSettings, setNavigate } =
+		useCustomProjectHeaderStore();
 
 	// Inject Next.js router into the store for navigation
 	useEffect(() => {

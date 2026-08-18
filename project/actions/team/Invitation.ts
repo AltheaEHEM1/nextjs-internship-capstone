@@ -1,17 +1,16 @@
 "use server";
 
-import dns from "node:dns";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { render } from "@react-email/render";
 import { and, eq, gt } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
+import type { Transporter } from "nodemailer";
 import nodemailer from "nodemailer";
 import React from "react";
 import { InviteEmail } from "@/components/emails/InviteEmail";
 import { db } from "@/lib/db";
-import { invitations, teamMembers } from "@/lib/db/schema";
-import type { Transporter } from "nodemailer";
+import { invitations } from "@/lib/db/schema";
 
 let transporter: Transporter;
 try {
@@ -29,17 +28,16 @@ try {
 	});
 } catch (e) {
 	console.error("Failed to create email transporter:", e);
-	throw new Error("Failed to configure email transport. Please contact support.");
+	throw new Error(
+		"Failed to configure email transport. Please contact support.",
+	);
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 
-export async function sendUserInvitationAction(
-	email: string,
-	notes?: string,
-) {
+export async function sendUserInvitationAction(email: string, notes?: string) {
 	try {
 		const normalizedEmail = email.trim().toLowerCase();
 
@@ -102,7 +100,7 @@ export async function sendUserInvitationAction(
 			});
 		}
 
-		let teamName = "Projectnify";
+		const teamName = "Projectnify";
 
 		const rawAppUrl =
 			process.env.NEXT_PUBLIC_APP_URL ||
@@ -169,7 +167,7 @@ export async function getInvitationByTokenAction(token: string) {
 		}
 
 		return { success: true, invitation };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("getInvitationByTokenAction Error:", err);
 		return { success: false, reason: "Failed to verify invitation." };
 	}
@@ -222,7 +220,7 @@ export async function respondToInvitation(
 			};
 		}
 
-		const dbUser = await getAuthenticatedDbUser();
+		const _dbUser = await getAuthenticatedDbUser();
 
 		await db
 			.update(invitations)

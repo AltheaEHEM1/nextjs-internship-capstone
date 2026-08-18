@@ -6,34 +6,34 @@ import { calendarLocalizer } from "@/hooks/project/(tabs)/useCalendar";
 import { useCalendarStore } from "@/stores/project/(tabs)/CalendarStore";
 
 export default function Calendar() {
-  const events = useCalendarStore((state) => state.events);
-  const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
-    const title = window.prompt("Enter new event title:");
-    if (title) {
-      const newEvent = { id: String(Date.now()), title, start, end };
-      useCalendarStore.getState().addEvent(newEvent);
-    }
-  };
-  const localizer = calendarLocalizer;
+	const events = useCalendarStore((state) => state.events);
+	const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
+		const title = window.prompt("Enter new event title:");
+		if (title) {
+			const newEvent = { id: String(Date.now()), title, start, end };
+			useCalendarStore.getState().addEvent(newEvent);
+		}
+	};
+	const localizer = calendarLocalizer;
 
-  return (
-    <div className="space-y-4 pb-12">
-      {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
-            Project Calendar & Schedules
-          </h2>
-          <p className="text-sm text-outer_space-500 dark:text-platinum-400">
-            Click and drag across time slots or days to instantly schedule
-            project milestones.
-          </p>
-        </div>
-      </div>
+	return (
+		<div className="space-y-4 pb-12">
+			{/* Header Info */}
+			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+				<div>
+					<h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
+						Project Calendar & Schedules
+					</h2>
+					<p className="text-sm text-outer_space-500 dark:text-platinum-400">
+						Click and drag across time slots or days to instantly schedule
+						project milestones.
+					</p>
+				</div>
+			</div>
 
-      {/* Calendar Wrapper Box */}
-      <div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-100">
-        <style jsx global>{`
+			{/* Calendar Wrapper Box */}
+			<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-100">
+				<style jsx global>{`
           /* Custom overrides matching your design tokens */
           .rbc-calendar {
             font-family: inherit;
@@ -90,19 +90,19 @@ export default function Calendar() {
           }
         `}</style>
 
-        <div style={{ height: 650 }}>
-          <BigCalendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            selectable
-            onSelectSlot={handleSelectSlot}
-            views={["month", "week", "day", "agenda"]}
-            defaultView="month"
-          />
-        </div>
-      </div>
-    </div>
-  );
+				<div style={{ height: 650 }}>
+					<BigCalendar
+						localizer={localizer}
+						events={events}
+						startAccessor="start"
+						endAccessor="end"
+						selectable
+						onSelectSlot={handleSelectSlot}
+						views={["month", "week", "day", "agenda"]}
+						defaultView="month"
+					/>
+				</div>
+			</div>
+		</div>
+	);
 }

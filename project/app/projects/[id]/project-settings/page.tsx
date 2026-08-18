@@ -12,7 +12,7 @@ export default async function ProjectSettingsPage({
 	const { id } = await params;
 	const [result, teamsResult] = await Promise.all([
 		getProjectSettingsAction(id),
-		getUserTeamsAction()
+		getUserTeamsAction(),
 	]);
 
 	// If fetch failed, render the form with empty/fallback data
@@ -27,9 +27,10 @@ export default async function ProjectSettingsPage({
 	}
 
 	const { data } = result;
-	const availableTeams = teamsResult.success && teamsResult.data 
-		? teamsResult.data.map(t => ({ id: t.id, name: t.name }))
-		: [];
+	const availableTeams =
+		teamsResult.success && teamsResult.data
+			? teamsResult.data.map((t) => ({ id: t.id, name: t.name }))
+			: [];
 
 	return (
 		<ProjectSettingsForm

@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import type {
+	AccessRole,
+	ProjectLabel,
+	ProjectStatus,
+	TeamMember,
+} from "@/stores/project/project-settings/ProjectSettingsStore";
 import { useProjectSettingsStore } from "@/stores/project/project-settings/ProjectSettingsStore";
-import type { AccessRole, TeamMember, ProjectLabel, ProjectStatus } from "@/stores/project/project-settings/ProjectSettingsStore";
 
 /**
  * Combined custom hooks containing all Hook logic (useState, useEffect, Zustand consumption)
@@ -10,41 +15,42 @@ import type { AccessRole, TeamMember, ProjectLabel, ProjectStatus } from "@/stor
 
 // Hook extracted from MemberRole
 export function useMemberRoleState() {
-    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-    return {
-        confirmDeleteId,
-        setConfirmDeleteId,
-    };
+	const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+	return {
+		confirmDeleteId,
+		setConfirmDeleteId,
+	};
 }
 
 // Hook extracted from page.tsx to initialize Zustand state on mount
 export function useInitializeProjectSettings(initialData: {
-    initialTitle: string;
-    initialDescription: string;
-    initialTeam: string;
-    initialTeamId: string;
-    availableTeams: { id: string; name: string }[];
-    initialAccess: AccessRole;
-    initialMembers: TeamMember[];
-    initialLabels: ProjectLabel[];
-    initialStatuses: ProjectStatus[];
+	initialTitle: string;
+	initialDescription: string;
+	initialTeam: string;
+	initialTeamId: string;
+	availableTeams: { id: string; name: string }[];
+	initialAccess: AccessRole;
+	initialMembers: TeamMember[];
+	initialLabels: ProjectLabel[];
+	initialStatuses: ProjectStatus[];
 }) {
-    useEffect(() => {
-        useProjectSettingsStore.getState().initialize({
-            title: initialData.initialTitle,
-            description: initialData.initialDescription,
-            team: initialData.initialTeam,
-            teamId: initialData.initialTeamId,
-            availableTeams: initialData.availableTeams,
-            access: initialData.initialAccess,
-            members: initialData.initialMembers,
-            labels: initialData.initialLabels,
-            statuses: initialData.initialStatuses,
-        });
-    }, [JSON.stringify(initialData)]);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: stringify is used for deep comparison
+	useEffect(() => {
+		useProjectSettingsStore.getState().initialize({
+			title: initialData.initialTitle,
+			description: initialData.initialDescription,
+			team: initialData.initialTeam,
+			teamId: initialData.initialTeamId,
+			availableTeams: initialData.availableTeams,
+			access: initialData.initialAccess,
+			members: initialData.initialMembers,
+			labels: initialData.initialLabels,
+			statuses: initialData.initialStatuses,
+		});
+	}, [JSON.stringify(initialData)]);
 }
 
 // Hook re-exporting store subscriptions for component reuse
 export function useProjectSettings() {
-    return useProjectSettingsStore();
+	return useProjectSettingsStore();
 }

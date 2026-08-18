@@ -1,9 +1,10 @@
-import { Layers, Tag, Trash2, X, Flag } from "lucide-react";
+import { Layers, Tag, X } from "lucide-react";
 import { useProjectSettings } from "@/hooks/project/project-settings/useProjectSettings";
 import { useToast } from "@/hooks/toast/use-toast";
 
 export function TaskStatusesWidget() {
-	const { statuses, setIsStatusModalOpen, handleDeleteStatus } = useProjectSettings();
+	const { statuses, setIsStatusModalOpen, handleDeleteStatus } =
+		useProjectSettings();
 	const { toast } = useToast();
 
 	const onRemove = (idx: number) => {
@@ -30,23 +31,33 @@ export function TaskStatusesWidget() {
 				</button>
 			</div>
 			<div className="flex flex-wrap gap-2">
-				{statuses.map((status: any, idx: number) => (
-					<span
-						key={idx}
-						title={status.description}
-						className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${status.color}`}
-					>
-						<Layers size={12} />
-						{status.name}
-						<button
-							type="button"
-							onClick={() => onRemove(idx)}
-							className="hover:opacity-75"
+				{statuses.map(
+					(
+						status: {
+							name: string;
+							description?: string;
+							color: string;
+							id?: string;
+						},
+						idx: number,
+					) => (
+						<span
+							key={status.id || status.name}
+							title={status.description}
+							className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${status.color}`}
 						>
-							<X size={12} />
-						</button>
-					</span>
-				))}
+							<Layers size={12} />
+							{status.name}
+							<button
+								type="button"
+								onClick={() => onRemove(idx)}
+								className="hover:opacity-75"
+							>
+								<X size={12} />
+							</button>
+						</span>
+					),
+				)}
 			</div>
 		</div>
 	);
@@ -54,10 +65,30 @@ export function TaskStatusesWidget() {
 
 export function TaskPrioritiesWidget() {
 	const PRIORITIES = [
-		{ name: "Urgent", description: "Urgent task requiring immediate attention", color: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800" },
-		{ name: "High", description: "High priority task", color: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800" },
-		{ name: "Medium", description: "Medium priority task", color: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800" },
-		{ name: "Low", description: "Low priority task", color: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800" }
+		{
+			name: "Urgent",
+			description: "Urgent task requiring immediate attention",
+			color:
+				"bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800",
+		},
+		{
+			name: "High",
+			description: "High priority task",
+			color:
+				"bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800",
+		},
+		{
+			name: "Medium",
+			description: "Medium priority task",
+			color:
+				"bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800",
+		},
+		{
+			name: "Low",
+			description: "Low priority task",
+			color:
+				"bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800",
+		},
 	];
 
 	return (
@@ -68,9 +99,9 @@ export function TaskPrioritiesWidget() {
 				</h2>
 			</div>
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-				{PRIORITIES.map((priority, idx) => (
+				{PRIORITIES.map((priority) => (
 					<div
-						key={idx}
+						key={priority.name}
 						className="flex items-center justify-between p-3 rounded-xl border border-french_gray-200 dark:border-payne's_gray-700 bg-french_gray-50 dark:bg-outer_space-800"
 					>
 						<div>
@@ -93,7 +124,8 @@ export function TaskPrioritiesWidget() {
 }
 
 export function ProjectLabelsWidget() {
-	const { labels, setIsLabelModalOpen, handleDeleteLabel } = useProjectSettings();
+	const { labels, setIsLabelModalOpen, handleDeleteLabel } =
+		useProjectSettings();
 	const { toast } = useToast();
 
 	const onRemove = (idx: number) => {
@@ -120,22 +152,24 @@ export function ProjectLabelsWidget() {
 				</button>
 			</div>
 			<div className="flex flex-wrap gap-2">
-				{labels.map((lbl: any, idx: number) => (
-					<span
-						key={idx}
-						className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${lbl.color}`}
-					>
-						<Tag size={12} />
-						{lbl.name}
-						<button
-							type="button"
-							onClick={() => onRemove(idx)}
-							className="hover:opacity-75"
+				{labels.map(
+					(lbl: { name: string; color: string; id?: string }, idx: number) => (
+						<span
+							key={lbl.id || lbl.name}
+							className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${lbl.color}`}
 						>
-							<X size={12} />
-						</button>
-					</span>
-				))}
+							<Tag size={12} />
+							{lbl.name}
+							<button
+								type="button"
+								onClick={() => onRemove(idx)}
+								className="hover:opacity-75"
+							>
+								<X size={12} />
+							</button>
+						</span>
+					),
+				)}
 			</div>
 		</div>
 	);
@@ -143,11 +177,31 @@ export function ProjectLabelsWidget() {
 
 export function TaskSizesWidget() {
 	const SIZES = [
-		{ name: "XS", color: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800" },
-		{ name: "S", color: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800" },
-		{ name: "M", color: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800" },
-		{ name: "L", color: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800" },
-		{ name: "XL", color: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800" },
+		{
+			name: "XS",
+			color:
+				"bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800",
+		},
+		{
+			name: "S",
+			color:
+				"bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800",
+		},
+		{
+			name: "M",
+			color:
+				"bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800",
+		},
+		{
+			name: "L",
+			color:
+				"bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800",
+		},
+		{
+			name: "XL",
+			color:
+				"bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800",
+		},
 	];
 
 	return (
@@ -158,9 +212,9 @@ export function TaskSizesWidget() {
 				</h2>
 			</div>
 			<div className="flex flex-wrap gap-2">
-				{SIZES.map((size, idx) => (
+				{SIZES.map((size) => (
 					<span
-						key={idx}
+						key={size.name}
 						className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${size.color}`}
 					>
 						<Layers size={12} />

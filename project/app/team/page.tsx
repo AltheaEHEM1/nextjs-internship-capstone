@@ -1,9 +1,10 @@
 "use client";
 
+import { Plus } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { Plus, ChevronRight } from "lucide-react";
-import Link from "next/link";
 import AddMemberModal from "@/components/modals/team/AddMemberModal";
 import AddTeamModal1 from "@/components/modals/team/AddTeamModal1";
 import AddTeamModal2 from "@/components/modals/team/AddTeamModal2";
@@ -11,7 +12,11 @@ import { PageHeader } from "@/components/page-header/PageHeader";
 import { useTeamManagement } from "@/hooks/team/useTeamManagement";
 import type { PersonItem, TeamItem } from "@/stores/team/useTeamStore";
 
-export function TeamPageContent({ initialTab }: { initialTab: "people" | "teams" }) {
+export function TeamPageContent({
+	initialTab,
+}: {
+	initialTab: "people" | "teams";
+}) {
 	const {
 		activeTab,
 		people = [],
@@ -51,12 +56,26 @@ export function TeamPageContent({ initialTab }: { initialTab: "people" | "teams"
 							<div className="group flex cursor-pointer items-center justify-between rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs transition-all duration-300 hover:border-blue_munsell-400 hover:shadow-md hover:-translate-y-0.5 dark:border-paynes_gray-600 dark:bg-outer_space-500">
 								<div className="flex min-w-0 items-center gap-4">
 									<div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue_munsell-500 text-xs font-bold text-white shadow-sm">
-										{person.avatar && (person.avatar.startsWith("http") || person.avatar.startsWith("data:")) ? (
-											<img src={person.avatar} alt={person.name} className="h-full w-full object-cover" />
+										{person.avatar &&
+										(person.avatar.startsWith("http") ||
+											person.avatar.startsWith("data:")) ? (
+											<Image
+												src={person.avatar}
+												alt={person.name}
+												width={44}
+												height={44}
+												className="h-full w-full object-cover"
+												unoptimized
+											/>
+										) : person.avatar && person.avatar.length <= 3 ? (
+											person.avatar
 										) : (
-											(person.avatar && person.avatar.length <= 3)
-												? person.avatar
-												: (person.name?.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() || "U")
+											person.name
+												?.split(" ")
+												.map((n) => n[0])
+												.join("")
+												.substring(0, 2)
+												.toUpperCase() || "U"
 										)}
 									</div>
 									<div className="min-w-0">
@@ -122,7 +141,13 @@ function TeamPageWithParams() {
 
 export default function TeamPage() {
 	return (
-		<Suspense fallback={<div className="p-8 text-center text-outer_space-500">Loading team...</div>}>
+		<Suspense
+			fallback={
+				<div className="p-8 text-center text-outer_space-500">
+					Loading team...
+				</div>
+			}
+		>
 			<TeamPageWithParams />
 		</Suspense>
 	);

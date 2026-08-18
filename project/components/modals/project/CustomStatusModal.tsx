@@ -1,6 +1,20 @@
 "use client";
 
 import {
+	closestCenter,
+	DndContext,
+	type DragEndEvent,
+	DragOverlay,
+	type DragStartEvent,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
+import {
+	SortableContext,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import {
 	ArrowLeft,
 	CheckCircle2,
 	CircleDot,
@@ -10,20 +24,6 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-	DndContext,
-	DragOverlay,
-	PointerSensor,
-	closestCenter,
-	useSensor,
-	useSensors,
-	type DragEndEvent,
-	type DragStartEvent,
-} from "@dnd-kit/core";
-import {
-	SortableContext,
-	verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import BaseModal from "@/components/layout/BaseModal";
 import { useSortableItem } from "@/hooks/components/useSortableItem";
 import { useCustomStatusStore } from "../../../stores/custom-status-store";
@@ -136,7 +136,7 @@ interface CustomStatusProps {
 		done: string[];
 		closed: string[];
 	};
-	onChangeStatus: (status: any) => void;
+	onChangeStatus: (status: Record<string, string[]>) => void;
 }
 
 export default function CustomStatus({
@@ -150,8 +150,7 @@ export default function CustomStatus({
 		useCustomStatusStore.getState().initialize(status, onChangeStatus);
 	}, [status, onChangeStatus]);
 
-	const { handleRemove, handleReorder, addPrompted } =
-		useCustomStatusStore();
+	const { handleRemove, handleReorder } = useCustomStatusStore();
 
 	const categories = [
 		{ key: "notStarted" as const, label: "Not started" },
@@ -206,7 +205,7 @@ export default function CustomStatus({
 	const onDragStart = useCallback((event: DragStartEvent) => {
 		const parsed = parseItemId(event.active.id);
 		setActiveItem({ category: parsed.category, item: parsed.item });
-	}, [setActiveItem]);
+	}, []);
 
 	const onDragEnd = useCallback(
 		(event: DragEndEvent) => {
@@ -226,7 +225,7 @@ export default function CustomStatus({
 				overParsed.fromIndex,
 			);
 		},
-		[handleReorder, setActiveItem],
+		[handleReorder],
 	);
 
 	return (
@@ -290,7 +289,7 @@ export default function CustomStatus({
 									>
 										{items.map((item: string, index: number) => (
 											<SortableStatusItem
-												key={`${key}:${index}:${item}`}
+												key={`${key}:${item}`}
 												category={key}
 												index={index}
 												item={item}
@@ -375,7 +374,6 @@ export default function CustomStatus({
 						}}
 						placeholder="e.g. In Review"
 						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1e9b65] focus:outline-none focus:ring-1 focus:ring-[#1e9b65] dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-						autoFocus
 					/>
 				</div>
 			</BaseModal>

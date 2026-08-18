@@ -37,10 +37,10 @@ export function InvitationCard({
 
 	const formattedExpiry = invitation.expiresAt
 		? new Date(invitation.expiresAt).toLocaleDateString(undefined, {
-			month: "short",
-			day: "numeric",
-			year: "numeric",
-		})
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			})
 		: null;
 
 	return (

@@ -1,13 +1,5 @@
 import type { IconType } from "react-icons";
-import {
-	FaCog,
-	FaFolderOpen,
-	FaHome,
-	FaLock,
-	FaPaintBrush,
-	FaUser,
-	FaUsers,
-} from "react-icons/fa";
+import { FaCog, FaFolderOpen, FaHome, FaUsers } from "react-icons/fa";
 
 export interface NavItem {
 	link?: string;

@@ -14,7 +14,7 @@ interface ViewTaskRightProps {
 		startDate: string;
 		reporter: string;
 	};
-	onUpdateTask?: (updatedFields: Record<string, any>) => void;
+	onUpdateTask?: (updatedFields: Record<string, unknown>) => void;
 }
 
 export default function ViewTaskModalRight({
@@ -47,10 +47,14 @@ export default function ViewTaskModalRight({
 		<>
 			{/* Status Dropdown */}
 			<div>
-				<label className="text-xs font-medium text-gray-500 dark:text-gray-400 block mb-1">
+				<label
+					htmlFor="statusSelect"
+					className="text-xs font-medium text-gray-500 dark:text-gray-400 block mb-1"
+				>
 					Status
 				</label>
 				<select
+					id="statusSelect"
 					value={status}
 					onChange={(e) => {
 						setStatus(e.target.value);

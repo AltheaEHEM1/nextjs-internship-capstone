@@ -31,14 +31,15 @@ export function TaskCardDisplay({
 	attributes,
 	listeners,
 }: TaskCardProps & {
-	setNodeRef?: any;
-	style?: any;
-	attributes?: any;
-	listeners?: any;
+	setNodeRef?: (node: HTMLElement | null) => void;
+	style?: React.CSSProperties;
+	attributes?: Record<string, unknown>;
+	listeners?: Record<string, unknown>;
 }) {
 	return (
-		<div
-			ref={setNodeRef}
+		<button
+			type="button"
+			ref={setNodeRef as React.LegacyRef<HTMLButtonElement>}
 			style={style}
 			{...attributes}
 			{...listeners}
@@ -61,7 +62,7 @@ export function TaskCardDisplay({
 					{taskData.assignee}
 				</div>
 			</div>
-		</div>
+		</button>
 	);
 }
 

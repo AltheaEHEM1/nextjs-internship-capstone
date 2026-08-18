@@ -12,7 +12,7 @@ type TaskData = {
 	startDate: string;
 };
 
-type UpdateTaskCallback = (updatedFields: Record<string, any>) => void;
+type UpdateTaskCallback = (updatedFields: Record<string, unknown>) => void;
 
 export interface CustomViewTaskRightState {
 	// fields
@@ -34,7 +34,7 @@ export interface CustomViewTaskRightState {
 	// initializer
 	initialize: (taskData: TaskData, onUpdateTask?: UpdateTaskCallback) => void;
 	// handler to propagate changes
-	handleFieldChange: (field: string, value: any) => void;
+	handleFieldChange: (field: string, value: unknown) => void;
 }
 
 export const useCustomViewTaskRightStore = create<CustomViewTaskRightState>()(

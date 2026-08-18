@@ -2,14 +2,14 @@ import { relations } from "drizzle-orm";
 import {
 	index,
 	integer,
+	jsonb,
 	pgTable,
 	text,
 	timestamp,
 	uniqueIndex,
 	uuid,
-	jsonb,
 } from "drizzle-orm/pg-core";
-import { roleEnum, sizeEnum, priorityEnum } from "./enums";
+import { priorityEnum, roleEnum, sizeEnum } from "./enums";
 import { teams, users } from "./index";
 
 export const projects = pgTable(
@@ -26,7 +26,14 @@ export const projects = pgTable(
 			.notNull(),
 		dueDate: timestamp("due_date").notNull(),
 		views: jsonb("views")
-			.default(["Dashboard", "List", "Board", "Whiteboard", "Gantt Chart", "Timeline"])
+			.default([
+				"Dashboard",
+				"List",
+				"Board",
+				"Whiteboard",
+				"Gantt Chart",
+				"Timeline",
+			])
 			.notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
@@ -70,7 +77,9 @@ export const projectStatuses = pgTable(
 		id: uuid("id").defaultRandom().primaryKey(),
 		name: text("name").notNull(),
 		description: text("description").default(""),
-		color: text("color").default("bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800"),
+		color: text("color").default(
+			"bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800",
+		),
 		projectId: uuid("project_id")
 			.references(() => projects.id, { onDelete: "cascade" })
 			.notNull(),
@@ -196,24 +205,33 @@ export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
 	}),
 }));
 
-export const projectStatusesRelations = relations(projectStatuses, ({ one, many }) => ({
-	project: one(projects, {
-		fields: [projectStatuses.projectId],
-		references: [projects.id],
+export const projectStatusesRelations = relations(
+	projectStatuses,
+	({ one, many }) => ({
+		project: one(projects, {
+			fields: [projectStatuses.projectId],
+			references: [projects.id],
+		}),
+		tasks: many(tasks),
 	}),
-	tasks: many(tasks),
-}));
+);
 
-export const projectLabelsRelations = relations(projectLabels, ({ one, many }) => ({
-	project: one(projects, {
-		fields: [projectLabels.projectId],
-		references: [projects.id],
+export const projectLabelsRelations = relations(
+	projectLabels,
+	({ one, many }) => ({
+		project: one(projects, {
+			fields: [projectLabels.projectId],
+			references: [projects.id],
+		}),
+		taskLabels: many(taskLabels),
 	}),
-	taskLabels: many(taskLabels),
-}));
+);
 
 export const tasksRelations = relations(tasks, ({ one, many }) => ({
-	status: one(projectStatuses, { fields: [tasks.statusId], references: [projectStatuses.id] }),
+	status: one(projectStatuses, {
+		fields: [tasks.statusId],
+		references: [projectStatuses.id],
+	}),
 	assignee: one(users, { fields: [tasks.assigneeId], references: [users.id] }),
 	comments: many(comments),
 	taskLabels: many(taskLabels),
@@ -221,7 +239,10 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
 
 export const taskLabelsRelations = relations(taskLabels, ({ one }) => ({
 	task: one(tasks, { fields: [taskLabels.taskId], references: [tasks.id] }),
-	label: one(projectLabels, { fields: [taskLabels.labelId], references: [projectLabels.id] }),
+	label: one(projectLabels, {
+		fields: [taskLabels.labelId],
+		references: [projectLabels.id],
+	}),
 }));
 
 export const commentsRelations = relations(comments, ({ one }) => ({

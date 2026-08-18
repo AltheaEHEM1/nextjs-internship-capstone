@@ -13,7 +13,7 @@ const clerkHandler = clerkMiddleware(async (auth, req) => {
 	}
 });
 
-export default function proxy(req: any, evt: any) {
+export default function proxy(req: unknown, evt: unknown) {
 	return clerkHandler(req, evt);
 }
 

@@ -1,11 +1,17 @@
 "use client";
 
-import { FolderPlus, Users, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import {
+	CheckCircle2,
+	FolderPlus,
+	Loader2,
+	Users,
+	XCircle,
+} from "lucide-react";
 import { useEffect, useState } from "react";
+import { checkProjectNameUniqueAction } from "@/actions/project/Project";
+import { getUserTeamsAction } from "@/actions/team/Team";
 import BaseModal from "@/components/layout/BaseModal";
 import { useMinDate } from "@/hooks/project/useMinDate";
-import { getUserTeamsAction } from "@/actions/team/Team";
-import { checkProjectNameUniqueAction } from "@/actions/project/Project";
 
 export type AccessRole = "administrator" | "member" | "viewer";
 
@@ -34,14 +40,14 @@ export default function CreateProject1({
 	setDescription,
 	team,
 	setTeam,
-	access,
-	setAccess,
 	dueDate,
 	setDueDate,
 	onNext,
 }: CreateProject1Props) {
 	const minDate = useMinDate();
-	const [teamsList, setTeamsList] = useState<{ id: string; name: string }[]>([]);
+	const [teamsList, setTeamsList] = useState<{ id: string; name: string }[]>(
+		[],
+	);
 	const [isCheckingName, setIsCheckingName] = useState(false);
 	const [isNameUnique, setIsNameUnique] = useState<boolean | null>(null);
 
@@ -103,7 +109,13 @@ export default function CreateProject1({
 					<button
 						type="button"
 						onClick={onNext}
-						disabled={!projectName.trim() || !team || !dueDate || isNameUnique === false || isCheckingName}
+						disabled={
+							!projectName.trim() ||
+							!team ||
+							!dueDate ||
+							isNameUnique === false ||
+							isCheckingName
+						}
 						className="rounded-lg bg-[#1e9b65] px-4 py-2 text-sm font-medium text-white shadow hover:opacity-90 disabled:opacity-50 transition"
 					>
 						Next
@@ -132,8 +144,8 @@ export default function CreateProject1({
 									? isCheckingName
 										? "border-gray-300 focus:border-gray-400 focus:ring-gray-400"
 										: isNameUnique
-										? "border-[#1e9b65] focus:border-[#1e9b65] focus:ring-[#1e9b65]"
-										: "border-red-500 focus:border-red-500 focus:ring-red-500"
+											? "border-[#1e9b65] focus:border-[#1e9b65] focus:ring-[#1e9b65]"
+											: "border-red-500 focus:border-red-500 focus:ring-red-500"
 									: "border-gray-300 focus:border-[#1e9b65] focus:ring-[#1e9b65] dark:border-gray-600"
 							}`}
 						/>
@@ -141,17 +153,25 @@ export default function CreateProject1({
 							{isCheckingName && (
 								<Loader2 size={16} className="animate-spin text-gray-400" />
 							)}
-							{!isCheckingName && projectName.trim() !== "" && isNameUnique === true && (
-								<CheckCircle2 size={16} className="text-[#1e9b65]" />
-							)}
-							{!isCheckingName && projectName.trim() !== "" && isNameUnique === false && (
-								<XCircle size={16} className="text-red-500" />
-							)}
+							{!isCheckingName &&
+								projectName.trim() !== "" &&
+								isNameUnique === true && (
+									<CheckCircle2 size={16} className="text-[#1e9b65]" />
+								)}
+							{!isCheckingName &&
+								projectName.trim() !== "" &&
+								isNameUnique === false && (
+									<XCircle size={16} className="text-red-500" />
+								)}
 						</div>
 					</div>
-					{!isCheckingName && isNameUnique === false && projectName.trim() !== "" && (
-						<p className="mt-1 text-xs text-red-500 font-medium">This project name is already taken.</p>
-					)}
+					{!isCheckingName &&
+						isNameUnique === false &&
+						projectName.trim() !== "" && (
+							<p className="mt-1 text-xs text-red-500 font-medium">
+								This project name is already taken.
+							</p>
+						)}
 				</div>
 
 				{/* Description */}

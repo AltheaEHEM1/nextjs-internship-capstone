@@ -1,11 +1,6 @@
 "use client";
 
-import {
-	ArrowLeft,
-	Check,
-	ChevronRight,
-	SlidersHorizontal,
-} from "lucide-react";
+import { ArrowLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import BaseModal from "@/components/layout/BaseModal";
 import CustomStatus from "@/components/modals/project/CustomStatusModal";
 import { useCreateProjectWorkflow } from "@/hooks/project/useCreateProjectWorkflow";
@@ -14,7 +9,7 @@ interface CreateProject2Props {
 	opened: boolean;
 	onClose: () => void;
 	onBack: () => void;
-	onCreate: (workflowData: any) => void;
+	onCreate: (workflowData: Record<string, unknown>) => void;
 }
 
 export default function CreateProject2({
@@ -25,7 +20,6 @@ export default function CreateProject2({
 }: CreateProject2Props) {
 	const {
 		activeSubView,
-		views,
 		statuses,
 		AVAILABLE_VIEWS,
 		setStatuses,
@@ -61,34 +55,32 @@ export default function CreateProject2({
 				</div>
 			}
 			footer={
-				<>
-					{activeSubView === "main" ? (
-						<>
-							<button
-								type="button"
-								onClick={onBack}
-								className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-gray-800"
-							>
-								Back
-							</button>
-							<button
-								type="button"
-								onClick={handleCreate}
-								className="rounded-lg bg-[#1e9b65] px-4 py-2 text-sm font-medium text-white shadow hover:opacity-90 transition"
-							>
-								Create Project
-							</button>
-						</>
-					) : (
+				activeSubView === "main" ? (
+					<>
 						<button
 							type="button"
-							onClick={() => setActiveSubView("main")}
-							className="w-full rounded-lg bg-[#1e9b65] py-2 text-sm font-medium text-white shadow hover:opacity-90 transition text-center"
+							onClick={onBack}
+							className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-gray-800"
 						>
-							Done
+							Back
 						</button>
-					)}
-				</>
+						<button
+							type="button"
+							onClick={handleCreate}
+							className="rounded-lg bg-[#1e9b65] px-4 py-2 text-sm font-medium text-white shadow hover:opacity-90 transition"
+						>
+							Create Project
+						</button>
+					</>
+				) : (
+					<button
+						type="button"
+						onClick={() => setActiveSubView("main")}
+						className="w-full rounded-lg bg-[#1e9b65] py-2 text-sm font-medium text-white shadow hover:opacity-90 transition text-center"
+					>
+						Done
+					</button>
+				)
 			}
 		>
 			{activeSubView === "main" && (
@@ -122,20 +114,11 @@ export default function CreateProject2({
 							Customize Settings
 						</label>
 
-
-
 						{/* Clickable Status Trigger Card */}
-						<div
-							role="button"
-							tabIndex={0}
+						<button
+							type="button"
 							onClick={() => setActiveSubView("statuses")}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" || e.key === " ") {
-									e.preventDefault();
-									setActiveSubView("statuses");
-								}
-							}}
-							className="group flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:border-[#1e9b65] dark:border-gray-700 dark:bg-gray-800"
+							className="group flex cursor-pointer w-full text-left items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:border-[#1e9b65] dark:border-gray-700 dark:bg-gray-800"
 						>
 							<div>
 								<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -153,12 +136,10 @@ export default function CreateProject2({
 								size={18}
 								className="text-gray-400 transition group-hover:text-[#1e9b65]"
 							/>
-						</div>
+						</button>
 					</div>
 				</div>
 			)}
-
-
 
 			{/* Custom Statuses Modal */}
 			<CustomStatus

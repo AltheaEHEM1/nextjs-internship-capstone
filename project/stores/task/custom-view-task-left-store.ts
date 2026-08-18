@@ -6,7 +6,7 @@ import { devtools } from "zustand/middleware";
 
 type TaskData = { title: string; description: string; status: string };
 
-type UpdateTaskCallback = (updatedFields: Record<string, any>) => void;
+type UpdateTaskCallback = (updatedFields: Record<string, unknown>) => void;
 
 export interface CustomViewTaskLeftState {
 	// Form fields

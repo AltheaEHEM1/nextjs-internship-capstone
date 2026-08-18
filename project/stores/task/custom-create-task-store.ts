@@ -4,8 +4,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-type Priority = "low" | "medium" | "high";
-
 export type WorkType = "Epic" | "Story" | "Bug" | "Task" | "Request";
 
 export type Status = "To Do" | "In Progress" | "In Review" | "Done";

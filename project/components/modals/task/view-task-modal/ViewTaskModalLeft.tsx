@@ -1,6 +1,6 @@
 "use client";
 
-import { History, MessageSquare, Plus, Trash2, X } from "lucide-react";
+import { History, MessageSquare } from "lucide-react";
 import { useEffect } from "react";
 import { useCustomViewTaskLeftStore } from "@/stores/task/custom-view-task-left-store";
 
@@ -10,7 +10,7 @@ interface ViewTaskLeftProps {
 		description: string;
 		status: string;
 	};
-	onUpdateTask?: (updatedFields: Record<string, any>) => void;
+	onUpdateTask?: (updatedFields: Record<string, unknown>) => void;
 }
 
 export default function ViewTaskModalLeft({
@@ -29,7 +29,6 @@ export default function ViewTaskModalLeft({
 		activeTab,
 		setActiveTab,
 		comments,
-		setComments,
 		newComment,
 		setNewComment,
 		handleTitleBlur,
@@ -51,42 +50,42 @@ export default function ViewTaskModalLeft({
 						value={title}
 						onChange={(e) => setTitle(e.target.value)}
 						onBlur={handleTitleBlur}
-						autoFocus
 						className="w-full text-xl font-bold rounded-lg border border-gray-300 p-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
 					/>
 				) : (
-					<h2
+					<button
+						type="button"
 						onClick={() => setIsEditingTitle(true)}
-						className="text-xl font-bold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 p-1 rounded transition"
+						className="text-xl font-bold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 p-1 rounded transition text-left"
 						title="Click to edit title"
 					>
 						{title}
-					</h2>
+					</button>
 				)}
 			</div>
 
 			{/* Description */}
 			<div className="space-y-1">
-				<label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+				<div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 					Description
-				</label>
+				</div>
 				{isEditingDesc ? (
 					<textarea
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
 						onBlur={handleDescBlur}
-						autoFocus
 						rows={4}
 						className="w-full text-sm rounded-lg border border-gray-300 p-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
 					/>
 				) : (
-					<div
+					<button
+						type="button"
 						onClick={() => setIsEditingDesc(true)}
-						className="text-sm text-gray-700 dark:text-gray-300 min-h-[60px] cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 p-2 rounded transition border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+						className="text-sm text-gray-700 dark:text-gray-300 min-h-[60px] cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 p-2 rounded transition border border-transparent hover:border-gray-200 dark:hover:border-gray-700 text-left w-full"
 						title="Click to edit description"
 					>
 						{description || "Add a more detailed description..."}
-					</div>
+					</button>
 				)}
 			</div>
 
@@ -132,6 +131,7 @@ export default function ViewTaskModalLeft({
 						<div className="space-y-2">
 							{comments.map((comment, idx) => (
 								<div
+									// biome-ignore lint/suspicious/noArrayIndexKey: simple array mapping where items don't reorder
 									key={idx}
 									className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 border border-gray-100 dark:border-gray-700"
 								>
