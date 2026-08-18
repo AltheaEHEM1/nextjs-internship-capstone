@@ -234,8 +234,10 @@ export async function getProjectDetailAction(id: string) {
 					orderBy: (statuses, { asc }) => [asc(statuses.position)],
 					with: {
 						tasks: {
+							orderBy: (tasks, { asc }) => [asc(tasks.position)],
 							with: {
 								reporter: true,
+								assignee: true,
 							},
 						},
 					},
@@ -478,6 +480,52 @@ export async function updateProjectSettingsAction(
 				err instanceof Error
 					? err.message
 					: "Failed to update project settings.",
+		};
+	}
+}
+
+export async function getProjectMembersAction(projectId: string) {
+	try {
+		await getAuthenticatedDbUser();
+
+		const project = await db.query.projects.findFirst({
+			where: eq(projects.id, projectId),
+			with: {
+				team: {
+					with: {
+						members: {
+							with: {
+								user: true,
+							},
+						},
+					},
+				},
+				members: {
+					with: {
+						user: true,
+					},
+				},
+			},
+		});
+
+		if (!project) return { success: false, error: "Project not found" };
+
+		const memberMap = new Map<string, any>();
+		
+		project.team?.members?.forEach((tm) => {
+			if (tm.user) memberMap.set(tm.user.id, tm.user);
+		});
+		
+		project.members?.forEach((pm) => {
+			if (pm.user) memberMap.set(pm.user.id, pm.user);
+		});
+
+		return { success: true, data: Array.from(memberMap.values()) };
+	} catch (err: unknown) {
+		console.error("getProjectMembersAction Error:", err);
+		return {
+			success: false,
+			error: err instanceof Error ? err.message : "Failed to fetch members",
 		};
 	}
 }

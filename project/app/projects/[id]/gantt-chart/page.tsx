@@ -1,12 +1,22 @@
 "use client";
 
+import { use, useEffect, useCallback } from "react";
+import { getProjectDetailAction } from "@/actions/project/Project";
+import { pusherClient } from "@/lib/pusher-client";
+
 import { Gantt } from "gantt-task-react";
 import "gantt-task-react/dist/index.css";
 import { useGanttChart } from "@/hooks/project/(tabs)/useGanttChart";
 
-export default function GanttChart() {
+export default function GanttChart({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
+	const { id } = use(params);
 	const {
 		tasks,
+		setTasks,
 		viewMode,
 		columnWidth,
 		viewModeOptions,
@@ -15,6 +25,51 @@ export default function GanttChart() {
 		handleTaskDelete,
 		handleProgressChange,
 	} = useGanttChart();
+
+	const fetchProjectData = useCallback(() => {
+		getProjectDetailAction(id).then((res) => {
+			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+				const allTasks = res.data.statuses.flatMap((s) =>
+					(s.tasks || [])
+						.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
+						.map((t) => {
+							const start = t.createdAt ? new Date(t.createdAt) : new Date(t.dueDate!);
+							const end = t.dueDate ? new Date(t.dueDate) : start;
+							return {
+								id: t.id,
+								name: t.title || "Untitled Task",
+								type: "task",
+								start,
+								end,
+								progress: s.name === "Done" ? 100 : s.name === "In Progress" ? 50 : 0,
+								isDisabled: false,
+								styles: { progressColor: "#0ea5e9", progressSelectedColor: "#0284c7" },
+							} as any;
+						})
+				);
+
+				setTasks(allTasks.length > 0 ? allTasks : []);
+			}
+		});
+	}, [id, setTasks]);
+
+	useEffect(() => {
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
 
 	return (
 		<div className="space-y-4 pb-12">

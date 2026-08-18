@@ -22,6 +22,7 @@ export interface CustomViewTaskRightState {
 	dueDate: string;
 	label: string;
 	startDate: string;
+	projectMembers: { id: string; name: string | null }[];
 	// callback
 	onUpdateTask?: UpdateTaskCallback;
 	// setters
@@ -31,10 +32,12 @@ export interface CustomViewTaskRightState {
 	setDueDate: (d: string) => void;
 	setLabel: (l: string) => void;
 	setStartDate: (d: string) => void;
+	setProjectMembers: (members: { id: string; name: string | null }[]) => void;
 	// initializer
 	initialize: (taskData: TaskData, onUpdateTask?: UpdateTaskCallback) => void;
 	// handler to propagate changes
 	handleFieldChange: (field: string, value: unknown) => void;
+	fetchProjectMembers: (projectId: string) => Promise<void>;
 }
 
 export const useCustomViewTaskRightStore = create<CustomViewTaskRightState>()(
@@ -46,6 +49,7 @@ export const useCustomViewTaskRightStore = create<CustomViewTaskRightState>()(
 		dueDate: "",
 		label: "",
 		startDate: "",
+		projectMembers: [],
 		onUpdateTask: undefined,
 		// setters
 		setStatus: (s) => set({ status: s }),
@@ -54,15 +58,16 @@ export const useCustomViewTaskRightStore = create<CustomViewTaskRightState>()(
 		setDueDate: (d) => set({ dueDate: d }),
 		setLabel: (l) => set({ label: l }),
 		setStartDate: (d) => set({ startDate: d }),
+		setProjectMembers: (members) => set({ projectMembers: members }),
 		// initializer
 		initialize: (taskData, onUpdateTask) => {
 			set({
 				status: taskData.status,
 				assignee: taskData.assignee,
 				priority: taskData.priority,
-				dueDate: taskData.dueDate,
+				dueDate: taskData.dueDate ? taskData.dueDate.split("T")[0] : "",
 				label: taskData.label,
-				startDate: taskData.startDate,
+				startDate: taskData.startDate ? taskData.startDate.split("T")[0] : "",
 				onUpdateTask,
 			});
 		},
@@ -71,6 +76,15 @@ export const useCustomViewTaskRightStore = create<CustomViewTaskRightState>()(
 			const { onUpdateTask } = get();
 			if (onUpdateTask) {
 				onUpdateTask({ [field]: value });
+			}
+		},
+		fetchProjectMembers: async (projectId: string) => {
+			const { getProjectMembersAction } = await import(
+				"@/actions/project/Project"
+			);
+			const res = await getProjectMembersAction(projectId);
+			if (res.success && res.data) {
+				set({ projectMembers: res.data });
 			}
 		},
 	})),

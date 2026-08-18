@@ -2,6 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { AlertCircle, Flag, Plus, Tag } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getProjectSettingsAction } from "@/actions/project/Project";
 import { createTaskAction } from "@/actions/task/Task";
@@ -416,10 +417,12 @@ export default function CreateTaskModal({
 						</label>
 						<div className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5">
 							{user?.imageUrl ? (
-								<img
+								<Image
 									src={user.imageUrl}
 									alt="Reporter"
-									className="w-5 h-5 rounded-full"
+									width={20}
+									height={20}
+									className="rounded-full"
 								/>
 							) : (
 								<div className="w-5 h-5 rounded-full bg-cyan-500 text-white flex items-center justify-center text-[10px] font-bold uppercase">

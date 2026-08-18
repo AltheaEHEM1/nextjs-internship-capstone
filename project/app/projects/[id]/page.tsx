@@ -1,18 +1,20 @@
 "use client";
 
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { DndContext, type DragEndEvent, DragOverlay } from "@dnd-kit/core";
 import {
 	horizontalListSortingStrategy,
 	SortableContext,
 } from "@dnd-kit/sortable";
-import { use, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { getProjectDetailAction } from "@/actions/project/Project";
+import { reorderTasksAction } from "@/actions/task/Task";
 import { ColumnContainer } from "@/components/board/ColumnContainer";
 import type { Task } from "@/components/board/TaskCard";
 import { TaskCardDisplay } from "@/components/board/TaskCard";
 import ViewTaskModal from "@/components/modals/task/view-task-modal/ViewTaskModal";
 import { useProjectBoard } from "@/hooks/project/(tabs)/useProjectBoard";
+import { pusherClient } from "@/lib/pusher-client";
 import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
 
 export default function BoardPage({
@@ -27,12 +29,18 @@ export default function BoardPage({
 	);
 	const setTasks = useProjectBoardStore((state) => state.setTasks);
 
-	useEffect(() => {
-		setIsMounted(true);
+	const [statusesMap, setStatusesMap] = useState<Record<string, string>>({});
 
+	const fetchProjectData = useCallback(() => {
 		getProjectDetailAction(id).then((res) => {
 			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
 				setKanbanColumns(res.data.statuses.map((s) => s.name));
+				const sMap: Record<string, string> = {};
+				res.data.statuses.forEach((s) => {
+					sMap[s.name] = s.id;
+				});
+				setStatusesMap(sMap);
+
 				const allTasks = res.data.statuses.flatMap((s) =>
 					(s.tasks || []).map(
 						(t) =>
@@ -44,25 +52,44 @@ export default function BoardPage({
 								priority: (t.priority === "urgent"
 									? "high"
 									: t.priority || "low") as "low" | "medium" | "high",
-								assignee: t.assigneeId
-									? t.assigneeId.substring(0, 2).toUpperCase()
-									: "UN",
+								assignee: t.assigneeId || "",
+								assigneeName: (t as any).assignee?.name || "UN",
 								dueDate: t.dueDate ? new Date(t.dueDate).toISOString() : "",
 								workType: "Task",
 								label: "",
 								startDate: t.createdAt
 									? new Date(t.createdAt).toISOString()
 									: "",
-								reporter: (t as any).reporter?.name || "System",
+								reporter:
+									(t as { reporter?: { name?: string } }).reporter?.name ||
+									"System",
 							}) as Task,
 					),
 				);
 
-				// Overwrite dummy tasks with database tasks
 				setTasks(allTasks);
 			}
 		});
 	}, [id, setKanbanColumns, setTasks]);
+
+	useEffect(() => {
+		setIsMounted(true);
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
 
 	const {
 		kanbanColumns,
@@ -80,6 +107,26 @@ export default function BoardPage({
 		closeViewTask,
 	} = useProjectBoard();
 
+	const handleDragEnd = (event: DragEndEvent) => {
+		onDragEnd(event);
+
+		// Allow Zustand state to update first
+		setTimeout(() => {
+			const updatedTasks = useProjectBoardStore.getState().tasks;
+			const payload = updatedTasks
+				.map((t, index) => ({
+					id: t.id,
+					statusId: statusesMap[t.status],
+					position: index,
+				}))
+				.filter((t) => t.statusId);
+
+			if (payload.length > 0) {
+				reorderTasksAction(payload, id);
+			}
+		}, 0);
+	};
+
 	if (!isMounted) {
 		return null;
 	}
@@ -90,7 +137,7 @@ export default function BoardPage({
 				sensors={sensors}
 				onDragStart={onDragStart}
 				onDragOver={onDragOver}
-				onDragEnd={onDragEnd}
+				onDragEnd={handleDragEnd}
 			>
 				<div className="flex gap-6">
 					<SortableContext
@@ -134,6 +181,7 @@ export default function BoardPage({
 					onClose={closeViewTask}
 					taskData={selectedTask}
 					onUpdateTask={handleUpdateTask}
+					projectId={id}
 				/>
 			)}
 		</div>

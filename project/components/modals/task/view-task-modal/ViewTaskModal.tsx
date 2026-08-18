@@ -8,6 +8,7 @@ interface ViewTaskProps {
 	opened: boolean;
 	onClose: () => void;
 	taskData: {
+		id: string;
 		workType: string;
 		title: string;
 		description: string;
@@ -20,6 +21,7 @@ interface ViewTaskProps {
 		reporter: string;
 	};
 	onUpdateTask?: (updatedFields: Record<string, unknown>) => void;
+	projectId?: string;
 }
 
 export default function ViewTask({
@@ -27,6 +29,7 @@ export default function ViewTask({
 	onClose,
 	taskData,
 	onUpdateTask,
+	projectId,
 }: ViewTaskProps) {
 	return (
 		<BaseModal
@@ -45,12 +48,16 @@ export default function ViewTask({
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-h-[75vh] overflow-y-auto pr-1">
 				{/* ================= LEFT SIDE (2 Columns) ================= */}
 				<div className="md:col-span-2 space-y-6">
-					<ViewTaskModalLeft taskData={taskData} onUpdateTask={onUpdateTask} />
+					<ViewTaskModalLeft
+						taskData={taskData}
+						onUpdateTask={onUpdateTask}
+						projectId={projectId}
+					/>
 				</div>
 
 				{/* ================= RIGHT SIDE (1 Column) ================= */}
 				<div className="space-y-5 bg-gray-50/70 dark:bg-gray-800/40 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-					<ViewTaskModalRight taskData={taskData} onUpdateTask={onUpdateTask} />
+					<ViewTaskModalRight taskData={taskData} onUpdateTask={onUpdateTask} projectId={projectId} />
 				</div>
 			</div>
 		</BaseModal>

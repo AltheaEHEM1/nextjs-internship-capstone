@@ -1,5 +1,9 @@
 "use client";
 
+import { use, useEffect, useCallback, useState } from "react";
+import { getProjectDetailAction } from "@/actions/project/Project";
+import { pusherClient } from "@/lib/pusher-client";
+
 import {
 	BarChart3,
 	CalendarClock,
@@ -18,9 +22,135 @@ import {
 	type WorkTypeItem,
 } from "@/hooks/project/(tabs)/useSummary";
 
-export default function Summary() {
-	const { recentActivities, statusOverview, workTypes, teamWorkload } =
+export default function Summary({ params }: { params: Promise<{ id: string }> }) {
+	const { id } = use(params);
+	const { recentActivities, statusOverview, workTypes, teamWorkload, setSummaryData } =
 		useSummary();
+
+	const [projectInfo, setProjectInfo] = useState({
+		name: "Loading...",
+		description: "",
+		progress: 0,
+		completedCount: 0,
+		createdCount: 0,
+		dueSoonCount: 0,
+		editedCount: 0
+	});
+
+	const fetchProjectData = useCallback(() => {
+		getProjectDetailAction(id).then((res) => {
+			if (res.success && res.data) {
+				const project = res.data;
+				const statuses = project.statuses || [];
+				const allTasks = statuses.flatMap((s) => (s.tasks || []).map(t => ({ ...t, statusName: s.name })));
+
+				const now = new Date();
+				const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+				const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+				let completedCount = 0;
+				let createdCount = 0;
+				let editedCount = 0;
+				let dueSoonCount = 0;
+				let doneTasks = 0;
+
+				allTasks.forEach(t => {
+					const createdAt = new Date(t.createdAt);
+					const updatedAt = new Date(t.updatedAt);
+					const dueDate = t.dueDate ? new Date(t.dueDate) : null;
+
+					if (t.statusName === "Done") {
+						doneTasks++;
+						if (updatedAt >= sevenDaysAgo) completedCount++;
+					}
+
+					if (createdAt >= sevenDaysAgo) createdCount++;
+					if (updatedAt >= sevenDaysAgo) editedCount++;
+					
+					if (dueDate && dueDate >= now && dueDate <= sevenDaysFromNow && t.statusName !== "Done") {
+						dueSoonCount++;
+					}
+				});
+
+				const progress = allTasks.length > 0 ? Math.round((doneTasks / allTasks.length) * 100) : 0;
+
+				setProjectInfo({
+					name: project.name,
+					description: project.description || "Tracking core development metrics, task velocity, and team contributions for the current cycle.",
+					progress,
+					completedCount,
+					createdCount,
+					dueSoonCount,
+					editedCount
+				});
+
+				const statusOverviewData = statuses.map(s => ({
+					label: s.name,
+					count: s.tasks?.length || 0,
+					percentage: allTasks.length > 0 ? Math.round(((s.tasks?.length || 0) / allTasks.length) * 100) : 0,
+					color: s.color?.includes("emerald") ? "bg-emerald-500" : s.color?.includes("blue") ? "bg-blue_munsell-500" : s.color?.includes("amber") ? "bg-amber-500" : "bg-purple-500"
+				}));
+
+				const priorityCounts: Record<string, number> = { high: 0, medium: 0, low: 0 };
+				allTasks.forEach(t => {
+					const p = t.priority === "urgent" ? "high" : (t.priority || "low");
+					priorityCounts[p]++;
+				});
+				const workTypesData = [
+					{ label: "High Priority", count: priorityCounts.high, percentage: allTasks.length > 0 ? Math.round((priorityCounts.high / allTasks.length) * 100) : 0, color: "bg-rose-500" },
+					{ label: "Medium Priority", count: priorityCounts.medium, percentage: allTasks.length > 0 ? Math.round((priorityCounts.medium / allTasks.length) * 100) : 0, color: "bg-amber-500" },
+					{ label: "Low Priority", count: priorityCounts.low, percentage: allTasks.length > 0 ? Math.round((priorityCounts.low / allTasks.length) * 100) : 0, color: "bg-blue_munsell-500" },
+				].filter(w => w.count > 0);
+
+				const workloadMap: Record<string, number> = {};
+				allTasks.forEach(t => {
+					if (t.statusName !== "Done" && (t as any).assignee) {
+						const assigneeName = (t as any).assignee.name || "Unknown";
+						workloadMap[assigneeName] = (workloadMap[assigneeName] || 0) + 1;
+					}
+				});
+				const totalActiveTasks = Object.values(workloadMap).reduce((a, b) => a + b, 0);
+				const teamWorkloadData = Object.entries(workloadMap).map(([name, tasks]) => ({
+					name,
+					tasks,
+					load: totalActiveTasks > 0 ? `${Math.round((tasks / totalActiveTasks) * 100)}%` : "0%"
+				})).sort((a, b) => b.tasks - a.tasks);
+
+				const sortedTasks = [...allTasks].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 5);
+				const recentActivitiesData = sortedTasks.map((t, idx) => ({
+					id: idx + 1,
+					time: new Date(t.updatedAt).toLocaleDateString(),
+					author: (t as any).assignee?.name || "System",
+					title: `Updated task: ${t.title}`
+				}));
+
+				setSummaryData({
+					statusOverview: statusOverviewData,
+					workTypes: workTypesData.length > 0 ? workTypesData : [{ label: "No tasks", count: 0, percentage: 0, color: "bg-gray-500" }],
+					teamWorkload: teamWorkloadData,
+					recentActivities: recentActivitiesData
+				});
+			}
+		});
+	}, [id, setSummaryData]);
+
+	useEffect(() => {
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
 
 	return (
 		<div className="space-y-6 pb-12">
@@ -32,11 +162,10 @@ export default function Summary() {
 							Active Sprint Overview
 						</span>
 						<h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
-							Website Redesign Phase 2
+							{projectInfo.name}
 						</h2>
 						<p className="mt-1 text-sm text-outer_space-500 dark:text-platinum-400">
-							Tracking core development metrics, task velocity, and team
-							contributions for the current cycle.
+							{projectInfo.description}
 						</p>
 					</div>
 					<div className="flex items-center gap-3">
@@ -45,7 +174,7 @@ export default function Summary() {
 								Sprint Progress
 							</span>
 							<span className="text-lg font-bold text-blue_munsell-600 dark:text-blue_munsell-400">
-								72%
+								{projectInfo.progress}%
 							</span>
 						</div>
 					</div>
@@ -66,10 +195,7 @@ export default function Summary() {
 					</div>
 					<div className="mt-4 flex items-baseline gap-2">
 						<span className="text-3xl font-bold text-outer_space-800 dark:text-platinum-100">
-							14
-						</span>
-						<span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-							+12% vs last week
+							{projectInfo.completedCount}
 						</span>
 					</div>
 				</div>
@@ -86,10 +212,7 @@ export default function Summary() {
 					</div>
 					<div className="mt-4 flex items-baseline gap-2">
 						<span className="text-3xl font-bold text-outer_space-800 dark:text-platinum-100">
-							8
-						</span>
-						<span className="text-xs font-medium text-blue_munsell-600 dark:text-blue_munsell-400">
-							New backlog items
+							{projectInfo.createdCount}
 						</span>
 					</div>
 				</div>
@@ -106,10 +229,7 @@ export default function Summary() {
 					</div>
 					<div className="mt-4 flex items-baseline gap-2">
 						<span className="text-3xl font-bold text-outer_space-800 dark:text-platinum-100">
-							5
-						</span>
-						<span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-							Requires attention
+							{projectInfo.dueSoonCount}
 						</span>
 					</div>
 				</div>
@@ -126,10 +246,7 @@ export default function Summary() {
 					</div>
 					<div className="mt-4 flex items-baseline gap-2">
 						<span className="text-3xl font-bold text-outer_space-800 dark:text-platinum-100">
-							32
-						</span>
-						<span className="text-xs font-medium text-purple-600 dark:text-purple-400">
-							Active revisions
+							{projectInfo.editedCount}
 						</span>
 					</div>
 				</div>

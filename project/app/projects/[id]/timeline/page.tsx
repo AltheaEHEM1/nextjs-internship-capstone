@@ -1,12 +1,65 @@
 "use client";
 
+import { use, useCallback } from "react";
+import { getProjectDetailAction } from "@/actions/project/Project";
+import { pusherClient } from "@/lib/pusher-client";
+import { useTimelineStore } from "@/stores/project/(tabs)/TimelineStore";
+
 import "vis-timeline/styles/vis-timeline-graph2d.min.css";
 import { useEffect, useRef } from "react";
 import { useTimeline } from "@/hooks/project/(tabs)/useTimeline";
 
-export default function Timeline() {
+export default function Timeline({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
+	const { id } = use(params);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const { items: timelineItems, options: storeOptions } = useTimeline();
+	const setItems = useTimelineStore((state) => state.setItems);
+
+	const fetchProjectData = useCallback(() => {
+		getProjectDetailAction(id).then((res) => {
+			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+				const allItems = res.data.statuses.flatMap((s) =>
+					(s.tasks || [])
+						.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
+						.map((t) => {
+							const start = t.createdAt ? new Date(t.createdAt) : new Date(t.dueDate!);
+							const end = t.dueDate ? new Date(t.dueDate) : undefined;
+							return {
+								id: t.id,
+								content: t.title || "Untitled Task",
+								start,
+								end,
+								className: s.name === "Done" ? "bg-emerald-500 text-white" : s.name === "In Progress" ? "bg-blue-500 text-white" : "bg-gray-500 text-white",
+							};
+						})
+				);
+
+				setItems(allItems);
+			}
+		});
+	}, [id, setItems]);
+
+	useEffect(() => {
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
 
 	useEffect(() => {
 		if (!containerRef.current) return;

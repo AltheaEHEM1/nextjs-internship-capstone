@@ -63,11 +63,13 @@ const options: TimelineOptions = {
 export interface TimelineState {
 	items: TimelineItem[];
 	options: TimelineOptions;
+	setItems: (items: TimelineItem[]) => void;
 }
 
 export const useTimelineStore = create<TimelineState>()(
-	devtools(() => ({
+	devtools((set) => ({
 		items,
 		options,
+		setItems: (items) => set({ items }),
 	})),
 );

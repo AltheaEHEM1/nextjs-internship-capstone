@@ -1,5 +1,9 @@
 "use client";
 
+import { use, useEffect, useCallback } from "react";
+import { getProjectDetailAction } from "@/actions/project/Project";
+import { pusherClient } from "@/lib/pusher-client";
+
 import {
 	type Cell,
 	type ColumnDef,
@@ -29,18 +33,14 @@ const PRIORITY_COLORS: Record<Task["priority"], string> = {
 	Critical: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
 };
 
-export default function List() {
+export default function List({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
+	const { id } = use(params);
 	const columns = useMemo<ColumnDef<Task>[]>(
 		() => [
-			{
-				accessorKey: "id",
-				header: "ID",
-				cell: ({ getValue }) => (
-					<span className="font-mono text-xs text-outer_space-400 dark:text-platinum-400">
-						{getValue<string>()}
-					</span>
-				),
-			},
 			{
 				accessorKey: "title",
 				header: "Title",
@@ -109,7 +109,48 @@ export default function List() {
 		[],
 	);
 
-	const { table } = useList(columns);
+	const { table, setTasks } = useList(columns);
+
+	const fetchProjectData = useCallback(() => {
+		getProjectDetailAction(id).then((res) => {
+			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+				const allTasks = res.data.statuses.flatMap((s) =>
+					(s.tasks || []).map(
+						(t) =>
+							({
+								id: t.id,
+								title: t.title || "Untitled Task",
+								status: s.name as any,
+								priority: (t.priority === "urgent" ? "High" : (t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1) : "Low")) as any,
+								assignee: (t as any).assignee?.name || "Unassigned",
+								dueDate: t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "",
+								estimate: t.size ? String(t.size) : "",
+							}) as Task,
+					),
+				);
+
+				setTasks(allTasks);
+			}
+		});
+	}, [id, setTasks]);
+
+	useEffect(() => {
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
 
 	return (
 		<div className="space-y-4 pb-12">

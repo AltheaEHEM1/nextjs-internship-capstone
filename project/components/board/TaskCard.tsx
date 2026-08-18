@@ -8,7 +8,8 @@ export interface Task {
 	title: string;
 	description: string;
 	status: string;
-	assignee: string;
+	assignee: string; // This will hold the ID
+	assigneeName?: string;
 	priority: "low" | "medium" | "high";
 	dueDate: string;
 	label: string;
@@ -59,7 +60,7 @@ export function TaskCardDisplay({
 					{taskData.priority}
 				</span>
 				<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue_munsell-500 text-xs font-semibold text-white shadow-xs">
-					{taskData.assignee?.substring(0, 2).toUpperCase() || "?"}
+					{taskData.assigneeName?.substring(0, 2).toUpperCase() || "?"}
 				</div>
 			</div>
 		</button>

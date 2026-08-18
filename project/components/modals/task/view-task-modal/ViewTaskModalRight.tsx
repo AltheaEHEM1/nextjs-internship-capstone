@@ -15,11 +15,13 @@ interface ViewTaskRightProps {
 		reporter: string;
 	};
 	onUpdateTask?: (updatedFields: Record<string, unknown>) => void;
+	projectId?: string;
 }
 
 export default function ViewTaskModalRight({
 	taskData,
 	onUpdateTask,
+	projectId,
 }: ViewTaskRightProps) {
 	// Access Zustand store for right pane
 	const {
@@ -35,13 +37,18 @@ export default function ViewTaskModalRight({
 		setLabel,
 		startDate,
 		setStartDate,
+		projectMembers,
 		handleFieldChange,
+		fetchProjectMembers,
 	} = useCustomViewTaskRightStore();
 
 	// Initialize store with incoming props
 	useEffect(() => {
 		useCustomViewTaskRightStore.getState().initialize(taskData, onUpdateTask);
-	}, [taskData, onUpdateTask]);
+		if (projectId) {
+			fetchProjectMembers(projectId);
+		}
+	}, [taskData, onUpdateTask, projectId, fetchProjectMembers]);
 
 	return (
 		<>
@@ -80,13 +87,21 @@ export default function ViewTaskModalRight({
 					<span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-xs">
 						<User size={14} /> Assignee
 					</span>
-					<input
-						type="text"
-						value={assignee}
-						onChange={(e) => setAssignee(e.target.value)}
-						onBlur={() => handleFieldChange("assignee", assignee)}
-						className="text-right text-xs bg-transparent border-b border-transparent hover:border-gray-300 focus:border-[#1e9b65] focus:outline-none dark:text-white"
-					/>
+					<select
+						value={assignee || ""}
+						onChange={(e) => {
+							setAssignee(e.target.value);
+							handleFieldChange("assigneeId", e.target.value);
+						}}
+						className="text-xs bg-transparent border border-gray-300 rounded px-1.5 py-0.5 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+					>
+						<option value="" disabled>Select User</option>
+						{projectMembers.map((member) => (
+							<option key={member.id} value={member.id}>
+								{member.name}
+							</option>
+						))}
+					</select>
 				</div>
 
 				{/* Priority */}

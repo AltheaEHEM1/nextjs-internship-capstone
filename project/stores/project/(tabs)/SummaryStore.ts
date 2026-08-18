@@ -80,13 +80,15 @@ export interface SummaryState {
 	statusOverview: StatusOverviewItem[];
 	workTypes: WorkTypeItem[];
 	teamWorkload: TeamWorkloadMember[];
+	setSummaryData: (data: Partial<SummaryState>) => void;
 }
 
 export const useSummaryStore = create<SummaryState>()(
-	devtools(() => ({
+	devtools((set) => ({
 		recentActivities,
 		statusOverview,
 		workTypes,
 		teamWorkload,
+		setSummaryData: (data) => set((state) => ({ ...state, ...data })),
 	})),
 );

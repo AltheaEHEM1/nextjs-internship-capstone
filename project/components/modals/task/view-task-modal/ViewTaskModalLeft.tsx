@@ -4,18 +4,21 @@ import { History, MessageSquare } from "lucide-react";
 import { useEffect } from "react";
 import { useCustomViewTaskLeftStore } from "@/stores/task/custom-view-task-left-store";
 
-interface ViewTaskLeftProps {
+export interface ViewTaskLeftProps {
 	taskData: {
+		id: string;
 		title: string;
 		description: string;
 		status: string;
 	};
+	projectId?: string;
 	onUpdateTask?: (updatedFields: Record<string, unknown>) => void;
 }
 
 export default function ViewTaskModalLeft({
 	taskData,
 	onUpdateTask,
+	projectId,
 }: ViewTaskLeftProps) {
 	const {
 		title,
@@ -29,15 +32,21 @@ export default function ViewTaskModalLeft({
 		activeTab,
 		setActiveTab,
 		comments,
+		history,
 		newComment,
 		setNewComment,
 		handleTitleBlur,
 		handleDescBlur,
+		fetchHistory,
 		handleAddComment,
 	} = useCustomViewTaskLeftStore();
 
 	useEffect(() => {
 		useCustomViewTaskLeftStore.getState().initialize(taskData, onUpdateTask);
+		if (taskData.id) {
+			useCustomViewTaskLeftStore.getState().fetchComments(taskData.id);
+			useCustomViewTaskLeftStore.getState().fetchHistory(taskData.id);
+		}
 	}, [taskData, onUpdateTask]);
 
 	return (
@@ -112,7 +121,7 @@ export default function ViewTaskModalLeft({
 								: "border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400"
 						}`}
 					>
-						<History size={14} /> History
+						<History size={14} /> History ({history.length})
 					</button>
 				</div>
 
@@ -124,25 +133,59 @@ export default function ViewTaskModalLeft({
 								placeholder="Write a comment..."
 								value={newComment}
 								onChange={(e) => setNewComment(e.target.value)}
-								onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") {
+										e.preventDefault();
+										handleAddComment(taskData.id, projectId || "");
+									}
+								}}
 								className="w-full text-sm rounded-lg border border-gray-300 p-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
 							/>
 						</div>
 						<div className="space-y-2">
 							{comments.map((comment, idx) => (
 								<div
-									// biome-ignore lint/suspicious/noArrayIndexKey: simple array mapping where items don't reorder
-									key={idx}
+									key={comment.id || idx}
 									className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 border border-gray-100 dark:border-gray-700"
 								>
-									{comment}
+									<div className="flex justify-between text-xs text-gray-500 mb-1">
+										<span className="font-semibold">
+											{comment.author?.name || "User"}
+										</span>
+										<span>
+											{comment.createdAt
+												? new Date(comment.createdAt).toLocaleString()
+												: ""}
+										</span>
+									</div>
+									{comment.content}
 								</div>
 							))}
 						</div>
 					</div>
 				) : (
-					<div className="text-xs text-gray-500 dark:text-gray-400 py-3 italic">
-						Task created and status set to {taskData.status}.
+					<div className="space-y-3">
+						{history.map((activity, idx) => (
+							<div
+								key={activity.id || idx}
+								className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 border border-gray-100 dark:border-gray-700"
+							>
+								<div className="flex justify-between text-xs text-gray-500 mb-1">
+									<span className="font-semibold">{activity.author?.name || "User"}</span>
+									<span>
+										{activity.createdAt
+											? new Date(activity.createdAt).toLocaleString()
+											: ""}
+									</span>
+								</div>
+								<span>{activity.action}</span>
+							</div>
+						))}
+						{history.length === 0 && (
+							<div className="text-xs text-gray-500 dark:text-gray-400 py-3 italic">
+								No history recorded yet.
+							</div>
+						)}
 					</div>
 				)}
 			</div>

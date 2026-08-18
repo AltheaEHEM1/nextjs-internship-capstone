@@ -190,6 +190,24 @@ export const comments = pgTable(
 	}),
 );
 
+export const taskActivities = pgTable(
+	"task_activities",
+	{
+		id: uuid("id").defaultRandom().primaryKey(),
+		action: text("action").notNull(),
+		taskId: uuid("task_id")
+			.references(() => tasks.id, { onDelete: "cascade" })
+			.notNull(),
+		authorId: uuid("author_id")
+			.references(() => users.id, { onDelete: "cascade" })
+			.notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+	},
+	(table) => ({
+		taskIdx: index("task_activities_task_id_idx").on(table.taskId),
+	}),
+);
+
 export const projectsRelations = relations(projects, ({ one, many }) => ({
 	owner: one(users, { fields: [projects.ownerId], references: [users.id] }),
 	team: one(teams, { fields: [projects.teamId], references: [teams.id] }),
@@ -240,6 +258,7 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
 	reporter: one(users, { fields: [tasks.reporterId], references: [users.id] }),
 	comments: many(comments),
 	taskLabels: many(taskLabels),
+	activities: many(taskActivities),
 }));
 
 export const taskLabelsRelations = relations(taskLabels, ({ one }) => ({
@@ -253,4 +272,9 @@ export const taskLabelsRelations = relations(taskLabels, ({ one }) => ({
 export const commentsRelations = relations(comments, ({ one }) => ({
 	task: one(tasks, { fields: [comments.taskId], references: [tasks.id] }),
 	author: one(users, { fields: [comments.authorId], references: [users.id] }),
+}));
+
+export const taskActivitiesRelations = relations(taskActivities, ({ one }) => ({
+	task: one(tasks, { fields: [taskActivities.taskId], references: [tasks.id] }),
+	author: one(users, { fields: [taskActivities.authorId], references: [users.id] }),
 }));

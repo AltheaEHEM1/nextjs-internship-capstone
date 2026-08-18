@@ -32,11 +32,13 @@ export function useSummary() {
 	const statusOverview = useSummaryStore((state) => state.statusOverview);
 	const workTypes = useSummaryStore((state) => state.workTypes);
 	const teamWorkload = useSummaryStore((state) => state.teamWorkload);
+	const setSummaryData = useSummaryStore((state) => state.setSummaryData);
 
 	return {
 		recentActivities,
 		statusOverview,
 		workTypes,
 		teamWorkload,
+		setSummaryData,
 	};
 }
