@@ -3,7 +3,13 @@
 import { usePathname } from "next/navigation";
 
 /** Segment prefixes that map to each layout. */
-const AUTH_PREFIXES = ["/login", "/register", "/forgot-password"];
+const AUTH_PREFIXES = [
+	"/login",
+	"/register",
+	"/forgot-password",
+	"/signup",
+	"/sign-in",
+];
 const ADMIN_PREFIXES = [
 	"/dashboard",
 	"/projects", // for navigation

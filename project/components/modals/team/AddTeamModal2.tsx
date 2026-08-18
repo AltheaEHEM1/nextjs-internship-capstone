@@ -44,11 +44,11 @@ export default function AddTeamModal2({
 				.then((res: Record<string, unknown> | unknown[]) => {
 					// Handles both raw array returns or standard { success, data } server action wrappers
 					if (Array.isArray(res)) {
-						setAcceptedUsers(res);
+						setAcceptedUsers(res as AcceptedUser[]);
 					} else if (res?.success && Array.isArray(res.data)) {
-						setAcceptedUsers(res.data);
+						setAcceptedUsers(res.data as AcceptedUser[]);
 					} else if (Array.isArray(res?.users)) {
-						setAcceptedUsers(res.users);
+						setAcceptedUsers(res.users as AcceptedUser[]);
 					}
 				})
 				.catch(console.error);
@@ -124,7 +124,11 @@ export default function AddTeamModal2({
 								<option value="">Choose accepted user...</option>
 								{acceptedUsers
 									// hide users already queued so they can't be added twice
-									.filter((u) => !membersList.some((m) => m.userId === u.id))
+									.filter(
+										(u, index, self) =>
+											index === self.findIndex((t) => t.id === u.id) &&
+											!membersList.some((m) => m.userId === u.id),
+									)
 									.map((u) => (
 										<option key={u.id} value={u.id}>
 											{u.name} ({u.email})

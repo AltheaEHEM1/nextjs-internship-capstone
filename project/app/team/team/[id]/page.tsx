@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import EditRoleModal from "@/components/modals/team/EditRoleModal";
+import { EditTeamModal } from "@/components/modals/team/EditTeamModal";
 import { useTeamDetailManagement } from "@/hooks/team/useTeamManagement";
 
 export default function SpecificTeam() {
@@ -37,6 +38,10 @@ export default function SpecificTeam() {
 		handleDeleteMember,
 		handleEditMemberClick,
 		submitEditRole,
+		isEditTeamModalOpen,
+		openEditTeamModal,
+		closeEditTeamModal,
+		submitEditTeam,
 	} = useTeamDetailManagement(teamId);
 
 	if (loading) {
@@ -124,6 +129,19 @@ export default function SpecificTeam() {
 							</button>
 							{isMenuOpen && (
 								<div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1 z-10">
+									<button
+										type="button"
+										onClick={() =>
+											openEditTeamModal({
+												name: teamDetail.name,
+												icon: teamDetail.icon || "🚀",
+												coverUrl: teamDetail.coverUrl || "",
+											})
+										}
+										className="flex w-full items-center gap-2 px-4 py-2 text-xs text-outer_space-700 hover:bg-french_gray-50 dark:text-platinum-200 dark:hover:bg-outer_space-600 cursor-pointer"
+									>
+										Edit Team Details
+									</button>
 									<button
 										type="button"
 										onClick={handleDeleteTeam}
@@ -221,6 +239,19 @@ export default function SpecificTeam() {
 				onClose={closeEditRole}
 				onSubmit={submitEditRole}
 			/>
+
+			{teamDetail && (
+				<EditTeamModal
+					isOpen={isEditTeamModalOpen}
+					onClose={closeEditTeamModal}
+					onSubmit={submitEditTeam}
+					initialData={{
+						name: teamDetail.name,
+						icon: teamDetail.icon || "🚀",
+						coverUrl: teamDetail.coverUrl || "",
+					}}
+				/>
+			)}
 		</div>
 	);
 }

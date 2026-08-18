@@ -5,6 +5,7 @@ import {
 	deleteTeamAction,
 	getTeamDetailAction,
 	getUserTeamsAction,
+	updateTeamAction,
 } from "@/actions/team/Team";
 import {
 	getAcceptedInvitesAction,
@@ -351,6 +352,33 @@ export function useTeamDetailManagement(teamId: string) {
 		}
 	};
 
+	const submitEditTeam = async (data: {
+		name: string;
+		icon: string;
+		coverUrl: string;
+	}) => {
+		const res = await updateTeamAction(teamId, data);
+		if (res.success) {
+			toast({
+				title: "Team updated",
+				description: "The team details have been successfully updated.",
+				variant: "success",
+			});
+			// Refresh team detail in store
+			const refreshed = await getTeamDetailAction(teamId);
+			if (refreshed.success && refreshed.data) {
+				store.setTeamDetail(refreshed.data as never);
+			}
+		} else {
+			toast({
+				title: "Error",
+				description: res.error || "Failed to update team.",
+				variant: "destructive",
+			});
+			throw new Error(res.error || "Failed to update team.");
+		}
+	};
+
 	const setIsTeamDetailLoading = store.setIsTeamDetailLoading;
 	const setTeamDetailError = store.setTeamDetailError;
 	const setTeamDetail = store.setTeamDetail;
@@ -395,6 +423,10 @@ export function useTeamDetailManagement(teamId: string) {
 		editRoleState: store.teamEditRoleState,
 		isMenuOpen: store.isMenuOpen,
 		isAddMemberOpen: store.isAddMemberOpen,
+		isEditTeamModalOpen: store.isEditTeamModalOpen,
+		editTeamData: store.editTeamData,
+		openEditTeamModal: store.openEditTeamModal,
+		closeEditTeamModal: store.closeEditTeamModal,
 		toggleMenu: store.toggleMenu,
 		openAddMemberModal: store.openAddMemberModal,
 		closeAddMemberModal: store.closeAddMemberModal,
@@ -404,5 +436,6 @@ export function useTeamDetailManagement(teamId: string) {
 		handleDeleteMember,
 		handleEditMemberClick,
 		submitEditRole,
+		submitEditTeam,
 	};
 }

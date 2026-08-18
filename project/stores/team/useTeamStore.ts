@@ -104,6 +104,14 @@ export interface TeamState {
 		loading: boolean;
 	};
 
+	// Edit team modal
+	isEditTeamModalOpen: boolean;
+	editTeamData: {
+		name: string;
+		icon: string;
+		coverUrl: string;
+	};
+
 	// Person Detail
 	personDetail: PersonDetail | null;
 	isPersonLoading: boolean;
@@ -138,6 +146,15 @@ export interface TeamState {
 	setTeamConfirmState: (state: Partial<TeamState["teamConfirmState"]>) => void;
 	setTeamEditRoleState: (
 		state: Partial<TeamState["teamEditRoleState"]>,
+	) => void;
+	openEditTeamModal: (data: {
+		name: string;
+		icon: string;
+		coverUrl: string;
+	}) => void;
+	closeEditTeamModal: () => void;
+	setEditTeamData: (
+		data: Partial<{ name: string; icon: string; coverUrl: string }>,
 	) => void;
 
 	setPersonDetail: (p: PersonDetail | null) => void;
@@ -184,6 +201,12 @@ export const useTeamStore = create<TeamState>((set, _get) => ({
 		currentRole: "",
 		currentPermission: "member",
 		loading: false,
+	},
+	isEditTeamModalOpen: false,
+	editTeamData: {
+		name: "",
+		icon: "🚀",
+		coverUrl: "",
 	},
 	personDetail: null,
 	isPersonLoading: true,
@@ -233,6 +256,11 @@ export const useTeamStore = create<TeamState>((set, _get) => ({
 		set((s) => ({ teamConfirmState: { ...s.teamConfirmState, ...state } })),
 	setTeamEditRoleState: (state) =>
 		set((s) => ({ teamEditRoleState: { ...s.teamEditRoleState, ...state } })),
+	openEditTeamModal: (data) =>
+		set({ isEditTeamModalOpen: true, editTeamData: data, isMenuOpen: false }),
+	closeEditTeamModal: () => set({ isEditTeamModalOpen: false }),
+	setEditTeamData: (data) =>
+		set((s) => ({ editTeamData: { ...s.editTeamData, ...data } })),
 
 	setPersonDetail: (p) => set({ personDetail: p }),
 	setIsPersonLoading: (v) => set({ isPersonLoading: v }),

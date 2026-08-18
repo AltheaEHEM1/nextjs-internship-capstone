@@ -54,9 +54,13 @@ export function AddTeamMemberModal({
 						res.success &&
 						Array.isArray(res.data)
 					) {
-						setPeople(res.data);
+						setPeople(
+							res.data as Array<{ id: string; name: string; email: string }>,
+						);
 					} else if (Array.isArray(res)) {
-						setPeople(res);
+						setPeople(
+							res as Array<{ id: string; name: string; email: string }>,
+						);
 					}
 				})
 				.catch(console.error);
@@ -178,7 +182,8 @@ export function AddTeamMemberModal({
 							<option value="">Select a person...</option>
 							{people
 								.filter(
-									(person) =>
+									(person, index, self) =>
+										index === self.findIndex((t) => t.id === person.id) &&
 										!(
 											teamId &&
 											(existingEmails.has(person.email.toLowerCase()) ||

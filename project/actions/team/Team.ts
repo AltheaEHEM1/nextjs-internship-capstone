@@ -112,3 +112,47 @@ export async function deleteTeamAction(teamId: string) {
 		};
 	}
 }
+
+export async function updateTeamAction(
+	teamId: string,
+	data: { name: string; icon: string; coverUrl?: string },
+) {
+	try {
+		const dbUser = await getAuthenticatedDbUser();
+
+		// Check permission
+		const memberRecord = await db.query.teamMembers.findFirst({
+			where: and(
+				eq(teamMembers.teamId, teamId),
+				eq(teamMembers.userId, dbUser.id),
+			),
+		});
+
+		if (memberRecord?.permission !== "administrator") {
+			return {
+				success: false,
+				error: "Only team administrators can edit this team.",
+			};
+		}
+
+		await db
+			.update(teams)
+			.set({
+				name: data.name,
+				icon: data.icon,
+				coverUrl: data.coverUrl || null,
+			})
+			.where(eq(teams.id, teamId));
+
+		revalidatePath(`/team/team/${teamId}`);
+		revalidatePath("/team");
+
+		return { success: true };
+	} catch (err: unknown) {
+		console.error("updateTeamAction Error:", err);
+		return {
+			success: false,
+			error: err instanceof Error ? err.message : "Failed to update team.",
+		};
+	}
+}
