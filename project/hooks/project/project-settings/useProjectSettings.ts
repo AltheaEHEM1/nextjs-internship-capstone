@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useProjectSettingsStore } from "@/stores/project/project-settings/ProjectSettingsStore";
-import type { AccessRole, TeamMember, ProjectLabel, ProjectPriority, ProjectStatus } from "@/stores/project/project-settings/ProjectSettingsStore";
+import type { AccessRole, TeamMember, ProjectLabel, ProjectStatus } from "@/stores/project/project-settings/ProjectSettingsStore";
 
 /**
  * Combined custom hooks containing all Hook logic (useState, useEffect, Zustand consumption)
@@ -27,7 +27,6 @@ export function useInitializeProjectSettings(initialData: {
     initialAccess: AccessRole;
     initialMembers: TeamMember[];
     initialLabels: ProjectLabel[];
-    initialPriorities: ProjectPriority[];
     initialStatuses: ProjectStatus[];
 }) {
     useEffect(() => {
@@ -40,10 +39,9 @@ export function useInitializeProjectSettings(initialData: {
             access: initialData.initialAccess,
             members: initialData.initialMembers,
             labels: initialData.initialLabels,
-            priorities: initialData.initialPriorities,
             statuses: initialData.initialStatuses,
         });
-    }, []);
+    }, [JSON.stringify(initialData)]);
 }
 
 // Hook re-exporting store subscriptions for component reuse

@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import BaseModal from "@/components/layout/BaseModal";
 import { cn } from "@/lib/utils";
 import { useCustomAddStatusStore } from "@/stores/custom-add-status-store";
+import { useToast } from "@/hooks/toast/use-toast";
 
 interface AddStatusProps {
 	isOpen: boolean;
@@ -45,6 +46,7 @@ const PRESET_COLORS = [
 ];
 
 export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
+	const { toast } = useToast();
 	const {
 		name,
 		setName,
@@ -55,6 +57,15 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 		handleSubmit,
 	} = useCustomAddStatusStore();
 
+	const onFormSubmit = (e: React.FormEvent) => {
+		handleSubmit(e);
+		toast({
+			title: "Status added",
+			description: "New status has been created.",
+			variant: "success",
+		});
+	};
+
 	useEffect(() => {
 		useCustomAddStatusStore
 			.getState()
@@ -62,23 +73,30 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 	}, [onSave, onClose]);
 
 	return (
-		<BaseModal opened={isOpen} onClose={onClose} width={448}>
-			{/* Header */}
-			<div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4">
-				<div className="flex items-center gap-2.5">
-					<div className="rounded-xl bg-cyan-500/10 dark:bg-cyan-500/20 p-2 text-cyan-600 dark:text-cyan-400">
+		<BaseModal
+			opened={isOpen}
+			onClose={onClose}
+			width={448}
+			title={
+				<div className="flex items-center gap-3">
+					<div className="rounded-xl bg-cyan-500/10 dark:bg-cyan-500/20 p-2.5 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 shadow-2xs">
 						<Layers size={18} />
 					</div>
-					<h3 className="text-base font-semibold text-slate-900 dark:text-white font-['Poppins',sans-serif]">
-						Add New Status
-					</h3>
+					<div>
+						<h3 className="text-base font-semibold text-slate-900 dark:text-white font-['Poppins',sans-serif]">
+							Add New Status
+						</h3>
+						<p className="text-xs text-slate-500 dark:text-slate-400 font-normal mt-0.5">
+							Create a custom status for your board
+						</p>
+					</div>
 				</div>
-			</div>
-
+			}
+		>
 			{/* Form */}
-			<form onSubmit={(e) => handleSubmit(e)} className="p-6 space-y-4">
-				<div>
-					<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+			<form onSubmit={onFormSubmit} className="p-6 space-y-5">
+				<div className="space-y-1.5">
+					<label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
 						Status Name
 					</label>
 					<input
@@ -87,39 +105,25 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 						onChange={(e) => setName(e.target.value)}
 						placeholder="e.g. In Review, Backlog"
 						required
-						className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
+						className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500 transition-all shadow-2xs"
 					/>
 				</div>
-
-				<div>
-					<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-						Description
-					</label>
-					<textarea
-						value={description}
-						onChange={(e) => setDescription(e.target.value)}
-						placeholder="Briefly describe when to use this status..."
-						rows={2}
-						className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50 resize-none"
-					/>
-				</div>
-
-				<div>
-					<label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+				<div className="space-y-2">
+					<label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
 						Theme Color
 					</label>
-					<div className="flex items-center gap-2 pt-1">
+					<div className="flex items-center gap-2.5 pt-0.5">
 						{PRESET_COLORS.map((c) => (
 							<button
 								key={c.label}
 								type="button"
 								onClick={() => setColor(c.value)}
 								className={cn(
-									"h-7 w-7 rounded-full transition-transform border",
+									"h-8 w-8 rounded-full transition-all duration-200 border cursor-pointer",
 									c.value.split(" ")[0],
 									color === c.value
-										? "ring-2 ring-offset-2 ring-cyan-500 scale-110"
-										: "opacity-80 hover:opacity-100",
+										? "ring-2 ring-offset-2 ring-cyan-500 scale-110 shadow-sm"
+										: "opacity-75 hover:opacity-100 hover:scale-105",
 								)}
 								title={c.label}
 							/>
@@ -128,17 +132,17 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 				</div>
 
 				{/* Footer Actions */}
-				<div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+				<div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200/80 dark:border-slate-800/80">
 					<button
 						type="button"
 						onClick={onClose}
-						className="rounded-xl px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+						className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
 					>
 						Cancel
 					</button>
 					<button
 						type="submit"
-						className="rounded-xl bg-cyan-500 hover:bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-cyan-500/20 transition-all"
+						className="rounded-xl bg-cyan-500 hover:bg-cyan-600 active:scale-95 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-cyan-500/25 transition-all cursor-pointer"
 					>
 						Save Status
 					</button>

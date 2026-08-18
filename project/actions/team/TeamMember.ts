@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, sql, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
@@ -97,6 +97,17 @@ export async function getPersonDetailAction(personId: string) {
 			.from(projects)
 			.where(eq(projects.ownerId, person.id));
 
+		const userTeamIds = userTeams.map((t) => t.id);
+		const teamProjects = userTeamIds.length > 0
+			? await db
+					.select({
+						id: projects.id,
+						name: projects.name,
+					})
+					.from(projects)
+					.where(inArray(projects.teamId, userTeamIds))
+			: [];
+
 		const projectMap = new Map<
 			string,
 			{ id: string; name: string; role: string; status: string }
@@ -117,6 +128,17 @@ export async function getPersonDetailAction(personId: string) {
 					id: p.id,
 					name: p.name,
 					role: "Owner",
+					status: "Active",
+				});
+			}
+		}
+
+		for (const p of teamProjects) {
+			if (!projectMap.has(p.id)) {
+				projectMap.set(p.id, {
+					id: p.id,
+					name: p.name,
+					role: "Team Member",
 					status: "Active",
 				});
 			}

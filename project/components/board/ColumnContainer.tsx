@@ -4,7 +4,7 @@ import {
 	SortableContext,
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { MoreHorizontal } from "lucide-react";
+
 import { useSortableItem } from "../../hooks/components/useSortableItem";
 import { type Task, TaskCard } from "./TaskCard";
 
@@ -58,12 +58,7 @@ export function ColumnContainer({
 						{tasks.length}
 					</span>
 				</h3>
-				<button
-					type="button"
-					className="rounded-lg p-1 text-outer_space-400 hover:bg-french_gray-200 dark:text-platinum-400 dark:hover:bg-payne's_gray-400"
-				>
-					<MoreHorizontal size={16} />
-				</button>
+
 			</div>
 
 			{/* Task Cards Container */}

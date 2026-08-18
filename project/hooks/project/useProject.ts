@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import type { AccessRole } from "@/components/modals/project/CreateProject1Modal";
 import { createProjectAction } from "@/actions/project/Project";
 import { useProjectStore } from "@/stores/project/project-store";
+import { useToast } from "@/hooks/toast/use-toast";
 
 /**
  * Custom hook that wraps the project Zustand store,
@@ -11,6 +12,7 @@ import { useProjectStore } from "@/stores/project/project-store";
 export function useProject() {
 	const { modalStep, form, setModalStep, setFormField, resetForm } =
 		useProjectStore();
+	const { toast } = useToast();
 
 	const setProjectName = useCallback(
 		(value: string) => setFormField("projectName", value),
@@ -56,12 +58,19 @@ export function useProject() {
 		});
 
 		if (!result.success) {
-			console.error("Failed to create project:", result.error);
-			// Ideally add a toast here.
+			toast({
+				title: "Error",
+				description: result.error || "Failed to create project.",
+				variant: "destructive",
+			});
 			return;
 		}
 
-		console.log("Project created:", result.data);
+		toast({
+			title: "Project created",
+			description: "Project has been successfully created.",
+			variant: "success",
+		});
 		resetForm();
 	}, [form, resetForm]);
 

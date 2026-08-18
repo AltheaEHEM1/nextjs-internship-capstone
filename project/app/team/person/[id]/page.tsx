@@ -2,13 +2,14 @@
 
 import { AlertCircle, ArrowLeft, Briefcase, Folder, Mail, Trash2, Users, } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import { usePersonManagement } from "@/hooks/team/useTeamManagement";
 
 export default function PersonDetailPage() {
 	const params = useParams();
+	const router = useRouter();
 	const personId = params.id as string;
 
 	const {
@@ -25,13 +26,14 @@ export default function PersonDetailPage() {
 	if (isLoading) {
 		return (
 			<div className="space-y-6 pb-12">
-				<Link
-					href="/team"
-					className="inline-flex items-center px-3 text-sm font-medium text-outer_space-700"
+				<button
+					type="button"
+					onClick={() => router.back()}
+					className="inline-flex items-center gap-2 text-sm font-medium text-outer_space-700 dark:text-platinum-300 hover:text-outer_space-900 dark:hover:text-platinum-100 transition-all hover:scale-105"
 				>
 					<ArrowLeft size={16} />
-					Back to Team Management
-				</Link>
+					Back
+				</button>
 				<div className="rounded-xl border border-french_gray-200 bg-white p-8 text-center dark:border-paynes_gray-600 dark:bg-outer_space-500">
 					<p className="text-outer_space-500 dark:text-platinum-300">
 						Loading person details...
@@ -44,13 +46,14 @@ export default function PersonDetailPage() {
 	if (error || !person) {
 		return (
 			<div className="space-y-6 pb-12">
-				<Link
-					href="/team"
-					className="inline-flex items-center px-3 text-sm font-medium text-outer_space-700"
+				<button
+					type="button"
+					onClick={() => router.back()}
+					className="inline-flex items-center gap-2 text-sm font-medium text-outer_space-700 dark:text-platinum-300 hover:text-outer_space-900 dark:hover:text-platinum-100 transition-all hover:scale-105"
 				>
 					<ArrowLeft size={16} />
-					Back to Team Management
-				</Link>
+					Back
+				</button>
 				<Alert variant="destructive">
 					<AlertCircle className="h-4 w-4" />
 					<AlertTitle>Error</AlertTitle>
@@ -64,13 +67,14 @@ export default function PersonDetailPage() {
 		<div className="space-y-6 pb-12">
 			{/* Navigation Header */}
 			<div className="flex items-center justify-between">
-				<Link
-					href="/team"
-					className="inline-flex items-center gap-2 rounded-xl border border-french_gray-200 bg-white px-3 py-2 text-sm font-medium text-outer_space-700 shadow-xs transition-colors hover:bg-platinum-100 dark:border-paynes_gray-600 dark:bg-outer_space-500 dark:text-platinum-200 dark:hover:bg-outer_space-400"
+				<button
+					type="button"
+					onClick={() => router.back()}
+					className="inline-flex items-center gap-2 text-sm font-medium text-outer_space-700 dark:text-platinum-300 hover:text-outer_space-900 dark:hover:text-platinum-100 transition-all hover:scale-105"
 				>
 					<ArrowLeft size={16} />
-					Back to Team Management
-				</Link>
+					Back
+				</button>
 
 				<button
 					type="button"
@@ -171,9 +175,10 @@ export default function PersonDetailPage() {
 					) : (
 						<div className="divide-y divide-french_gray-100 dark:divide-paynes_gray-600">
 							{person.projects.map((project) => (
-								<div
+								<Link
 									key={project.id}
-									className="py-3 flex items-center justify-between first:pt-0 last:pb-0"
+									href={`/projects/${project.id}`}
+									className="py-3 flex items-center justify-between first:pt-0 last:pb-0 hover:opacity-80 transition-opacity"
 								>
 									<div>
 										<h4 className="font-semibold text-xs text-outer_space-800 dark:text-platinum-100">
@@ -186,7 +191,7 @@ export default function PersonDetailPage() {
 									<span className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
 										{project.status}
 									</span>
-								</div>
+								</Link>
 							))}
 						</div>
 					)}

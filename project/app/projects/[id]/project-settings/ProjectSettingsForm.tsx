@@ -1,22 +1,25 @@
 "use client";
-import { ArrowLeft, Check, Edit, Save, Trash2, X, Settings } from "lucide-react";
+import { ArrowLeft, Check, Edit, Save, Trash2, X, Settings, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import { AddLabelModal } from "@/components/modals/project-settings/AddLabelModal";
-import { AddPriorityModal } from "@/components/modals/project-settings/AddPriorityModal";
 import { AddStatusModal } from "@/components/modals/project-settings/AddStatusModal";
+import { updateProjectSettingsAction } from "@/actions/project/Project";
+import { useToast } from "@/hooks/toast/use-toast";
 
 import {
 	useInitializeProjectSettings,
 	useProjectSettings,
 } from "@/hooks/project/project-settings/useProjectSettings";
 import MemberRole from "./MemberRole";
-import ProjectLabelPriority from "./ProjectLabelPriorityStatus";
+import { TaskStatusesWidget, TaskPrioritiesWidget, ProjectLabelsWidget, TaskSizesWidget } from "./ProjectLabelPriorityStatus";
 
 import type {
 	AccessRole,
 	TeamMember,
 	ProjectLabel,
-	ProjectPriority,
 	ProjectStatus,
 } from "@/stores/project/project-settings/ProjectSettingsStore";
 
@@ -30,7 +33,6 @@ interface ProjectSettingsFormProps {
 	initialAccess?: AccessRole;
 	initialMembers: TeamMember[];
 	initialLabels?: ProjectLabel[];
-	initialPriorities?: ProjectPriority[];
 	initialStatuses: ProjectStatus[];
 	onSave?: (data: {
 		title: string;
@@ -39,7 +41,6 @@ interface ProjectSettingsFormProps {
 		access: AccessRole;
 		members: TeamMember[];
 		labels: ProjectLabel[];
-		priorities: ProjectPriority[];
 		statuses: ProjectStatus[];
 	}) => void;
 	onDelete?: () => void;
@@ -61,21 +62,6 @@ const DEFAULT_LABELS: ProjectLabel[] = [
 	},
 ];
 
-const DEFAULT_PRIORITIES: ProjectPriority[] = [
-	{
-		name: "Critical",
-		description: "System blockages or emergency fixes",
-		color: "bg-red-500 text-white",
-		level: 1,
-	},
-	{
-		name: "Urgent",
-		description: "High impact tasks for current sprint",
-		color: "bg-amber-500 text-white",
-		level: 2,
-	},
-];
-
 export default function ProjectSettingsForm({
 	projectId,
 	initialTitle,
@@ -86,7 +72,6 @@ export default function ProjectSettingsForm({
 	initialAccess = "administrator",
 	initialMembers,
 	initialLabels = DEFAULT_LABELS,
-	initialPriorities = DEFAULT_PRIORITIES,
 	initialStatuses,
 	onSave,
 	onDelete,
@@ -100,7 +85,6 @@ export default function ProjectSettingsForm({
 		initialAccess,
 		initialMembers,
 		initialLabels,
-		initialPriorities,
 		initialStatuses,
 	});
 
@@ -108,6 +92,7 @@ export default function ProjectSettingsForm({
 		title,
 		description,
 		team,
+		teamId,
 		access,
 		isEditingGeneral,
 		setIsEditingGeneral,
@@ -121,16 +106,12 @@ export default function ProjectSettingsForm({
 		handleSaveGeneral,
 		handleCancelGeneral,
 		labels,
-		priorities,
 		statuses,
 		isLabelModalOpen,
-		isPriorityModalOpen,
 		isStatusModalOpen,
 		setIsLabelModalOpen,
-		setIsPriorityModalOpen,
 		setIsStatusModalOpen,
 		handleAddLabel,
-		handleAddPriority,
 		handleAddStatus,
 		members,
 		editingMemberId,
@@ -143,17 +124,49 @@ export default function ProjectSettingsForm({
 		handleEditMemberSave,
 		handleDeleteMember,
 	} = useProjectSettings();
+	const { toast } = useToast();
+	const router = useRouter();
+	const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
-	const handleSave = (e: React.FormEvent) => {
+	const handleSave = async (e: React.FormEvent) => {
 		e.preventDefault();
+
+		let finalTitle = title;
+		let finalDescription = description;
+
+		if (isEditingGeneral) {
+			finalTitle = tempTitle;
+			finalDescription = tempDescription;
+			handleSaveGeneral();
+		}
+
+		const result = await updateProjectSettingsAction(projectId, {
+			name: finalTitle,
+			description: finalDescription,
+			teamId: teamId,
+			statuses: statuses
+		});
+
+		if (result.success) {
+			toast({
+				title: "Success",
+				description: "Project settings updated successfully.",
+			});
+		} else {
+			toast({
+				title: "Error",
+				description: result.error || "Failed to update project settings.",
+				variant: "destructive",
+			});
+		}
+
 		onSave?.({
-			title,
-			description,
+			title: finalTitle,
+			description: finalDescription,
 			team,
 			access,
 			members,
 			labels,
-			priorities,
 			statuses,
 		});
 	};
@@ -162,13 +175,14 @@ export default function ProjectSettingsForm({
 		<div className="max-w-5xl mx-auto space-y-8 pb-12">
 			{/* Back Navigation & Page Header */}
 			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-				<Link
-					href={`/projects/${projectId}`}
-					className="inline-flex items-center gap-2 text-xs font-semibold text-outer_space-600 dark:text-platinum-400 hover:text-blue_munsell-600 dark:hover:text-blue_munsell-400 transition-colors w-fit"
+				<button
+					type="button"
+					onClick={() => router.back()}
+					className="inline-flex items-center gap-2 text-sm font-medium text-outer_space-700 dark:text-platinum-300 hover:text-outer_space-900 dark:hover:text-platinum-100 transition-all hover:scale-105 w-fit"
 				>
-					<ArrowLeft size={15} />
-					Back to Project
-				</Link>
+					<ArrowLeft size={16} />
+					Back
+				</button>
 			</div>
 
 			{/* Settings Form Container */}
@@ -200,7 +214,28 @@ export default function ProjectSettingsForm({
 							<div className="flex items-center gap-2">
 								<button
 									type="button"
-									onClick={handleSaveGeneral}
+									onClick={async () => {
+										// Save to DB immediately when clicking Done
+										const result = await updateProjectSettingsAction(projectId, {
+											name: tempTitle,
+											description: tempDescription,
+											teamId: teamId
+										});
+
+										if (result.success) {
+											toast({
+												title: "Success",
+												description: "Project details updated.",
+											});
+											handleSaveGeneral(); // updates store and hides edit mode
+										} else {
+											toast({
+												title: "Error",
+												description: result.error || "Failed to update project details.",
+												variant: "destructive",
+											});
+										}
+									}}
 									className="inline-flex items-center gap-1 px-3.5 py-1.5 bg-blue_munsell-500 hover:bg-blue_munsell-600 text-white rounded-xl text-xs font-semibold shadow-xs transition-all"
 								>
 									<Check size={13} /> Done
@@ -273,23 +308,53 @@ export default function ProjectSettingsForm({
 						</div>
 					)}
 				</div>
-
 				<MemberRole members={members} />
-				<ProjectLabelPriority />
 
-				{/* Actions Footer */}
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+					<TaskStatusesWidget />
+					<ProjectLabelsWidget />
+					<TaskSizesWidget />
+					<TaskPrioritiesWidget />
+				</div>
+
+				{/* Delete Alert & Actions Footer */}
+				{showDeleteAlert && (
+					<Alert variant="destructive" className="bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50">
+						<AlertCircle className="h-4 w-4" />
+						<AlertTitle>Confirm Deletion</AlertTitle>
+						<AlertDescription>
+							Are you sure you want to delete this project? This action cannot be undone.
+							<div className="flex justify-end gap-3 mt-4">
+								<button
+									type="button"
+									onClick={() => setShowDeleteAlert(false)}
+									className="px-4 py-2 text-xs font-semibold rounded-lg bg-white dark:bg-outer_space-800 text-outer_space-600 dark:text-platinum-300 border border-french_gray-200 dark:border-payne's_gray-600 hover:bg-gray-50 dark:hover:bg-outer_space-700 transition"
+								>
+									Cancel
+								</button>
+								<button
+									type="button"
+									onClick={() => {
+										onDelete?.();
+										toast({
+											title: "Project deleted",
+											description: "Project has been successfully deleted.",
+											variant: "success",
+										});
+									}}
+									className="px-4 py-2 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+								>
+									Confirm Delete
+								</button>
+							</div>
+						</AlertDescription>
+					</Alert>
+				)}
+
 				<div className="flex items-center justify-between pt-4 border-t border-french_gray-200/60 dark:border-payne's_gray-800">
 					<button
 						type="button"
-						onClick={() => {
-							if (
-								window.confirm(
-									"Are you sure you want to delete this project? This action cannot be undone."
-								)
-							) {
-								onDelete?.();
-							}
-						}}
+						onClick={() => setShowDeleteAlert(true)}
 						className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors border border-red-200/60 dark:border-red-900/40"
 					>
 						<Trash2 size={15} />
@@ -310,11 +375,6 @@ export default function ProjectSettingsForm({
 				isOpen={isLabelModalOpen}
 				onClose={() => setIsLabelModalOpen(false)}
 				onSave={handleAddLabel}
-			/>
-			<AddPriorityModal
-				isOpen={isPriorityModalOpen}
-				onClose={() => setIsPriorityModalOpen(false)}
-				onSave={handleAddPriority}
 			/>
 			<AddStatusModal
 				isOpen={isStatusModalOpen}

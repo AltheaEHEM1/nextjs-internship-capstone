@@ -2,7 +2,7 @@
 
 import { AlertCircle, ArrowLeft, MoreHorizontal, Pencil, Trash2, UserPlus, } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import EditRoleModal from "@/components/modals/team/EditRoleModal";
@@ -11,6 +11,7 @@ import { useTeamDetailManagement } from "@/hooks/team/useTeamManagement";
 
 export default function SpecificTeam() {
 	const params = useParams();
+	const router = useRouter();
 	const teamId = params.id as string;
 
 	const {
@@ -45,13 +46,14 @@ export default function SpecificTeam() {
 	if (error || !teamDetail) {
 		return (
 			<div className="space-y-6 pb-12">
-				<Link
-					href="/team?tab=teams"
-					className="inline-flex items-center px-3 py-2 text-sm font-medium text-outer_space-700"
+				<button
+					type="button"
+					onClick={() => router.back()}
+					className="inline-flex items-center gap-2 text-sm font-medium text-outer_space-700 dark:text-platinum-300 hover:text-outer_space-900 dark:hover:text-platinum-100 transition-all hover:scale-105"
 				>
 					<ArrowLeft size={16} />
-					Back to Teams
-				</Link>
+					Back
+				</button>
 				<Alert variant="destructive">
 					<AlertCircle className="h-4 w-4" />
 					<AlertTitle>Error</AlertTitle>
@@ -64,13 +66,14 @@ export default function SpecificTeam() {
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center">
-				<Link
-					href="/team?tab=teams"
-					className="inline-flex items-center px-3 text-sm font-medium text-outer_space-700"
+				<button
+					type="button"
+					onClick={() => router.back()}
+					className="inline-flex items-center gap-2 text-sm font-medium text-outer_space-700 dark:text-platinum-300 hover:text-outer_space-900 dark:hover:text-platinum-100 transition-all hover:scale-105"
 				>
 					<ArrowLeft size={16} />
-					Back to Teams
-				</Link>
+					Back
+				</button>
 			</div>
 
 			<div className="relative rounded-2xl border border-french_gray-200 bg-white shadow-xs dark:border-paynes_gray-600 dark:bg-outer_space-500">

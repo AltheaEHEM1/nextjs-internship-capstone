@@ -1,10 +1,10 @@
 "use server";
 
-import { eq, isNull } from "drizzle-orm";
+import { eq, isNull, desc, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
-import { projects, projectMembers, teams, lists } from "@/lib/db/schema";
+import { projects, projectMembers, teams, projectStatuses, projectLabels } from "@/lib/db/schema";
 
 export async function createProjectAction(data: {
 	name: string;
@@ -34,7 +34,7 @@ export async function createProjectAction(data: {
 				ownerId: dbUser.id,
 				teamId: data.teamId,
 				dueDate: new Date(data.dueDate),
-				views: data.views,
+				views: ["Dashboard", "List", "Board", "Whiteboard", "Gantt Chart", "Timeline"],
 			})
 			.returning();
 
@@ -46,30 +46,57 @@ export async function createProjectAction(data: {
 			permission: "administrator",
 		});
 
-		// Add Kanban lists from statuses
-		const customStatuses = data.statuses || {
+		// Map User-Provided Statuses
+		const userStatuses = data.statuses || {
 			notStarted: ["To Do"],
 			active: ["In Progress"],
 			done: ["Done"],
-			closed: ["Closed"],
+			closed: []
 		};
 
-		const allStatuses = [
-			...(customStatuses.notStarted || []),
-			...(customStatuses.active || []),
-			...(customStatuses.done || []),
-			...(customStatuses.closed || []),
-		];
+		const finalStatuses: Array<{ name: string, description: string, color: string }> = [];
 
-		const listsToInsert = allStatuses.map((name, index) => ({
-			name,
+		userStatuses.notStarted?.forEach((name: string) => {
+			finalStatuses.push({ name, description: "Task is not started", color: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800" });
+		});
+		userStatuses.active?.forEach((name: string) => {
+			finalStatuses.push({ name, description: "Task is in progress", color: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800" });
+		});
+		userStatuses.done?.forEach((name: string) => {
+			finalStatuses.push({ name, description: "Task is completed", color: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900 dark:text-emerald-300 dark:border-emerald-800" });
+		});
+		userStatuses.closed?.forEach((name: string) => {
+			finalStatuses.push({ name, description: "Task is closed", color: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900 dark:text-rose-300 dark:border-rose-800" });
+		});
+
+		const statusesToInsert = finalStatuses.map((s, index) => ({
+			name: s.name,
+			description: s.description,
+			color: s.color,
 			projectId: newProject[0].id,
 			position: index,
 		}));
 
-		if (listsToInsert.length > 0) {
-			await db.insert(lists).values(listsToInsert);
+		if (statusesToInsert.length > 0) {
+			await db.insert(projectStatuses).values(statusesToInsert);
 		}
+
+		// Default Labels
+		const defaultLabels = [
+			{ name: "Bug", color: "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30" },
+			{ name: "Frontend", color: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30" },
+			{ name: "Testing", color: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30" },
+			{ name: "Backend", color: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30" },
+			{ name: "Documentation", color: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" },
+			{ name: "Feature", color: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30" }
+		];
+
+		const labelsToInsert = defaultLabels.map(l => ({
+			...l,
+			projectId: newProject[0].id,
+		}));
+
+		await db.insert(projectLabels).values(labelsToInsert);
 
 		revalidatePath("/projects");
 		return { success: true, data: newProject[0] };
@@ -86,20 +113,38 @@ export async function getProjectsAction() {
 	try {
 		await getAuthenticatedDbUser();
 
-		const allProjects = await db
-			.select({
-				id: projects.id,
-				name: projects.name,
-				description: projects.description,
-				dueDate: projects.dueDate,
-				createdAt: projects.createdAt,
-				views: projects.views,
-				teamName: teams.name,
-			})
-			.from(projects)
-			.leftJoin(teams, eq(projects.teamId, teams.id));
+		const allProjects = await db.query.projects.findMany({
+			with: {
+				team: {
+					with: { members: true }
+				},
+				members: true
+			},
+			orderBy: (projects, { desc }) => [desc(projects.createdAt)]
+		});
 
-		return { success: true, data: allProjects };
+		const formattedProjects = allProjects.map(p => {
+			const memberSet = new Set<string>();
+			p.team?.members?.forEach(tm => {
+				if (tm.userId) memberSet.add(tm.userId);
+			});
+			p.members?.forEach(pm => {
+				if (pm.userId) memberSet.add(pm.userId);
+			});
+
+			return {
+				id: p.id,
+				name: p.name,
+				description: p.description,
+				dueDate: p.dueDate,
+				createdAt: p.createdAt,
+				views: p.views,
+				teamName: p.team?.name || null,
+				memberCount: memberSet.size,
+			};
+		});
+
+		return { success: true, data: formattedProjects };
 	} catch (err: any) {
 		console.error("getProjectsAction Error:", err);
 		return {
@@ -116,8 +161,8 @@ export async function getProjectDetailAction(id: string) {
 		const projectDetails = await db.query.projects.findFirst({
 			where: eq(projects.id, id),
 			with: {
-				lists: {
-					orderBy: (lists, { asc }) => [asc(lists.position)],
+				statuses: {
+					orderBy: (statuses, { asc }) => [asc(statuses.position)],
 					with: {
 						tasks: true,
 					},
@@ -182,9 +227,10 @@ export async function getProjectSettingsAction(id: string) {
 						user: true,
 					},
 				},
-				lists: {
-					orderBy: (lists, { asc }) => [asc(lists.position)],
+				statuses: {
+					orderBy: (statuses, { asc }) => [asc(statuses.position)],
 				},
+				labels: true,
 			},
 		});
 
@@ -227,13 +273,18 @@ export async function getProjectSettingsAction(id: string) {
 
 		const members = Array.from(memberMap.values());
 
-		// Map lists to statuses (lists are the Kanban columns / statuses)
-		const statuses = projectData.lists.map((list) => ({
-			name: list.name,
-			description: "",
-			color:
-				"bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800",
-		}));
+		// Map collections
+		const statuses = projectData.statuses?.map((s) => ({
+			id: s.id,
+			name: s.name,
+			description: s.description ?? "",
+			color: s.color ?? "",
+		})) ?? [];
+
+		const labels = projectData.labels?.map((l) => ({
+			name: l.name,
+			color: l.color,
+		})) ?? [];
 
 		return {
 			success: true,
@@ -247,6 +298,7 @@ export async function getProjectSettingsAction(id: string) {
 				views: (projectData.views as string[]) ?? [],
 				members,
 				statuses,
+				labels,
 			},
 		};
 	} catch (err: any) {
@@ -255,5 +307,65 @@ export async function getProjectSettingsAction(id: string) {
 			success: false,
 			error: err?.message || "Failed to fetch project settings.",
 		};
+	}
+}
+
+export async function updateProjectSettingsAction(id: string, data: { name: string, description: string, teamId: string, statuses?: { id?: string, name: string, description: string, color: string }[] }) {
+	try {
+		await getAuthenticatedDbUser();
+		
+		await db
+			.update(projects)
+			.set({
+				name: data.name,
+				description: data.description,
+				teamId: data.teamId,
+			})
+			.where(eq(projects.id, id));
+
+		// Sync statuses
+		if (data.statuses) {
+			const existingStatuses = await db.query.projectStatuses.findMany({
+				where: eq(projectStatuses.projectId, id)
+			});
+			const existingIds = new Set(existingStatuses.map(s => s.id));
+			const incomingIds = new Set(data.statuses.map(s => s.id).filter(Boolean));
+
+			// Delete ones not in incoming
+			const toDelete = [...existingIds].filter(eid => !incomingIds.has(eid));
+			if (toDelete.length > 0) {
+				await db.delete(projectStatuses).where(inArray(projectStatuses.id, toDelete));
+			}
+
+			// Upsert incoming
+			for (let i = 0; i < data.statuses.length; i++) {
+				const s = data.statuses[i];
+				if (s.id && existingIds.has(s.id)) {
+					// update
+					await db.update(projectStatuses)
+						.set({ name: s.name, description: s.description, color: s.color, position: i })
+						.where(eq(projectStatuses.id, s.id));
+				} else {
+					// insert
+					await db.insert(projectStatuses)
+						.values({
+							projectId: id,
+							name: s.name,
+							description: s.description,
+							color: s.color,
+							position: i
+						});
+				}
+			}
+		}
+
+		revalidatePath("/projects");
+		revalidatePath(`/projects/${id}`);
+		revalidatePath(`/projects/${id}/project-settings`);
+		
+		return { success: true };
+	} catch (err: any) {
+		console.error("updateProjectSettingsAction Error:", err);
+		return { success: false, error: err?.message || "Failed to update project settings." };
 	}
 }

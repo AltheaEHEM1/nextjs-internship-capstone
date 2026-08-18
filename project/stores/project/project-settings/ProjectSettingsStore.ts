@@ -15,14 +15,9 @@ export interface ProjectLabel {
     color: string;
 }
 
-export interface ProjectPriority {
-    name: string;
-    description: string;
-    color: string;
-    level: number;
-}
 
 export interface ProjectStatus {
+    id?: string;
     name: string;
     description: string;
     color: string;
@@ -44,7 +39,6 @@ interface ProjectSettingsState {
     // Data Collections
     members: TeamMember[];
     labels: ProjectLabel[];
-    priorities: ProjectPriority[];
     statuses: ProjectStatus[];
 
     // Edit Member State
@@ -54,7 +48,6 @@ interface ProjectSettingsState {
 
     // Modals State
     isLabelModalOpen: boolean;
-    isPriorityModalOpen: boolean;
     isStatusModalOpen: boolean;
 
     // Actions & Handlers
@@ -67,7 +60,6 @@ interface ProjectSettingsState {
         access: AccessRole;
         members: TeamMember[];
         labels: ProjectLabel[];
-        priorities: ProjectPriority[];
         statuses: ProjectStatus[];
     }) => void;
     setTitle: (title: string) => void;
@@ -76,6 +68,7 @@ interface ProjectSettingsState {
     setTeamId: (teamId: string) => void;
     setAccess: (access: AccessRole) => void;
     setIsEditingGeneral: (isEditing: boolean) => void;
+    setMembers: (members: TeamMember[]) => void;
     setTempTitle: (tempTitle: string) => void;
     setTempDescription: (tempDescription: string) => void;
     setTempTeamId: (tempTeamId: string) => void;
@@ -84,14 +77,11 @@ interface ProjectSettingsState {
 
     // Modal Actions
     setIsLabelModalOpen: (isOpen: boolean) => void;
-    setIsPriorityModalOpen: (isOpen: boolean) => void;
     setIsStatusModalOpen: (isOpen: boolean) => void;
 
     // Entity Handlers
     handleAddLabel: (label: ProjectLabel) => void;
     handleDeleteLabel: (index: number) => void;
-    handleAddPriority: (priority: ProjectPriority) => void;
-    handleDeletePriority: (index: number) => void;
     handleAddStatus: (status: ProjectStatus) => void;
     handleDeleteStatus: (index: number) => void;
 
@@ -118,7 +108,6 @@ export const useProjectSettingsStore = create<ProjectSettingsState>((set, get) =
 
     members: [],
     labels: [],
-    priorities: [],
     statuses: [],
 
     editingMemberId: null,
@@ -126,7 +115,6 @@ export const useProjectSettingsStore = create<ProjectSettingsState>((set, get) =
     editMemberAccess: "member",
 
     isLabelModalOpen: false,
-    isPriorityModalOpen: false,
     isStatusModalOpen: false,
 
     initialize: (data) =>
@@ -142,7 +130,6 @@ export const useProjectSettingsStore = create<ProjectSettingsState>((set, get) =
             tempTeamId: data.teamId,
             members: data.members,
             labels: data.labels,
-            priorities: data.priorities,
             statuses: data.statuses,
         }),
 
@@ -150,6 +137,7 @@ export const useProjectSettingsStore = create<ProjectSettingsState>((set, get) =
     setDescription: (description) => set({ description }),
     setTeam: (team) => set({ team }),
     setTeamId: (teamId) => set({ teamId }),
+    setMembers: (members) => set({ members }),
     setAccess: (access) => set({ access }),
     setIsEditingGeneral: (isEditingGeneral) => set({ isEditingGeneral }),
     setTempTitle: (tempTitle) => set({ tempTitle }),
@@ -157,40 +145,31 @@ export const useProjectSettingsStore = create<ProjectSettingsState>((set, get) =
     setTempTeamId: (tempTeamId) => set({ tempTeamId }),
 
     handleSaveGeneral: () => {
-        const { tempTitle, tempDescription, tempTeamId, availableTeams } = get();
-        // Look up the actual team name for the newly selected ID
-        const selectedTeam = availableTeams.find(t => t.id === tempTeamId);
-        
+        const { tempTitle, tempDescription } = get();
+
         set({
             title: tempTitle,
             description: tempDescription,
-            teamId: tempTeamId,
-            team: selectedTeam ? selectedTeam.name : get().team,
             isEditingGeneral: false,
         });
     },
 
     handleCancelGeneral: () => {
-        const { title, description, teamId } = get();
+        const { title, description } = get();
         set({
             tempTitle: title,
             tempDescription: description,
-            tempTeamId: teamId,
             isEditingGeneral: false,
         });
     },
 
     setIsLabelModalOpen: (isLabelModalOpen) => set({ isLabelModalOpen }),
-    setIsPriorityModalOpen: (isPriorityModalOpen) => set({ isPriorityModalOpen }),
     setIsStatusModalOpen: (isStatusModalOpen) => set({ isStatusModalOpen }),
 
     handleAddLabel: (label) => set((state) => ({ labels: [...state.labels, label] })),
     handleDeleteLabel: (index) =>
         set((state) => ({ labels: state.labels.filter((_, i) => i !== index) })),
 
-    handleAddPriority: (priority) => set((state) => ({ priorities: [...state.priorities, priority] })),
-    handleDeletePriority: (index) =>
-        set((state) => ({ priorities: state.priorities.filter((_, i) => i !== index) })),
 
     handleAddStatus: (status) => set((state) => ({ statuses: [...state.statuses, status] })),
     handleDeleteStatus: (index) =>

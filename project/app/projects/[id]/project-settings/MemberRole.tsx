@@ -1,6 +1,9 @@
 "use client";
+import { useState } from "react";
 import { Mail, Shield, User } from "lucide-react";
+import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import { useProjectSettings } from "@/hooks/project/project-settings/useProjectSettings";
+import { getTeamDetailAction } from "@/actions/team/Team";
 import type { AccessRole, TeamMember } from "@/stores/project/project-settings/ProjectSettingsStore";
 
 interface MemberRoleProps {
@@ -8,7 +11,8 @@ interface MemberRoleProps {
 }
 
 export default function MemberRole({ members }: MemberRoleProps) {
-	const { team, teamId, availableTeams, setTeamId, setTeam } = useProjectSettings();
+	const { team, teamId, availableTeams, setTeamId, setTeam, setMembers } = useProjectSettings();
+	const [pendingTeamId, setPendingTeamId] = useState<string | null>(null);
 
 	const getAccessBadgeStyle = (access: AccessRole) => {
 		switch (access) {
@@ -22,7 +26,7 @@ export default function MemberRole({ members }: MemberRoleProps) {
 	};
 
 	return (
-		<div className="rounded-2xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-700 dark:bg-outer_space-900 space-y-5">
+		<div className="rounded-2xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-700 dark:bg-outer_space-900 space-y-5 flex flex-col h-full">
 			{/* Header */}
 			<div className="flex items-center justify-between pb-4 border-b border-french_gray-100 dark:border-payne's_gray-800">
 				<div className="space-y-0.5">
@@ -30,24 +34,16 @@ export default function MemberRole({ members }: MemberRoleProps) {
 						<User size={16} className="text-blue_munsell-500" />
 						Team Member
 					</h2>
-					<p className="text-xs text-outer_space-500 dark:text-platinum-400">
-						Manage personnel access permissions and project assignments
-					</p>
 				</div>
 				<div className="flex items-center gap-3">
 					{team && (
 						<div className="flex items-center gap-2 border-r border-french_gray-200 dark:border-payne's_gray-700 pr-3">
-							<span className="text-[11px] font-semibold text-outer_space-500 dark:text-platinum-400 uppercase tracking-wider">
-								Team
-							</span>
 							<select
 								value={teamId}
 								onChange={(e) => {
 									const newTeamId = e.target.value;
-									const selected = availableTeams.find((t) => t.id === newTeamId);
-									if (selected) {
-										setTeamId(newTeamId);
-										setTeam(selected.name);
+									if (newTeamId !== teamId) {
+										setPendingTeamId(newTeamId);
 									}
 								}}
 								className="px-2 py-0.5 rounded-md bg-blue_munsell-50 dark:bg-blue_munsell-500/10 text-xs font-bold text-blue_munsell-600 dark:text-blue_munsell-400 border border-blue_munsell-100 dark:border-blue_munsell-500/20 focus:outline-hidden cursor-pointer hover:bg-blue_munsell-100 transition-colors capitalize"
@@ -60,12 +56,39 @@ export default function MemberRole({ members }: MemberRoleProps) {
 							</select>
 						</div>
 					)}
-					<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-french_gray-100 dark:bg-payne's_gray-800 text-outer_space-700 dark:text-platinum-300 border border-french_gray-200 dark:border-payne's_gray-700">
-						<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-						{members.length} Active
-					</span>
 				</div>
 			</div>
+			{/* Alert Popup */}
+			<ConfirmDialog
+				opened={pendingTeamId !== null}
+				onClose={() => setPendingTeamId(null)}
+				onConfirm={async () => {
+					if (!pendingTeamId) return;
+					const newTeamId = pendingTeamId;
+					const selected = availableTeams.find((t) => t.id === newTeamId);
+					if (selected) {
+						setTeamId(newTeamId);
+						setTeam(selected.name);
+
+						const res = await getTeamDetailAction(newTeamId);
+						if (res.success && res.data?.members) {
+							const newMembers: TeamMember[] = res.data.members.map((m: any) => ({
+								id: m.id,
+								name: m.name || "Unknown",
+								email: m.email || "",
+								role: m.role || "Member",
+								access: (m.permission as AccessRole) || "member",
+							}));
+							setMembers(newMembers);
+						}
+					}
+					setPendingTeamId(null);
+				}}
+				title="Change Team?"
+				description="Are you sure you want to change the project's team? If you do, all assigned tasks to the current members will be gone."
+				confirmLabel="Confirm Change"
+				variant="danger"
+			/>
 			{/* Members List */}
 			<div className="divide-y divide-french_gray-100 dark:divide-payne's_gray-800">
 				{members.length === 0 ? (

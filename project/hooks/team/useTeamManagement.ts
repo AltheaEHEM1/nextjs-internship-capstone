@@ -138,22 +138,26 @@ export function usePersonManagement(personId: string) {
 	const { toast } = useToast();
 	const router = useRouter();
 
+	const setIsPersonLoading = store.setIsPersonLoading;
+	const setPersonError = store.setPersonError;
+	const setPersonDetail = store.setPersonDetail;
+
 	useEffect(() => {
 		let isMounted = true;
 		async function fetchPersonDetail() {
 			if (!personId) return;
-			store.setIsPersonLoading(true);
-			store.setPersonError(null);
+			setIsPersonLoading(true);
+			setPersonError(null);
 			const res = await getPersonDetailAction(personId);
 			if (!isMounted) return;
 
 			if (res.success && res.data) {
-				store.setPersonDetail(res.data);
+				setPersonDetail(res.data);
 				setBreadcrumbMapping(personId, res.data.name);
 			} else {
-				store.setPersonError(res.error || "Person not found.");
+				setPersonError(res.error || "Person not found.");
 			}
-			store.setIsPersonLoading(false);
+			setIsPersonLoading(false);
 		}
 
 		fetchPersonDetail();
@@ -161,7 +165,7 @@ export function usePersonManagement(personId: string) {
 		return () => {
 			isMounted = false;
 		};
-	}, [personId, setBreadcrumbMapping, store]);
+	}, [personId, setBreadcrumbMapping, setIsPersonLoading, setPersonError, setPersonDetail]);
 
 	const handleDeleteClick = () => {
 		store.setIsPersonConfirmOpen(true);

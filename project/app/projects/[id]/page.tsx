@@ -22,19 +22,17 @@ export default function BoardPage({ params }: { params: Promise<{ id: string }> 
         setIsMounted(true);
         
         getProjectDetailAction(id).then((res: any) => {
-            if (res.success && res.data?.lists && res.data.lists.length > 0) {
-                setKanbanColumns(res.data.lists.map((l: any) => l.name));
-                const allTasks = res.data.lists.flatMap((l: any) => 
-                    (l.tasks || []).map((t: any) => ({
+            if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+                setKanbanColumns(res.data.statuses.map((s: any) => s.name));
+                const allTasks = res.data.statuses.flatMap((s: any) => 
+                    (s.tasks || []).map((t: any) => ({
                         ...t,
-                        status: l.name
+                        status: s.name
                     }))
                 );
                 
-                // Only overwrite dummy tasks if we actually have tasks from the database
-                if (allTasks.length > 0) {
-                    setTasks(allTasks);
-                }
+                // Overwrite dummy tasks with database tasks
+                setTasks(allTasks);
             }
         });
     }, [id, setKanbanColumns, setTasks]);

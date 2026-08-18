@@ -9,7 +9,7 @@ import {
 	uuid,
 	jsonb,
 } from "drizzle-orm/pg-core";
-import { priorityEnum, roleEnum } from "./enums";
+import { roleEnum, sizeEnum, priorityEnum } from "./enums";
 import { teams, users } from "./index";
 
 export const projects = pgTable(
@@ -26,7 +26,7 @@ export const projects = pgTable(
 			.notNull(),
 		dueDate: timestamp("due_date").notNull(),
 		views: jsonb("views")
-			.default(["List", "Board", "Gantt Chart"])
+			.default(["Dashboard", "List", "Board", "Whiteboard", "Gantt Chart", "Timeline"])
 			.notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
@@ -64,11 +64,13 @@ export const projectMembers = pgTable(
 	}),
 );
 
-export const lists = pgTable(
-	"lists",
+export const projectStatuses = pgTable(
+	"project_statuses",
 	{
 		id: uuid("id").defaultRandom().primaryKey(),
 		name: text("name").notNull(),
+		description: text("description").default(""),
+		color: text("color").default("bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800"),
 		projectId: uuid("project_id")
 			.references(() => projects.id, { onDelete: "cascade" })
 			.notNull(),
@@ -80,7 +82,27 @@ export const lists = pgTable(
 			.notNull(),
 	},
 	(table) => ({
-		projectIdx: index("lists_project_id_idx").on(table.projectId),
+		projectIdx: index("project_statuses_project_id_idx").on(table.projectId),
+	}),
+);
+
+export const projectLabels = pgTable(
+	"project_labels",
+	{
+		id: uuid("id").defaultRandom().primaryKey(),
+		name: text("name").notNull(),
+		color: text("color").notNull(),
+		projectId: uuid("project_id")
+			.references(() => projects.id, { onDelete: "cascade" })
+			.notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => new Date())
+			.notNull(),
+	},
+	(table) => ({
+		projectIdx: index("project_labels_project_id_idx").on(table.projectId),
 	}),
 );
 
@@ -90,13 +112,14 @@ export const tasks = pgTable(
 		id: uuid("id").defaultRandom().primaryKey(),
 		title: text("title").notNull(),
 		description: text("description"),
-		listId: uuid("list_id")
-			.references(() => lists.id, { onDelete: "cascade" })
+		statusId: uuid("status_id")
+			.references(() => projectStatuses.id, { onDelete: "cascade" })
 			.notNull(),
 		assigneeId: uuid("assignee_id").references(() => users.id, {
 			onDelete: "set null",
 		}),
 		priority: priorityEnum("priority").default("medium").notNull(),
+		size: sizeEnum("size").default("M").notNull(),
 		position: integer("position").default(0).notNull(),
 		dueDate: timestamp("due_date"),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -106,8 +129,29 @@ export const tasks = pgTable(
 			.notNull(),
 	},
 	(table) => ({
-		listIdx: index("tasks_list_id_idx").on(table.listId),
+		statusIdx: index("tasks_status_id_idx").on(table.statusId),
 		assigneeIdx: index("tasks_assignee_id_idx").on(table.assigneeId),
+	}),
+);
+
+export const taskLabels = pgTable(
+	"task_labels",
+	{
+		id: uuid("id").defaultRandom().primaryKey(),
+		taskId: uuid("task_id")
+			.references(() => tasks.id, { onDelete: "cascade" })
+			.notNull(),
+		labelId: uuid("label_id")
+			.references(() => projectLabels.id, { onDelete: "cascade" })
+			.notNull(),
+	},
+	(table) => ({
+		taskIdx: index("task_labels_task_id_idx").on(table.taskId),
+		labelIdx: index("task_labels_label_id_idx").on(table.labelId),
+		taskLabelUnique: uniqueIndex("task_labels_task_label_unique").on(
+			table.taskId,
+			table.labelId,
+		),
 	}),
 );
 
@@ -136,7 +180,8 @@ export const comments = pgTable(
 export const projectsRelations = relations(projects, ({ one, many }) => ({
 	owner: one(users, { fields: [projects.ownerId], references: [users.id] }),
 	team: one(teams, { fields: [projects.teamId], references: [teams.id] }),
-	lists: many(lists),
+	statuses: many(projectStatuses),
+	labels: many(projectLabels),
 	members: many(projectMembers),
 }));
 
@@ -151,18 +196,32 @@ export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
 	}),
 }));
 
-export const listsRelations = relations(lists, ({ one, many }) => ({
+export const projectStatusesRelations = relations(projectStatuses, ({ one, many }) => ({
 	project: one(projects, {
-		fields: [lists.projectId],
+		fields: [projectStatuses.projectId],
 		references: [projects.id],
 	}),
 	tasks: many(tasks),
 }));
 
+export const projectLabelsRelations = relations(projectLabels, ({ one, many }) => ({
+	project: one(projects, {
+		fields: [projectLabels.projectId],
+		references: [projects.id],
+	}),
+	taskLabels: many(taskLabels),
+}));
+
 export const tasksRelations = relations(tasks, ({ one, many }) => ({
-	list: one(lists, { fields: [tasks.listId], references: [lists.id] }),
+	status: one(projectStatuses, { fields: [tasks.statusId], references: [projectStatuses.id] }),
 	assignee: one(users, { fields: [tasks.assigneeId], references: [users.id] }),
 	comments: many(comments),
+	taskLabels: many(taskLabels),
+}));
+
+export const taskLabelsRelations = relations(taskLabels, ({ one }) => ({
+	task: one(tasks, { fields: [taskLabels.taskId], references: [tasks.id] }),
+	label: one(projectLabels, { fields: [taskLabels.labelId], references: [projectLabels.id] }),
 }));
 
 export const commentsRelations = relations(comments, ({ one }) => ({
