@@ -13,7 +13,7 @@ export default async function ProjectLayout({
 }: ProjectLayoutProps) {
 	const resolvedParams = await params;
 	const projectRes = await getProjectDetailAction(resolvedParams.id);
-	const projectDetails = projectRes.success ? projectRes.data : null;
+	const projectDetails = projectRes.success ? projectRes.data : undefined;
 
 	return (
 		<BaseProject params={resolvedParams} projectDetails={projectDetails}>

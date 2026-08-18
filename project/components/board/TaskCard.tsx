@@ -93,8 +93,8 @@ export function TaskCard({ taskData, onClick, isOverlay }: TaskCardProps) {
 			isOverlay={isOverlay}
 			setNodeRef={setNodeRef}
 			style={style}
-			attributes={attributes}
-			listeners={listeners}
+			attributes={attributes as unknown as Record<string, unknown>}
+			listeners={listeners as unknown as Record<string, unknown>}
 		/>
 	);
 }

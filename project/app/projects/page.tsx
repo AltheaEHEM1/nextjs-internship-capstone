@@ -41,7 +41,7 @@ export default function ProjectsPage() {
 		{
 			id: string;
 			teamName: string | null;
-			dueDate: string;
+			dueDate: Date;
 			name: string;
 			description: string | null;
 			memberCount: number;
@@ -61,9 +61,18 @@ export default function ProjectsPage() {
 		fetchProjects();
 	}, [fetchProjects]);
 
-	// Refresh when a new project is created
 	const onProjectCreated = async (data: Record<string, unknown>) => {
-		await handleCreateFinal(data);
+		await handleCreateFinal(
+			data as unknown as {
+				views: string[];
+				statuses: {
+					notStarted?: string[];
+					active?: string[];
+					done?: string[];
+					closed?: string[];
+				};
+			},
+		);
 		await fetchProjects();
 	};
 

@@ -146,7 +146,9 @@ export default function CreateProject2({
 				opened={activeSubView === "statuses"}
 				onClose={() => setActiveSubView("main")}
 				status={statuses}
-				onChangeStatus={setStatuses}
+				onChangeStatus={(status) =>
+					setStatuses(status as unknown as typeof statuses)
+				}
 			/>
 		</BaseModal>
 	);

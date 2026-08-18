@@ -8,7 +8,7 @@ import ProjectNav from "@/components/project-component/ProjectNavigation";
 interface BaseProjectProps {
 	children: ReactNode;
 	params: { id: string };
-	projectDetails?: Record<string, unknown>;
+	projectDetails?: { name?: string | null; views?: unknown } | null;
 }
 
 export default function BaseProject({
@@ -30,7 +30,10 @@ export default function BaseProject({
 							projectId={id}
 						/>
 					</div>
-					<ProjectNav projectId={id} projectViews={projectDetails?.views} />
+					<ProjectNav
+						projectId={id}
+						projectViews={(projectDetails?.views as string[]) ?? undefined}
+					/>
 				</div>
 			)}
 			<div className="flex-1 px-4 pb-5 sm:px-6 lg:px-8">{children}</div>
