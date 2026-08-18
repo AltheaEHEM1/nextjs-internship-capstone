@@ -319,6 +319,7 @@ export async function getProjectSettingsAction(id: string) {
 				if (tm.user) {
 					memberMap.set(tm.user.id, {
 						id: tm.id,
+						userId: tm.user.id,
 						name: tm.user.name ?? "Unknown",
 						email: tm.user.email ?? "",
 						role: tm.role ?? "Member",
@@ -334,6 +335,7 @@ export async function getProjectSettingsAction(id: string) {
 				if (pm.user) {
 					memberMap.set(pm.user.id, {
 						id: pm.id,
+						userId: pm.user.id,
 						name: pm.user.name ?? "Unknown",
 						email: pm.user.email ?? "",
 						role: pm.role ?? "Member",

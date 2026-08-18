@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { updateProjectSettingsAction } from "@/actions/project/Project";
+import { getTeamDetailAction } from "@/actions/team/Team";
+import { useToast } from "@/hooks/toast/use-toast";
 import type {
 	AccessRole,
 	ProjectLabel,
@@ -13,12 +16,197 @@ import { useProjectSettingsStore } from "@/stores/project/project-settings/Proje
  * Combined custom hooks containing all Hook logic (useState, useEffect, Zustand consumption)
  */
 
+// Hook extracted from ProjectSettingsForm
+export function useProjectSettingsFormActions(
+	projectId: string,
+	onSave?: (data: {
+		title: string;
+		description: string;
+		team: string;
+		access: AccessRole;
+		members: TeamMember[];
+		labels: ProjectLabel[];
+		statuses: ProjectStatus[];
+	}) => void,
+	onDelete?: () => void,
+) {
+	const store = useProjectSettingsStore();
+	const { toast } = useToast();
+
+	const handleSaveDone = async () => {
+		const result = await updateProjectSettingsAction(projectId, {
+			name: store.tempTitle,
+			description: store.tempDescription,
+			teamId: store.teamId,
+		});
+
+		if (result.success) {
+			toast({
+				title: "Success",
+				description: "Project details updated.",
+			});
+			store.handleSaveGeneral();
+		} else {
+			toast({
+				title: "Error",
+				description: result.error || "Failed to update project details.",
+				variant: "destructive",
+			});
+		}
+	};
+
+	const handleSaveAll = async (e?: React.FormEvent) => {
+		if (e) e.preventDefault();
+
+		let finalTitle = store.title;
+		let finalDescription = store.description;
+
+		if (store.isEditingGeneral) {
+			finalTitle = store.tempTitle;
+			finalDescription = store.tempDescription;
+			store.handleSaveGeneral();
+		}
+
+		const result = await updateProjectSettingsAction(projectId, {
+			name: finalTitle,
+			description: finalDescription,
+			teamId: store.teamId,
+			statuses: store.statuses,
+		});
+
+		if (result.success) {
+			toast({
+				title: "Success",
+				description: "Project settings updated successfully.",
+			});
+		} else {
+			toast({
+				title: "Error",
+				description: result.error || "Failed to update project settings.",
+				variant: "destructive",
+			});
+		}
+
+		onSave?.({
+			title: finalTitle,
+			description: finalDescription,
+			team: store.team,
+			access: store.access,
+			members: store.members,
+			labels: store.labels,
+			statuses: store.statuses,
+		});
+	};
+
+	const handleDeleteConfirm = () => {
+		onDelete?.();
+		toast({
+			title: "Project deleted",
+			description: "Project has been successfully deleted.",
+			variant: "success",
+		});
+		store.setIsDeleteAlertOpen(false);
+	};
+
+	return {
+		handleSaveDone,
+		handleSaveAll,
+		handleDeleteConfirm,
+	};
+}
+
 // Hook extracted from MemberRole
 export function useMemberRoleState() {
 	const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+	const {
+		pendingTeamId,
+		setPendingTeamId,
+		availableTeams,
+		setTeamId,
+		setTeam,
+		setMembers,
+	} = useProjectSettingsStore();
+
+	const handleConfirmTeamChange = async () => {
+		if (!pendingTeamId) return;
+		const newTeamId = pendingTeamId;
+		const selected = availableTeams.find((t) => t.id === newTeamId);
+		if (selected) {
+			setTeamId(newTeamId);
+			setTeam(selected.name);
+
+			const res = await getTeamDetailAction(newTeamId);
+			if (res.success && res.data?.members) {
+				const newMembers: TeamMember[] = res.data.members.map(
+					(m: {
+						id: string;
+						name: string | null;
+						email: string | null;
+						role: string | null;
+						permission: string | null;
+					}) => ({
+						id: m.id,
+						name: m.name || "Unknown",
+						email: m.email || "",
+						role: m.role || "Member",
+						access: (m.permission as AccessRole) || "member",
+					}),
+				);
+				setMembers(newMembers);
+			}
+		}
+		setPendingTeamId(null);
+	};
+
 	return {
 		confirmDeleteId,
 		setConfirmDeleteId,
+		pendingTeamId,
+		setPendingTeamId,
+		handleConfirmTeamChange,
+	};
+}
+
+// Hooks extracted from ProjectLabelPriorityStatus widgets
+export function useTaskStatusesWidgetActions() {
+	const { statuses, setIsStatusModalOpen, handleDeleteStatus } =
+		useProjectSettingsStore();
+	const { toast } = useToast();
+
+	const onRemoveStatus = (idx: number) => {
+		handleDeleteStatus(idx);
+		toast({
+			title: "Status removed",
+			description: "Status has been removed.",
+			variant: "success",
+		});
+	};
+
+	return {
+		statuses,
+		setIsStatusModalOpen,
+		onRemoveStatus,
+	};
+}
+
+export function useProjectLabelsWidgetActions() {
+	const { labels, setIsLabelModalOpen, handleDeleteLabel } =
+		useProjectSettingsStore();
+	const { toast } = useToast();
+
+	const onRemoveLabel = (idx: number) => {
+		handleDeleteLabel(idx);
+		toast({
+			title: "Label removed",
+			description: "Label has been removed.",
+			variant: "success",
+		});
+	};
+
+	return {
+		labels,
+		setIsLabelModalOpen,
+		onRemoveLabel,
 	};
 }
 

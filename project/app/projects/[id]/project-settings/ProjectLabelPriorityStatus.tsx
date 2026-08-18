@@ -1,20 +1,12 @@
 import { Layers, Tag, X } from "lucide-react";
-import { useProjectSettings } from "@/hooks/project/project-settings/useProjectSettings";
-import { useToast } from "@/hooks/toast/use-toast";
+import {
+	useProjectLabelsWidgetActions,
+	useTaskStatusesWidgetActions,
+} from "@/hooks/project/project-settings/useProjectSettings";
 
 export function TaskStatusesWidget() {
-	const { statuses, setIsStatusModalOpen, handleDeleteStatus } =
-		useProjectSettings();
-	const { toast } = useToast();
-
-	const onRemove = (idx: number) => {
-		handleDeleteStatus(idx);
-		toast({
-			title: "Status removed",
-			description: "Status has been removed.",
-			variant: "success",
-		});
-	};
+	const { statuses, setIsStatusModalOpen, onRemoveStatus } =
+		useTaskStatusesWidgetActions();
 
 	return (
 		<div className="rounded-2xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-700 dark:bg-outer_space-900 space-y-4 flex flex-col h-full">
@@ -50,7 +42,7 @@ export function TaskStatusesWidget() {
 							{status.name}
 							<button
 								type="button"
-								onClick={() => onRemove(idx)}
+								onClick={() => onRemoveStatus(idx)}
 								className="hover:opacity-75"
 							>
 								<X size={12} />
@@ -124,18 +116,8 @@ export function TaskPrioritiesWidget() {
 }
 
 export function ProjectLabelsWidget() {
-	const { labels, setIsLabelModalOpen, handleDeleteLabel } =
-		useProjectSettings();
-	const { toast } = useToast();
-
-	const onRemove = (idx: number) => {
-		handleDeleteLabel(idx);
-		toast({
-			title: "Label removed",
-			description: "Label has been removed.",
-			variant: "success",
-		});
-	};
+	const { labels, setIsLabelModalOpen, onRemoveLabel } =
+		useProjectLabelsWidgetActions();
 
 	return (
 		<div className="rounded-2xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-700 dark:bg-outer_space-900 space-y-4 flex flex-col h-full">
@@ -162,7 +144,7 @@ export function ProjectLabelsWidget() {
 							{lbl.name}
 							<button
 								type="button"
-								onClick={() => onRemove(idx)}
+								onClick={() => onRemoveLabel(idx)}
 								className="hover:opacity-75"
 							>
 								<X size={12} />

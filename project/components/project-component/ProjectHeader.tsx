@@ -89,6 +89,7 @@ export default function ProjectHeader({
 				onClose={() => setIsCreateTaskOpen(false)}
 				onOpenAddPriority={onOpenAddPriority}
 				onOpenAddLabel={onOpenAddLabel}
+				projectId={projectId}
 			/>
 		</>
 	);

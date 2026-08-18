@@ -1,9 +1,14 @@
 "use client";
 
-import { Flag, Plus, Tag } from "lucide-react";
-import { useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { AlertCircle, Flag, Plus, Tag } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getProjectSettingsAction } from "@/actions/project/Project";
+import { createTaskAction } from "@/actions/task/Task";
+import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import BaseModal from "@/components/layout/BaseModal";
-import type { Status, WorkType } from "@/stores/task/custom-create-task-store";
+import { useToast } from "@/hooks/toast/use-toast";
+import type { Status } from "@/stores/task/custom-create-task-store";
 import { useCustomCreateTaskStore } from "@/stores/task/custom-create-task-store";
 
 interface CreateTaskModalProps {
@@ -11,6 +16,7 @@ interface CreateTaskModalProps {
 	onClose: () => void;
 	onOpenAddPriority?: () => void;
 	onOpenAddLabel?: () => void;
+	projectId?: string;
 }
 
 export default function CreateTaskModal({
@@ -18,20 +24,15 @@ export default function CreateTaskModal({
 	onClose,
 	onOpenAddPriority,
 	onOpenAddLabel,
+	projectId,
 }: CreateTaskModalProps) {
 	const {
 		taskName,
 		setTaskName,
-		project,
-		setProject,
-		workType,
-		setWorkType,
 		status,
 		setStatus,
 		description,
 		setDescription,
-		assignee,
-		setAssignee,
 		priority,
 		setPriority,
 		dueDate,
@@ -42,30 +43,81 @@ export default function CreateTaskModal({
 		setLabels,
 		team,
 		setTeam,
-		reporter,
-		setReporter,
 		reset,
 	} = useCustomCreateTaskStore();
 
-	const handleCreate = (e: React.FormEvent) => {
+	const { user } = useUser();
+	const { toast } = useToast();
+	const [projectData, setProjectData] = useState<{
+		members: { id: string; userId: string; name: string }[];
+		statuses: { id: string; name: string; color: string }[];
+		labels: { name: string; color: string }[];
+	} | null>(null);
+	const [isLoading, setIsLoading] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (opened && projectId) {
+			setIsLoading(true);
+			getProjectSettingsAction(projectId).then((result) => {
+				if (result.success && result.data) {
+					setProjectData(result.data);
+					if (result.data.statuses.length > 0 && !status) {
+						setStatus(result.data.statuses[0].id);
+					}
+				}
+				setIsLoading(false);
+			});
+		}
+	}, [opened, projectId, setStatus, status]);
+
+	const handleCreate = async (e: React.FormEvent) => {
 		e.preventDefault();
-		// Optionally reset after creation
-		reset();
-		console.log({
-			taskName,
-			project,
-			workType,
-			status,
-			description,
-			assignee,
-			priority,
-			dueDate,
-			startDate,
-			labels,
-			team,
-			reporter,
-		});
-		onClose();
+		if (!projectId) return;
+
+		setIsSubmitting(true);
+		setError(null);
+
+		try {
+			const result = await createTaskAction({
+				title: taskName,
+				description,
+				statusId: status,
+				assigneeId: team || undefined,
+				priority: priority as "low" | "medium" | "high" | "urgent",
+				dueDate: dueDate || undefined,
+				projectId: projectId,
+				labelName: labels || undefined,
+			});
+
+			if (result.success) {
+				toast({
+					title: "Task created",
+					description: "The task was successfully created.",
+					variant: "success",
+				});
+				reset();
+				onClose();
+			} else {
+				setError(result.error || "Failed to create task");
+				toast({
+					title: "Error",
+					description: result.error || "Failed to create task",
+					variant: "destructive",
+				});
+			}
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : "An error occurred";
+			setError(msg);
+			toast({
+				title: "Error",
+				description: msg,
+				variant: "destructive",
+			});
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	useEffect(() => {
@@ -101,13 +153,21 @@ export default function CreateTaskModal({
 					<button
 						type="submit"
 						form="create-task-form"
-						className="rounded-xl bg-cyan-500 hover:bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-cyan-500/20 transition-all"
+						disabled={isSubmitting}
+						className="rounded-xl bg-cyan-500 hover:bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-cyan-500/20 transition-all disabled:opacity-50"
 					>
-						Create Task
+						{isSubmitting ? "Creating..." : "Create Task"}
 					</button>
 				</>
 			}
 		>
+			{error && (
+				<Alert variant="destructive" className="mb-4">
+					<AlertCircle className="h-4 w-4" />
+					<AlertTitle>Error</AlertTitle>
+					<AlertDescription>{error}</AlertDescription>
+				</Alert>
+			)}
 			<form
 				id="create-task-form"
 				onSubmit={handleCreate}
@@ -132,50 +192,6 @@ export default function CreateTaskModal({
 					/>
 				</div>
 
-				{/* Project & Work Type Row */}
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-					<div>
-						<label
-							htmlFor="project"
-							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
-						>
-							Project
-						</label>
-						<select
-							id="project"
-							value={project}
-							onChange={(e) => setProject(e.target.value)}
-							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
-						>
-							<option value="">Select project...</option>
-							<option value="PUP Inventory System">PUP Inventory System</option>
-							<option value="Yo Etz AI">Yo Etz AI</option>
-							<option value="SRG Website">SRG Website</option>
-						</select>
-					</div>
-
-					<div>
-						<label
-							htmlFor="workType"
-							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
-						>
-							Work Type
-						</label>
-						<select
-							id="workType"
-							value={workType}
-							onChange={(e) => setWorkType(e.target.value as WorkType)}
-							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
-						>
-							<option value="Epic">Epic</option>
-							<option value="Story">Story</option>
-							<option value="Bug">Bug</option>
-							<option value="Task">Task</option>
-							<option value="Request">Request</option>
-						</select>
-					</div>
-				</div>
-
 				{/* Status & Team Row */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
@@ -190,11 +206,19 @@ export default function CreateTaskModal({
 							value={status}
 							onChange={(e) => setStatus(e.target.value as Status)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
+							disabled={isLoading}
 						>
-							<option value="To Do">To Do</option>
-							<option value="In Progress">In Progress</option>
-							<option value="In Review">In Review</option>
-							<option value="Done">Done</option>
+							{isLoading ? (
+								<option value="">Loading statuses...</option>
+							) : projectData?.statuses.length ? (
+								projectData.statuses.map((s) => (
+									<option key={s.id} value={s.id}>
+										{s.name}
+									</option>
+								))
+							) : (
+								<option value="">No statuses</option>
+							)}
 						</select>
 					</div>
 
@@ -203,18 +227,22 @@ export default function CreateTaskModal({
 							htmlFor="team"
 							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
 						>
-							Team
+							Member
 						</label>
 						<select
 							id="team"
 							value={team}
 							onChange={(e) => setTeam(e.target.value)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
+							disabled={isLoading}
 						>
-							<option value="">Select team...</option>
-							<option value="Core Architecture">Core Architecture</option>
-							<option value="Frontend Team">Frontend Team</option>
-							<option value="Backend Team">Backend Team</option>
+							<option value="">Select team member...</option>
+							{!isLoading &&
+								projectData?.members.map((m) => (
+									<option key={m.userId} value={m.userId}>
+										{m.name}
+									</option>
+								))}
 						</select>
 					</div>
 				</div>
@@ -276,26 +304,6 @@ export default function CreateTaskModal({
 				{/* Assignee & Priority Row */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
-						<label
-							htmlFor="assignee"
-							className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
-						>
-							Assignee
-						</label>
-						<select
-							id="assignee"
-							value={assignee}
-							onChange={(e) => setAssignee(e.target.value)}
-							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
-						>
-							<option value="">Select assignee...</option>
-							<option value="Yuan Evangelista">Yuan Evangelista</option>
-							<option value="Alex Mercer">Alex Mercer</option>
-							<option value="Sarah Jenkins">Sarah Jenkins</option>
-						</select>
-					</div>
-
-					<div>
 						<div className="flex items-center justify-between mb-1.5">
 							<label
 								htmlFor="priority"
@@ -316,14 +324,13 @@ export default function CreateTaskModal({
 						<select
 							id="priority"
 							value={priority}
-							onChange={(e) =>
-								setPriority(e.target.value as "High" | "Medium" | "Low")
-							}
+							onChange={(e) => setPriority(e.target.value)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
 						>
-							<option value="High">High</option>
-							<option value="Medium">Medium</option>
-							<option value="Low">Low</option>
+							<option value="low">Low</option>
+							<option value="medium">Medium</option>
+							<option value="high">High</option>
+							<option value="urgent">Urgent</option>
 						</select>
 					</div>
 				</div>
@@ -388,12 +395,15 @@ export default function CreateTaskModal({
 							value={labels}
 							onChange={(e) => setLabels(e.target.value)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
+							disabled={isLoading}
 						>
 							<option value="">Select label...</option>
-							<option value="Frontend">Frontend</option>
-							<option value="Backend">Backend</option>
-							<option value="Bug">Bug</option>
-							<option value="Feature">Feature</option>
+							{!isLoading &&
+								projectData?.labels.map((l) => (
+									<option key={l.name} value={l.name}>
+										{l.name}
+									</option>
+								))}
 						</select>
 					</div>
 
@@ -404,16 +414,26 @@ export default function CreateTaskModal({
 						>
 							Reporter
 						</label>
-						<select
-							id="reporter"
-							value={reporter}
-							onChange={(e) => setReporter(e.target.value)}
-							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
-						>
-							<option value="">Select reporter...</option>
-							<option value="Yuan Evangelista">Yuan Evangelista</option>
-							<option value="Project Manager">Project Manager</option>
-						</select>
+						<div className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5">
+							{user?.imageUrl ? (
+								<img
+									src={user.imageUrl}
+									alt="Reporter"
+									className="w-5 h-5 rounded-full"
+								/>
+							) : (
+								<div className="w-5 h-5 rounded-full bg-cyan-500 text-white flex items-center justify-center text-[10px] font-bold uppercase">
+									{user?.firstName?.charAt(0) ||
+										user?.primaryEmailAddress?.emailAddress?.charAt(0) ||
+										"?"}
+								</div>
+							)}
+							<span className="text-sm font-medium text-slate-900 dark:text-white">
+								{user?.fullName ||
+									user?.primaryEmailAddress?.emailAddress ||
+									"Loading..."}
+							</span>
+						</div>
 					</div>
 				</div>
 

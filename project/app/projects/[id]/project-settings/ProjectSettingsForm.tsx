@@ -10,16 +10,14 @@ import {
 	X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { updateProjectSettingsAction } from "@/actions/project/Project";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import { AddLabelModal } from "@/components/modals/project-settings/AddLabelModal";
 import { AddStatusModal } from "@/components/modals/project-settings/AddStatusModal";
 import {
 	useInitializeProjectSettings,
 	useProjectSettings,
+	useProjectSettingsFormActions,
 } from "@/hooks/project/project-settings/useProjectSettings";
-import { useToast } from "@/hooks/toast/use-toast";
 import type {
 	AccessRole,
 	ProjectLabel,
@@ -102,73 +100,27 @@ export default function ProjectSettingsForm({
 	const {
 		title,
 		description,
-		team,
-		teamId,
-		access,
 		isEditingGeneral,
 		setIsEditingGeneral,
 		tempTitle,
 		setTempTitle,
 		tempDescription,
 		setTempDescription,
-		handleSaveGeneral,
 		handleCancelGeneral,
-		labels,
-		statuses,
 		isLabelModalOpen,
-		isStatusModalOpen,
 		setIsLabelModalOpen,
-		setIsStatusModalOpen,
 		handleAddLabel,
+		isStatusModalOpen,
+		setIsStatusModalOpen,
 		handleAddStatus,
 		members,
+		isDeleteAlertOpen,
+		setIsDeleteAlertOpen,
 	} = useProjectSettings();
-	const { toast } = useToast();
 	const router = useRouter();
-	const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
-	const handleSave = async (e: React.FormEvent) => {
-		e.preventDefault();
-
-		let finalTitle = title;
-		let finalDescription = description;
-
-		if (isEditingGeneral) {
-			finalTitle = tempTitle;
-			finalDescription = tempDescription;
-			handleSaveGeneral();
-		}
-
-		const result = await updateProjectSettingsAction(projectId, {
-			name: finalTitle,
-			description: finalDescription,
-			teamId: teamId,
-			statuses: statuses,
-		});
-
-		if (result.success) {
-			toast({
-				title: "Success",
-				description: "Project settings updated successfully.",
-			});
-		} else {
-			toast({
-				title: "Error",
-				description: result.error || "Failed to update project settings.",
-				variant: "destructive",
-			});
-		}
-
-		onSave?.({
-			title: finalTitle,
-			description: finalDescription,
-			team,
-			access,
-			members,
-			labels,
-			statuses,
-		});
-	};
+	const { handleSaveDone, handleSaveAll, handleDeleteConfirm } =
+		useProjectSettingsFormActions(projectId, onSave, onDelete);
 
 	return (
 		<div className="max-w-5xl mx-auto space-y-8 pb-12">
@@ -185,7 +137,7 @@ export default function ProjectSettingsForm({
 			</div>
 
 			{/* Settings Form Container */}
-			<form onSubmit={handleSave} className="space-y-6">
+			<form onSubmit={handleSaveAll} className="space-y-6">
 				{/* General Settings Section */}
 				<div className="rounded-2xl border border-french_gray-200/80 bg-white p-6 sm:p-8 shadow-xs dark:border-payne's_gray-800 dark:bg-outer_space-900 space-y-6">
 					<div className="flex items-center justify-between pb-4 border-b border-french_gray-100 dark:border-payne's_gray-800">
@@ -213,32 +165,7 @@ export default function ProjectSettingsForm({
 							<div className="flex items-center gap-2">
 								<button
 									type="button"
-									onClick={async () => {
-										// Save to DB immediately when clicking Done
-										const result = await updateProjectSettingsAction(
-											projectId,
-											{
-												name: tempTitle,
-												description: tempDescription,
-												teamId: teamId,
-											},
-										);
-
-										if (result.success) {
-											toast({
-												title: "Success",
-												description: "Project details updated.",
-											});
-											handleSaveGeneral(); // updates store and hides edit mode
-										} else {
-											toast({
-												title: "Error",
-												description:
-													result.error || "Failed to update project details.",
-												variant: "destructive",
-											});
-										}
-									}}
+									onClick={handleSaveDone}
 									className="inline-flex items-center gap-1 px-3.5 py-1.5 bg-blue_munsell-500 hover:bg-blue_munsell-600 text-white rounded-xl text-xs font-semibold shadow-xs transition-all"
 								>
 									<Check size={13} /> Done
@@ -321,7 +248,7 @@ export default function ProjectSettingsForm({
 				</div>
 
 				{/* Delete Alert & Actions Footer */}
-				{showDeleteAlert && (
+				{isDeleteAlertOpen && (
 					<Alert
 						variant="destructive"
 						className="bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50"
@@ -334,21 +261,14 @@ export default function ProjectSettingsForm({
 							<div className="flex justify-end gap-3 mt-4">
 								<button
 									type="button"
-									onClick={() => setShowDeleteAlert(false)}
+									onClick={() => setIsDeleteAlertOpen(false)}
 									className="px-4 py-2 text-xs font-semibold rounded-lg bg-white dark:bg-outer_space-800 text-outer_space-600 dark:text-platinum-300 border border-french_gray-200 dark:border-payne's_gray-600 hover:bg-gray-50 dark:hover:bg-outer_space-700 transition"
 								>
 									Cancel
 								</button>
 								<button
 									type="button"
-									onClick={() => {
-										onDelete?.();
-										toast({
-											title: "Project deleted",
-											description: "Project has been successfully deleted.",
-											variant: "success",
-										});
-									}}
+									onClick={handleDeleteConfirm}
 									className="px-4 py-2 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
 								>
 									Confirm Delete
@@ -361,7 +281,7 @@ export default function ProjectSettingsForm({
 				<div className="flex items-center justify-between pt-4 border-t border-french_gray-200/60 dark:border-payne's_gray-800">
 					<button
 						type="button"
-						onClick={() => setShowDeleteAlert(true)}
+						onClick={() => setIsDeleteAlertOpen(true)}
 						className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors border border-red-200/60 dark:border-red-900/40"
 					>
 						<Trash2 size={15} />

@@ -44,10 +44,12 @@ interface ProjectSettingsState {
 	editingMemberId: string | null;
 	editMemberRole: string;
 	editMemberAccess: AccessRole;
+	pendingTeamId: string | null;
 
 	// Modals State
 	isLabelModalOpen: boolean;
 	isStatusModalOpen: boolean;
+	isDeleteAlertOpen: boolean;
 
 	// Actions & Handlers
 	initialize: (data: {
@@ -71,12 +73,14 @@ interface ProjectSettingsState {
 	setTempTitle: (tempTitle: string) => void;
 	setTempDescription: (tempDescription: string) => void;
 	setTempTeamId: (tempTeamId: string) => void;
+	setPendingTeamId: (pendingTeamId: string | null) => void;
 	handleSaveGeneral: () => void;
 	handleCancelGeneral: () => void;
 
 	// Modal Actions
 	setIsLabelModalOpen: (isOpen: boolean) => void;
 	setIsStatusModalOpen: (isOpen: boolean) => void;
+	setIsDeleteAlertOpen: (isOpen: boolean) => void;
 
 	// Entity Handlers
 	handleAddLabel: (label: ProjectLabel) => void;
@@ -113,9 +117,11 @@ export const useProjectSettingsStore = create<ProjectSettingsState>(
 		editingMemberId: null,
 		editMemberRole: "",
 		editMemberAccess: "member",
+		pendingTeamId: null,
 
 		isLabelModalOpen: false,
 		isStatusModalOpen: false,
+		isDeleteAlertOpen: false,
 
 		initialize: (data) =>
 			set({
@@ -143,6 +149,7 @@ export const useProjectSettingsStore = create<ProjectSettingsState>(
 		setTempTitle: (tempTitle) => set({ tempTitle }),
 		setTempDescription: (tempDescription) => set({ tempDescription }),
 		setTempTeamId: (tempTeamId) => set({ tempTeamId }),
+		setPendingTeamId: (pendingTeamId) => set({ pendingTeamId }),
 
 		handleSaveGeneral: () => {
 			const { tempTitle, tempDescription } = get();
@@ -165,6 +172,7 @@ export const useProjectSettingsStore = create<ProjectSettingsState>(
 
 		setIsLabelModalOpen: (isLabelModalOpen) => set({ isLabelModalOpen }),
 		setIsStatusModalOpen: (isStatusModalOpen) => set({ isStatusModalOpen }),
+		setIsDeleteAlertOpen: (isDeleteAlertOpen) => set({ isDeleteAlertOpen }),
 
 		handleAddLabel: (label) =>
 			set((state) => ({ labels: [...state.labels, label] })),

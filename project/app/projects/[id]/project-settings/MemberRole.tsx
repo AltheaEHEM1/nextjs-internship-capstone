@@ -1,9 +1,10 @@
 "use client";
 import { Mail, Shield, User } from "lucide-react";
-import { useState } from "react";
-import { getTeamDetailAction } from "@/actions/team/Team";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
-import { useProjectSettings } from "@/hooks/project/project-settings/useProjectSettings";
+import {
+	useMemberRoleState,
+	useProjectSettings,
+} from "@/hooks/project/project-settings/useProjectSettings";
 import type {
 	AccessRole,
 	TeamMember,
@@ -14,9 +15,9 @@ interface MemberRoleProps {
 }
 
 export default function MemberRole({ members }: MemberRoleProps) {
-	const { team, teamId, availableTeams, setTeamId, setTeam, setMembers } =
-		useProjectSettings();
-	const [pendingTeamId, setPendingTeamId] = useState<string | null>(null);
+	const { team, teamId, availableTeams } = useProjectSettings();
+	const { pendingTeamId, setPendingTeamId, handleConfirmTeamChange } =
+		useMemberRoleState();
 
 	const getAccessBadgeStyle = (access: AccessRole) => {
 		switch (access) {
@@ -66,36 +67,7 @@ export default function MemberRole({ members }: MemberRoleProps) {
 			<ConfirmDialog
 				opened={pendingTeamId !== null}
 				onClose={() => setPendingTeamId(null)}
-				onConfirm={async () => {
-					if (!pendingTeamId) return;
-					const newTeamId = pendingTeamId;
-					const selected = availableTeams.find((t) => t.id === newTeamId);
-					if (selected) {
-						setTeamId(newTeamId);
-						setTeam(selected.name);
-
-						const res = await getTeamDetailAction(newTeamId);
-						if (res.success && res.data?.members) {
-							const newMembers: TeamMember[] = res.data.members.map(
-								(m: {
-									id: string;
-									name: string | null;
-									email: string | null;
-									role: string | null;
-									permission: string | null;
-								}) => ({
-									id: m.id,
-									name: m.name || "Unknown",
-									email: m.email || "",
-									role: m.role || "Member",
-									access: (m.permission as AccessRole) || "member",
-								}),
-							);
-							setMembers(newMembers);
-						}
-					}
-					setPendingTeamId(null);
-				}}
+				onConfirm={handleConfirmTeamChange}
 				title="Change Team?"
 				description="Are you sure you want to change the project's team? If you do, all assigned tasks to the current members will be gone."
 				confirmLabel="Confirm Change"

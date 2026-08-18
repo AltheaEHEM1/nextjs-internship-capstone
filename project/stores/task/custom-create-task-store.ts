@@ -6,7 +6,7 @@ import { devtools } from "zustand/middleware";
 
 export type WorkType = "Epic" | "Story" | "Bug" | "Task" | "Request";
 
-export type Status = "To Do" | "In Progress" | "In Review" | "Done";
+export type Status = string;
 
 export interface CustomCreateTaskState {
 	// fields
@@ -16,7 +16,7 @@ export interface CustomCreateTaskState {
 	status: Status;
 	description: string;
 	assignee: string;
-	priority: "Medium" | "Low" | "High"; // keep UI strings
+	priority: string;
 	dueDate: string;
 	startDate: string;
 	labels: string;
@@ -29,7 +29,7 @@ export interface CustomCreateTaskState {
 	setStatus: (v: Status) => void;
 	setDescription: (v: string) => void;
 	setAssignee: (v: string) => void;
-	setPriority: (v: "Medium" | "Low" | "High") => void;
+	setPriority: (v: string) => void;
 	setDueDate: (v: string) => void;
 	setStartDate: (v: string) => void;
 	setLabels: (v: string) => void;
@@ -45,10 +45,10 @@ export const useCustomCreateTaskStore = create<CustomCreateTaskState>()(
 		taskName: "",
 		project: "",
 		workType: "Task",
-		status: "To Do",
+		status: "",
 		description: "",
 		assignee: "",
-		priority: "Medium",
+		priority: "medium",
 		dueDate: "",
 		startDate: "",
 		labels: "",
@@ -73,10 +73,10 @@ export const useCustomCreateTaskStore = create<CustomCreateTaskState>()(
 				taskName: "",
 				project: "",
 				workType: "Task",
-				status: "To Do",
+				status: "",
 				description: "",
 				assignee: "",
-				priority: "Medium",
+				priority: "medium",
 				dueDate: "",
 				startDate: "",
 				labels: "",

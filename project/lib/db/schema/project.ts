@@ -131,6 +131,9 @@ export const tasks = pgTable(
 		size: sizeEnum("size").default("M").notNull(),
 		position: integer("position").default(0).notNull(),
 		dueDate: timestamp("due_date"),
+		reporterId: uuid("reporter_id").references(() => users.id, {
+			onDelete: "set null",
+		}),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
 			.defaultNow()
@@ -233,6 +236,7 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
 		references: [projectStatuses.id],
 	}),
 	assignee: one(users, { fields: [tasks.assigneeId], references: [users.id] }),
+	reporter: one(users, { fields: [tasks.reporterId], references: [users.id] }),
 	comments: many(comments),
 	taskLabels: many(taskLabels),
 }));
