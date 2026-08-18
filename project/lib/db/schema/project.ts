@@ -276,5 +276,8 @@ export const commentsRelations = relations(comments, ({ one }) => ({
 
 export const taskActivitiesRelations = relations(taskActivities, ({ one }) => ({
 	task: one(tasks, { fields: [taskActivities.taskId], references: [tasks.id] }),
-	author: one(users, { fields: [taskActivities.authorId], references: [users.id] }),
+	author: one(users, {
+		fields: [taskActivities.authorId],
+		references: [users.id],
+	}),
 }));

@@ -102,18 +102,14 @@ export const useCustomViewTaskLeftStore = create<CustomViewTaskLeftState>()(
 			}
 		},
 		fetchComments: async (taskId: string) => {
-			const { getTaskCommentsAction } = await import(
-				"@/actions/task/Task"
-			);
+			const { getTaskCommentsAction } = await import("@/actions/task/Task");
 			const res = await getTaskCommentsAction(taskId);
 			if (res.success && res.data) {
 				set({ comments: res.data });
 			}
 		},
 		fetchHistory: async (taskId: string) => {
-			const { getTaskHistoryAction } = await import(
-				"@/actions/task/Task"
-			);
+			const { getTaskHistoryAction } = await import("@/actions/task/Task");
 			const res = await getTaskHistoryAction(taskId);
 			if (res.success && res.data) {
 				set({ history: res.data });

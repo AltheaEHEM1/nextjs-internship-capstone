@@ -1,9 +1,5 @@
 "use client";
 
-import { use, useEffect, useCallback } from "react";
-import { getProjectDetailAction } from "@/actions/project/Project";
-import { pusherClient } from "@/lib/pusher-client";
-
 import {
 	type Cell,
 	type ColumnDef,
@@ -13,8 +9,10 @@ import {
 	type Row,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
-import { useMemo } from "react";
+import { use, useCallback, useEffect, useMemo } from "react";
+import { getProjectDetailAction } from "@/actions/project/Project";
 import { type Task, useList } from "@/hooks/project/(tabs)/useList";
+import { pusherClient } from "@/lib/pusher-client";
 
 const STATUS_COLORS: Record<Task["status"], string> = {
 	Todo: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
@@ -33,11 +31,7 @@ const PRIORITY_COLORS: Record<Task["priority"], string> = {
 	Critical: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
 };
 
-export default function List({
-	params,
-}: {
-	params: Promise<{ id: string }>;
-}) {
+export default function List({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = use(params);
 	const columns = useMemo<ColumnDef<Task>[]>(
 		() => [
@@ -120,10 +114,18 @@ export default function List({
 							({
 								id: t.id,
 								title: t.title || "Untitled Task",
-								status: s.name as any,
-								priority: (t.priority === "urgent" ? "High" : (t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1) : "Low")) as any,
-								assignee: (t as any).assignee?.name || "Unassigned",
-								dueDate: t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "",
+								status: s.name as Task["status"],
+								priority: (t.priority === "urgent"
+									? "High"
+									: t.priority
+										? t.priority.charAt(0).toUpperCase() + t.priority.slice(1)
+										: "Low") as Task["priority"],
+								assignee:
+									(t as { assignee?: { name?: string } }).assignee?.name ||
+									"Unassigned",
+								dueDate: t.dueDate
+									? new Date(t.dueDate).toLocaleDateString()
+									: "",
 								estimate: t.size ? String(t.size) : "",
 							}) as Task,
 					),

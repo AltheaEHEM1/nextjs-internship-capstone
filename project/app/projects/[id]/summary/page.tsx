@@ -1,9 +1,5 @@
 "use client";
 
-import { use, useEffect, useCallback, useState } from "react";
-import { getProjectDetailAction } from "@/actions/project/Project";
-import { pusherClient } from "@/lib/pusher-client";
-
 import {
 	BarChart3,
 	CalendarClock,
@@ -14,6 +10,8 @@ import {
 	PlusCircle,
 	Users,
 } from "lucide-react";
+import { use, useCallback, useEffect, useState } from "react";
+import { getProjectDetailAction } from "@/actions/project/Project";
 import {
 	type RecentActivity,
 	type StatusOverviewItem,
@@ -21,11 +19,21 @@ import {
 	useSummary,
 	type WorkTypeItem,
 } from "@/hooks/project/(tabs)/useSummary";
+import { pusherClient } from "@/lib/pusher-client";
 
-export default function Summary({ params }: { params: Promise<{ id: string }> }) {
+export default function Summary({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
 	const { id } = use(params);
-	const { recentActivities, statusOverview, workTypes, teamWorkload, setSummaryData } =
-		useSummary();
+	const {
+		recentActivities,
+		statusOverview,
+		workTypes,
+		teamWorkload,
+		setSummaryData,
+	} = useSummary();
 
 	const [projectInfo, setProjectInfo] = useState({
 		name: "Loading...",
@@ -34,7 +42,7 @@ export default function Summary({ params }: { params: Promise<{ id: string }> })
 		completedCount: 0,
 		createdCount: 0,
 		dueSoonCount: 0,
-		editedCount: 0
+		editedCount: 0,
 	});
 
 	const fetchProjectData = useCallback(() => {
@@ -42,11 +50,15 @@ export default function Summary({ params }: { params: Promise<{ id: string }> })
 			if (res.success && res.data) {
 				const project = res.data;
 				const statuses = project.statuses || [];
-				const allTasks = statuses.flatMap((s) => (s.tasks || []).map(t => ({ ...t, statusName: s.name })));
+				const allTasks = statuses.flatMap((s) =>
+					(s.tasks || []).map((t) => ({ ...t, statusName: s.name })),
+				);
 
 				const now = new Date();
 				const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-				const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+				const sevenDaysFromNow = new Date(
+					now.getTime() + 7 * 24 * 60 * 60 * 1000,
+				);
 
 				let completedCount = 0;
 				let createdCount = 0;
@@ -54,7 +66,7 @@ export default function Summary({ params }: { params: Promise<{ id: string }> })
 				let dueSoonCount = 0;
 				let doneTasks = 0;
 
-				allTasks.forEach(t => {
+				allTasks.forEach((t) => {
 					const createdAt = new Date(t.createdAt);
 					const updatedAt = new Date(t.updatedAt);
 					const dueDate = t.dueDate ? new Date(t.dueDate) : null;
@@ -66,69 +78,145 @@ export default function Summary({ params }: { params: Promise<{ id: string }> })
 
 					if (createdAt >= sevenDaysAgo) createdCount++;
 					if (updatedAt >= sevenDaysAgo) editedCount++;
-					
-					if (dueDate && dueDate >= now && dueDate <= sevenDaysFromNow && t.statusName !== "Done") {
+
+					if (
+						dueDate &&
+						dueDate >= now &&
+						dueDate <= sevenDaysFromNow &&
+						t.statusName !== "Done"
+					) {
 						dueSoonCount++;
 					}
 				});
 
-				const progress = allTasks.length > 0 ? Math.round((doneTasks / allTasks.length) * 100) : 0;
+				const progress =
+					allTasks.length > 0
+						? Math.round((doneTasks / allTasks.length) * 100)
+						: 0;
 
 				setProjectInfo({
 					name: project.name,
-					description: project.description || "Tracking core development metrics, task velocity, and team contributions for the current cycle.",
+					description:
+						project.description ||
+						"Tracking core development metrics, task velocity, and team contributions for the current cycle.",
 					progress,
 					completedCount,
 					createdCount,
 					dueSoonCount,
-					editedCount
+					editedCount,
 				});
 
-				const statusOverviewData = statuses.map(s => ({
+				const statusOverviewData = statuses.map((s) => ({
 					label: s.name,
 					count: s.tasks?.length || 0,
-					percentage: allTasks.length > 0 ? Math.round(((s.tasks?.length || 0) / allTasks.length) * 100) : 0,
-					color: s.color?.includes("emerald") ? "bg-emerald-500" : s.color?.includes("blue") ? "bg-blue_munsell-500" : s.color?.includes("amber") ? "bg-amber-500" : "bg-purple-500"
+					percentage:
+						allTasks.length > 0
+							? Math.round(((s.tasks?.length || 0) / allTasks.length) * 100)
+							: 0,
+					color: s.color?.includes("emerald")
+						? "bg-emerald-500"
+						: s.color?.includes("blue")
+							? "bg-blue_munsell-500"
+							: s.color?.includes("amber")
+								? "bg-amber-500"
+								: "bg-purple-500",
 				}));
 
-				const priorityCounts: Record<string, number> = { high: 0, medium: 0, low: 0 };
-				allTasks.forEach(t => {
-					const p = t.priority === "urgent" ? "high" : (t.priority || "low");
+				const priorityCounts: Record<string, number> = {
+					high: 0,
+					medium: 0,
+					low: 0,
+				};
+				allTasks.forEach((t) => {
+					const p = t.priority === "urgent" ? "high" : t.priority || "low";
 					priorityCounts[p]++;
 				});
 				const workTypesData = [
-					{ label: "High Priority", count: priorityCounts.high, percentage: allTasks.length > 0 ? Math.round((priorityCounts.high / allTasks.length) * 100) : 0, color: "bg-rose-500" },
-					{ label: "Medium Priority", count: priorityCounts.medium, percentage: allTasks.length > 0 ? Math.round((priorityCounts.medium / allTasks.length) * 100) : 0, color: "bg-amber-500" },
-					{ label: "Low Priority", count: priorityCounts.low, percentage: allTasks.length > 0 ? Math.round((priorityCounts.low / allTasks.length) * 100) : 0, color: "bg-blue_munsell-500" },
-				].filter(w => w.count > 0);
+					{
+						label: "High Priority",
+						count: priorityCounts.high,
+						percentage:
+							allTasks.length > 0
+								? Math.round((priorityCounts.high / allTasks.length) * 100)
+								: 0,
+						color: "bg-rose-500",
+					},
+					{
+						label: "Medium Priority",
+						count: priorityCounts.medium,
+						percentage:
+							allTasks.length > 0
+								? Math.round((priorityCounts.medium / allTasks.length) * 100)
+								: 0,
+						color: "bg-amber-500",
+					},
+					{
+						label: "Low Priority",
+						count: priorityCounts.low,
+						percentage:
+							allTasks.length > 0
+								? Math.round((priorityCounts.low / allTasks.length) * 100)
+								: 0,
+						color: "bg-blue_munsell-500",
+					},
+				].filter((w) => w.count > 0);
 
 				const workloadMap: Record<string, number> = {};
-				allTasks.forEach(t => {
-					if (t.statusName !== "Done" && (t as any).assignee) {
-						const assigneeName = (t as any).assignee.name || "Unknown";
+				allTasks.forEach((t) => {
+					if (
+						t.statusName !== "Done" &&
+						(t as { assignee?: { name?: string } }).assignee
+					) {
+						const assigneeName =
+							(t as { assignee?: { name?: string } }).assignee?.name ||
+							"Unknown";
 						workloadMap[assigneeName] = (workloadMap[assigneeName] || 0) + 1;
 					}
 				});
-				const totalActiveTasks = Object.values(workloadMap).reduce((a, b) => a + b, 0);
-				const teamWorkloadData = Object.entries(workloadMap).map(([name, tasks]) => ({
-					name,
-					tasks,
-					load: totalActiveTasks > 0 ? `${Math.round((tasks / totalActiveTasks) * 100)}%` : "0%"
-				})).sort((a, b) => b.tasks - a.tasks);
+				const totalActiveTasks = Object.values(workloadMap).reduce(
+					(a, b) => a + b,
+					0,
+				);
+				const teamWorkloadData = Object.entries(workloadMap)
+					.map(([name, tasks]) => ({
+						name,
+						tasks,
+						load:
+							totalActiveTasks > 0
+								? `${Math.round((tasks / totalActiveTasks) * 100)}%`
+								: "0%",
+					}))
+					.sort((a, b) => b.tasks - a.tasks);
 
-				const sortedTasks = [...allTasks].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 5);
+				const sortedTasks = [...allTasks]
+					.sort(
+						(a, b) =>
+							new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+					)
+					.slice(0, 5);
 				const recentActivitiesData = sortedTasks.map((t, idx) => ({
 					id: idx + 1,
 					time: new Date(t.updatedAt).toLocaleDateString(),
-					author: (t as any).assignee?.name || "System",
-					title: `Updated task: ${t.title}`
+					author:
+						(t as { assignee?: { name?: string } }).assignee?.name || "System",
+					title: `Updated task: ${t.title}`,
 				}));
 
 				setSummaryData({
 					statusOverview: statusOverviewData,
-					workTypes: workTypesData.length > 0 ? workTypesData : [{ label: "No tasks", count: 0, percentage: 0, color: "bg-gray-500" }],
+					workTypes:
+						workTypesData.length > 0
+							? workTypesData
+							: [
+									{
+										label: "No tasks",
+										count: 0,
+										percentage: 0,
+										color: "bg-gray-500",
+									},
+								],
 					teamWorkload: teamWorkloadData,
-					recentActivities: recentActivitiesData
+					recentActivities: recentActivitiesData,
 				});
 			}
 		});

@@ -1,10 +1,9 @@
 "use client";
 
-import { use, useEffect, useCallback } from "react";
+import { Gantt } from "gantt-task-react";
+import { use, useCallback, useEffect } from "react";
 import { getProjectDetailAction } from "@/actions/project/Project";
 import { pusherClient } from "@/lib/pusher-client";
-
-import { Gantt } from "gantt-task-react";
 import "gantt-task-react/dist/index.css";
 import { useGanttChart } from "@/hooks/project/(tabs)/useGanttChart";
 
@@ -33,7 +32,9 @@ export default function GanttChart({
 					(s.tasks || [])
 						.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
 						.map((t) => {
-							const start = t.createdAt ? new Date(t.createdAt) : new Date(t.dueDate!);
+							const start = t.createdAt
+								? new Date(t.createdAt)
+								: new Date(t.dueDate || "");
 							const end = t.dueDate ? new Date(t.dueDate) : start;
 							return {
 								id: t.id,
@@ -41,11 +42,15 @@ export default function GanttChart({
 								type: "task",
 								start,
 								end,
-								progress: s.name === "Done" ? 100 : s.name === "In Progress" ? 50 : 0,
+								progress:
+									s.name === "Done" ? 100 : s.name === "In Progress" ? 50 : 0,
 								isDisabled: false,
-								styles: { progressColor: "#0ea5e9", progressSelectedColor: "#0284c7" },
-							} as any;
-						})
+								styles: {
+									progressColor: "#0ea5e9",
+									progressSelectedColor: "#0284c7",
+								},
+							} as unknown as import("gantt-task-react").Task;
+						}),
 				);
 
 				setTasks(allTasks.length > 0 ? allTasks : []);

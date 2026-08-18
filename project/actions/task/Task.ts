@@ -4,7 +4,14 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
-import { projectLabels, taskLabels, tasks, comments, taskActivities, projectStatuses } from "@/lib/db/schema";
+import {
+	comments,
+	projectLabels,
+	projectStatuses,
+	taskActivities,
+	taskLabels,
+	tasks,
+} from "@/lib/db/schema";
 import { pusherServer } from "@/lib/pusher-server";
 
 export async function createTaskAction(data: {
@@ -120,13 +127,25 @@ export async function updateTaskAction(
 			.returning();
 
 		if (data.title !== undefined) {
-			await db.insert(taskActivities).values({ taskId: id, action: `updated the title to "${data.title}"`, authorId: dbUser.id });
+			await db.insert(taskActivities).values({
+				taskId: id,
+				action: `updated the title to "${data.title}"`,
+				authorId: dbUser.id,
+			});
 		}
 		if (data.description !== undefined) {
-			await db.insert(taskActivities).values({ taskId: id, action: "updated the description", authorId: dbUser.id });
+			await db.insert(taskActivities).values({
+				taskId: id,
+				action: "updated the description",
+				authorId: dbUser.id,
+			});
 		}
 		if (data.priority !== undefined) {
-			await db.insert(taskActivities).values({ taskId: id, action: `changed priority to ${data.priority}`, authorId: dbUser.id });
+			await db.insert(taskActivities).values({
+				taskId: id,
+				action: `changed priority to ${data.priority}`,
+				authorId: dbUser.id,
+			});
 		}
 
 		if (data.projectId) {
@@ -159,8 +178,10 @@ export async function reorderTasksAction(
 
 		// Update each task sequentially (in a real app, you might want to use a transaction or batch update)
 		for (const t of tasksToUpdate) {
-			const oldTask = await db.query.tasks.findFirst({ where: eq(tasks.id, t.id) });
-			
+			const oldTask = await db.query.tasks.findFirst({
+				where: eq(tasks.id, t.id),
+			});
+
 			await db
 				.update(tasks)
 				.set({
@@ -168,11 +189,17 @@ export async function reorderTasksAction(
 					position: t.position,
 				})
 				.where(eq(tasks.id, t.id));
-				
+
 			if (oldTask && oldTask.statusId !== t.statusId) {
-				const newStatus = await db.query.projectStatuses.findFirst({ where: eq(projectStatuses.id, t.statusId) });
+				const newStatus = await db.query.projectStatuses.findFirst({
+					where: eq(projectStatuses.id, t.statusId),
+				});
 				if (newStatus) {
-					await db.insert(taskActivities).values({ taskId: t.id, action: `moved task to ${newStatus.name}`, authorId: dbUser.id });
+					await db.insert(taskActivities).values({
+						taskId: t.id,
+						action: `moved task to ${newStatus.name}`,
+						authorId: dbUser.id,
+					});
 				}
 			}
 		}

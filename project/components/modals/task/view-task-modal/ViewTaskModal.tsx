@@ -57,7 +57,11 @@ export default function ViewTask({
 
 				{/* ================= RIGHT SIDE (1 Column) ================= */}
 				<div className="space-y-5 bg-gray-50/70 dark:bg-gray-800/40 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-					<ViewTaskModalRight taskData={taskData} onUpdateTask={onUpdateTask} projectId={projectId} />
+					<ViewTaskModalRight
+						taskData={taskData}
+						onUpdateTask={onUpdateTask}
+						projectId={projectId}
+					/>
 				</div>
 			</div>
 		</BaseModal>

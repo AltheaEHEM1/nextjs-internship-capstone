@@ -17,7 +17,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import { usePersonManagement } from "@/hooks/team/useTeamManagement";
 
-export default function PersonDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PersonDetailPage({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
 	const { id: personId } = use(params);
 	const router = useRouter();
 

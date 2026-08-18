@@ -510,12 +510,12 @@ export async function getProjectMembersAction(projectId: string) {
 
 		if (!project) return { success: false, error: "Project not found" };
 
-		const memberMap = new Map<string, any>();
-		
+		const memberMap = new Map<string, unknown>();
+
 		project.team?.members?.forEach((tm) => {
 			if (tm.user) memberMap.set(tm.user.id, tm.user);
 		});
-		
+
 		project.members?.forEach((pm) => {
 			if (pm.user) memberMap.set(pm.user.id, pm.user);
 		});

@@ -84,7 +84,9 @@ export const useCustomViewTaskRightStore = create<CustomViewTaskRightState>()(
 			);
 			const res = await getProjectMembersAction(projectId);
 			if (res.success && res.data) {
-				set({ projectMembers: res.data });
+				set({
+					projectMembers: res.data as { id: string; name: string | null }[],
+				});
 			}
 		},
 	})),

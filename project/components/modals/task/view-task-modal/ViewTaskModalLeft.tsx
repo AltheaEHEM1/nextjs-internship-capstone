@@ -37,7 +37,6 @@ export default function ViewTaskModalLeft({
 		setNewComment,
 		handleTitleBlur,
 		handleDescBlur,
-		fetchHistory,
 		handleAddComment,
 	} = useCustomViewTaskLeftStore();
 
@@ -171,7 +170,9 @@ export default function ViewTaskModalLeft({
 								className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 border border-gray-100 dark:border-gray-700"
 							>
 								<div className="flex justify-between text-xs text-gray-500 mb-1">
-									<span className="font-semibold">{activity.author?.name || "User"}</span>
+									<span className="font-semibold">
+										{activity.author?.name || "User"}
+									</span>
 									<span>
 										{activity.createdAt
 											? new Date(activity.createdAt).toLocaleString()

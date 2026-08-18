@@ -53,7 +53,9 @@ export default function BoardPage({
 									? "high"
 									: t.priority || "low") as "low" | "medium" | "high",
 								assignee: t.assigneeId || "",
-								assigneeName: (t as any).assignee?.name || "UN",
+								assigneeName:
+									(t as { assignee?: { name?: string } }).assignee?.name ||
+									"UN",
 								dueDate: t.dueDate ? new Date(t.dueDate).toISOString() : "",
 								workType: "Task",
 								label: "",

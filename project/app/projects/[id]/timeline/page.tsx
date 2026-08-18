@@ -26,16 +26,23 @@ export default function Timeline({
 					(s.tasks || [])
 						.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
 						.map((t) => {
-							const start = t.createdAt ? new Date(t.createdAt) : new Date(t.dueDate!);
+							const start = t.createdAt
+								? new Date(t.createdAt)
+								: new Date(t.dueDate || "");
 							const end = t.dueDate ? new Date(t.dueDate) : undefined;
 							return {
 								id: t.id,
 								content: t.title || "Untitled Task",
 								start,
 								end,
-								className: s.name === "Done" ? "bg-emerald-500 text-white" : s.name === "In Progress" ? "bg-blue-500 text-white" : "bg-gray-500 text-white",
+								className:
+									s.name === "Done"
+										? "bg-emerald-500 text-white"
+										: s.name === "In Progress"
+											? "bg-blue-500 text-white"
+											: "bg-gray-500 text-white",
 							};
-						})
+						}),
 				);
 
 				setItems(allItems);

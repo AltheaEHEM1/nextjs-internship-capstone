@@ -1,10 +1,9 @@
 "use client";
 
-import { use, useEffect, useCallback } from "react";
+import { use, useCallback, useEffect } from "react";
+import { Calendar as BigCalendar } from "react-big-calendar";
 import { getProjectDetailAction } from "@/actions/project/Project";
 import { pusherClient } from "@/lib/pusher-client";
-
-import { Calendar as BigCalendar } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { calendarLocalizer } from "@/hooks/project/(tabs)/useCalendar";
 import { useCalendarStore } from "@/stores/project/(tabs)/CalendarStore";
@@ -25,7 +24,9 @@ export default function Calendar({
 					(s.tasks || [])
 						.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
 						.map((t) => {
-							const start = t.createdAt ? new Date(t.createdAt) : new Date(t.dueDate!);
+							const start = t.createdAt
+								? new Date(t.createdAt)
+								: new Date(t.dueDate || "");
 							const end = t.dueDate ? new Date(t.dueDate) : start;
 							return {
 								id: t.id,
@@ -33,7 +34,7 @@ export default function Calendar({
 								start,
 								end,
 							};
-						})
+						}),
 				);
 
 				setEvents(allEvents);

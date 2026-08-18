@@ -95,7 +95,9 @@ export default function ViewTaskModalRight({
 						}}
 						className="text-xs bg-transparent border border-gray-300 rounded px-1.5 py-0.5 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
 					>
-						<option value="" disabled>Select User</option>
+						<option value="" disabled>
+							Select User
+						</option>
 						{projectMembers.map((member) => (
 							<option key={member.id} value={member.id}>
 								{member.name}
