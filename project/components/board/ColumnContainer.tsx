@@ -71,14 +71,6 @@ export function ColumnContainer({
 						/>
 					))}
 				</SortableContext>
-
-				{/* Add Task Button */}
-				<button
-					type="button"
-					className="w-full rounded-lg border-2 border-dashed border-french_gray-300 py-2.5 text-sm font-medium text-outer_space-500 transition-colors hover:border-blue_munsell-500 hover:bg-blue_munsell-50/50 hover:text-blue_munsell-600 dark:border-payne's_gray-500 dark:text-platinum-400 dark:hover:bg-blue_munsell-950/20 dark:hover:text-blue_munsell-400"
-				>
-					+ Add task
-				</button>
 			</div>
 		</div>
 	);

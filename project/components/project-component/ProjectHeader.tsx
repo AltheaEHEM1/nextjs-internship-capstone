@@ -84,13 +84,15 @@ export default function ProjectHeader({
 			</header>
 
 			{/* Create Task Modal */}
-			<CreateTaskModal
-				opened={isCreateTaskOpen}
-				onClose={() => setIsCreateTaskOpen(false)}
-				onOpenAddPriority={onOpenAddPriority}
-				onOpenAddLabel={onOpenAddLabel}
-				projectId={projectId}
-			/>
+			{isCreateTaskOpen && (
+				<CreateTaskModal
+					opened={isCreateTaskOpen}
+					onClose={() => setIsCreateTaskOpen(false)}
+					onOpenAddPriority={onOpenAddPriority}
+					onOpenAddLabel={onOpenAddLabel}
+					projectId={projectId}
+				/>
+			)}
 		</>
 	);
 }

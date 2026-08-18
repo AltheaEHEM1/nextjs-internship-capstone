@@ -53,7 +53,7 @@ export default function BoardPage({
 								startDate: t.createdAt
 									? new Date(t.createdAt).toISOString()
 									: "",
-								reporter: "System",
+								reporter: (t as any).reporter?.name || "System",
 							}) as Task,
 					),
 				);

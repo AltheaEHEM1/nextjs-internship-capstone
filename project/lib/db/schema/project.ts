@@ -30,6 +30,7 @@ export const projects = pgTable(
 				"Dashboard",
 				"List",
 				"Board",
+				"Calendar",
 				"Whiteboard",
 				"Gantt Chart",
 				"Timeline",

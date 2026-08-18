@@ -17,6 +17,7 @@ const AVAILABLE_VIEWS = [
 	"Dashboard",
 	"List",
 	"Board",
+	"Calendar",
 	"Whiteboard",
 	"Gantt chart",
 	"Timeline",

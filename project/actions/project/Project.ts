@@ -51,6 +51,7 @@ export async function createProjectAction(data: {
 					"Dashboard",
 					"List",
 					"Board",
+					"Calendar",
 					"Whiteboard",
 					"Gantt Chart",
 					"Timeline",
@@ -232,7 +233,11 @@ export async function getProjectDetailAction(id: string) {
 				statuses: {
 					orderBy: (statuses, { asc }) => [asc(statuses.position)],
 					with: {
-						tasks: true,
+						tasks: {
+							with: {
+								reporter: true,
+							},
+						},
 					},
 				},
 			},
