@@ -12,10 +12,11 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use } from "react";
+import { use, useEffect } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import { usePersonManagement } from "@/hooks/team/useTeamManagement";
+import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
 
 export default function PersonDetailPage({
 	params,
@@ -24,6 +25,7 @@ export default function PersonDetailPage({
 }) {
 	const { id: personId } = use(params);
 	const router = useRouter();
+	const setMapping = useBreadcrumbStore((state) => state.setMapping);
 
 	const {
 		personDetail: person,
@@ -35,6 +37,12 @@ export default function PersonDetailPage({
 		handleDeleteClick,
 		handleDeleteConfirm,
 	} = usePersonManagement(personId);
+
+	useEffect(() => {
+		if (person?.name) {
+			setMapping(personId, person.name);
+		}
+	}, [person?.name, personId, setMapping]);
 
 	if (isLoading) {
 		return (

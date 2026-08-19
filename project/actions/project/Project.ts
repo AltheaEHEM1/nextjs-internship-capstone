@@ -1,14 +1,14 @@
 "use server";
 
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
 import {
-	projectLabels,
-	projectMembers,
+	labels,
 	projectStatuses,
 	projects,
+	priorityEnum,
 } from "@/lib/db/schema";
 
 export async function createProjectAction(data: {
@@ -58,14 +58,6 @@ export async function createProjectAction(data: {
 				],
 			})
 			.returning();
-
-		// Add owner as a member
-		await db.insert(projectMembers).values({
-			projectId: newProject[0].id,
-			userId: dbUser.id,
-			role: "Owner",
-			permission: "administrator",
-		});
 
 		// Map User-Provided Statuses
 		const userStatuses = data.statuses || {
@@ -165,7 +157,7 @@ export async function createProjectAction(data: {
 			projectId: newProject[0].id,
 		}));
 
-		await db.insert(projectLabels).values(labelsToInsert);
+		await db.insert(labels).values(labelsToInsert);
 
 		revalidatePath("/projects");
 		return { success: true, data: newProject[0] };
@@ -183,23 +175,17 @@ export async function getProjectsAction() {
 		await getAuthenticatedDbUser();
 
 		const allProjects = await db.query.projects.findMany({
+			where: isNull(projects.deletedAt),
 			with: {
 				team: {
 					with: { members: true },
 				},
-				members: true,
 			},
 			orderBy: (projects, { desc }) => [desc(projects.createdAt)],
 		});
 
 		const formattedProjects = allProjects.map((p) => {
-			const memberSet = new Set<string>();
-			p.team?.members?.forEach((tm) => {
-				if (tm.userId) memberSet.add(tm.userId);
-			});
-			p.members?.forEach((pm) => {
-				if (pm.userId) memberSet.add(pm.userId);
-			});
+			const memberCount = p.team?.members?.length ?? 0;
 
 			return {
 				id: p.id,
@@ -209,7 +195,7 @@ export async function getProjectsAction() {
 				createdAt: p.createdAt,
 				views: p.views,
 				teamName: p.team?.name || null,
-				memberCount: memberSet.size,
+				memberCount,
 			};
 		});
 
@@ -228,7 +214,7 @@ export async function getProjectDetailAction(id: string) {
 		await getAuthenticatedDbUser();
 
 		const projectDetails = await db.query.projects.findFirst({
-			where: eq(projects.id, id),
+			where: and(eq(projects.id, id), isNull(projects.deletedAt)),
 			with: {
 				statuses: {
 					orderBy: (statuses, { asc }) => [asc(statuses.position)],
@@ -268,7 +254,7 @@ export async function checkProjectNameUniqueAction(name: string) {
 		}
 
 		const existingProject = await db.query.projects.findFirst({
-			where: eq(projects.name, name.trim()),
+			where: and(eq(projects.name, name.trim()), isNull(projects.deletedAt)),
 		});
 
 		return { success: true, isUnique: !existingProject };
@@ -288,9 +274,9 @@ export async function getProjectSettingsAction(id: string) {
 	try {
 		await getAuthenticatedDbUser();
 
-		// Fetch project with team (and team's members) and project members
+		// Fetch project with team (and team's members)
 		const projectData = await db.query.projects.findFirst({
-			where: eq(projects.id, id),
+			where: and(eq(projects.id, id), isNull(projects.deletedAt)),
 			with: {
 				team: {
 					with: {
@@ -299,11 +285,6 @@ export async function getProjectSettingsAction(id: string) {
 								user: true,
 							},
 						},
-					},
-				},
-				members: {
-					with: {
-						user: true,
 					},
 				},
 				statuses: {
@@ -317,14 +298,20 @@ export async function getProjectSettingsAction(id: string) {
 			return { success: false, error: "Project not found." };
 		}
 
-		// Combine team members and project members, deduplicating by user ID
-		const memberMap = new Map();
+		// Build members list from team members (single source of truth)
+		const members: {
+			id: string;
+			userId: string;
+			name: string;
+			email: string;
+			role: string;
+			access: "administrator" | "member" | "viewer";
+		}[] = [];
 
-		// First, add team members
 		if (projectData.team?.members) {
 			projectData.team.members.forEach((tm) => {
 				if (tm.user) {
-					memberMap.set(tm.user.id, {
+					members.push({
 						id: tm.id,
 						userId: tm.user.id,
 						name: tm.user.name ?? "Unknown",
@@ -336,24 +323,6 @@ export async function getProjectSettingsAction(id: string) {
 			});
 		}
 
-		// Then, add or override with explicit project members
-		if (projectData.members) {
-			projectData.members.forEach((pm) => {
-				if (pm.user) {
-					memberMap.set(pm.user.id, {
-						id: pm.id,
-						userId: pm.user.id,
-						name: pm.user.name ?? "Unknown",
-						email: pm.user.email ?? "",
-						role: pm.role ?? "Member",
-						access: pm.permission as "administrator" | "member" | "viewer",
-					});
-				}
-			});
-		}
-
-		const members = Array.from(memberMap.values());
-
 		// Map collections
 		const statuses =
 			projectData.statuses?.map((s) => ({
@@ -363,7 +332,7 @@ export async function getProjectSettingsAction(id: string) {
 				color: s.color ?? "",
 			})) ?? [];
 
-		const labels =
+		const projectLabels =
 			projectData.labels?.map((l) => ({
 				name: l.name,
 				color: l.color,
@@ -381,7 +350,8 @@ export async function getProjectSettingsAction(id: string) {
 				views: (projectData.views as string[]) ?? [],
 				members,
 				statuses,
-				labels,
+				labels: projectLabels,
+				priorities: priorityEnum.enumValues,
 			},
 		};
 	} catch (err: unknown) {
@@ -420,7 +390,7 @@ export async function updateProjectSettingsAction(
 				description: data.description,
 				teamId: data.teamId,
 			})
-			.where(eq(projects.id, id));
+			.where(and(eq(projects.id, id), isNull(projects.deletedAt)));
 
 		// Sync statuses
 		if (data.statuses) {
@@ -489,7 +459,7 @@ export async function getProjectMembersAction(projectId: string) {
 		await getAuthenticatedDbUser();
 
 		const project = await db.query.projects.findFirst({
-			where: eq(projects.id, projectId),
+			where: and(eq(projects.id, projectId), isNull(projects.deletedAt)),
 			with: {
 				team: {
 					with: {
@@ -500,32 +470,73 @@ export async function getProjectMembersAction(projectId: string) {
 						},
 					},
 				},
-				members: {
-					with: {
-						user: true,
-					},
-				},
 			},
 		});
 
 		if (!project) return { success: false, error: "Project not found" };
 
-		const memberMap = new Map<string, unknown>();
+		// Use team members as the single source of truth
+		const members = project.team?.members
+			?.filter((tm) => tm.user)
+			.map((tm) => tm.user) ?? [];
 
-		project.team?.members?.forEach((tm) => {
-			if (tm.user) memberMap.set(tm.user.id, tm.user);
-		});
-
-		project.members?.forEach((pm) => {
-			if (pm.user) memberMap.set(pm.user.id, pm.user);
-		});
-
-		return { success: true, data: Array.from(memberMap.values()) };
+		return { success: true, data: members };
 	} catch (err: unknown) {
 		console.error("getProjectMembersAction Error:", err);
 		return {
 			success: false,
 			error: err instanceof Error ? err.message : "Failed to fetch members",
+		};
+	}
+}
+
+export async function deleteProjectAction(id: string) {
+	try {
+		await getAuthenticatedDbUser();
+
+		await db
+			.update(projects)
+			.set({ deletedAt: new Date() })
+			.where(eq(projects.id, id));
+
+		revalidatePath("/projects");
+
+		return { success: true };
+	} catch (err: unknown) {
+		console.error("deleteProjectAction Error:", err);
+		return {
+			success: false,
+			error: err instanceof Error ? err.message : "Failed to delete project.",
+		};
+	}
+}
+
+export async function reorderStatusesAction(
+	statusesToUpdate: { id: string; position: number }[],
+	projectId: string,
+) {
+	try {
+		await getAuthenticatedDbUser();
+
+		for (const s of statusesToUpdate) {
+			await db
+				.update(projectStatuses)
+				.set({
+					position: s.position,
+				})
+				.where(eq(projectStatuses.id, s.id));
+		}
+
+		if (projectId) {
+			revalidatePath(`/projects/${projectId}`);
+		}
+
+		return { success: true };
+	} catch (err: unknown) {
+		console.error("reorderStatusesAction Error:", err);
+		return {
+			success: false,
+			error: err instanceof Error ? err.message : "Failed to reorder statuses",
 		};
 	}
 }

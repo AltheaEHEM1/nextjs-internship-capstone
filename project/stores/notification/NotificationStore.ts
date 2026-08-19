@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,9 +27,18 @@ export interface NotificationSection {
 
 export type NotificationSettings = Record<SettingKey, boolean>;
 
+export interface AppNotification {
+	id: string;
+	title: string;
+	description: string;
+	date: string;
+	read: boolean;
+}
+
 interface NotificationState {
 	settings: NotificationSettings;
 	sections: NotificationSection[];
+	inbox: AppNotification[];
 	isLoading: boolean;
 	error: string | null;
 
@@ -37,6 +47,13 @@ interface NotificationState {
 	updateSetting: (key: SettingKey, value: boolean) => void;
 	resetSettings: () => void;
 	saveSettings: () => Promise<void>;
+
+	addNotification: (
+		notification: Omit<AppNotification, "id" | "date" | "read">,
+	) => void;
+	markAsRead: (id: string) => void;
+	markAllAsRead: () => void;
+	clearInbox: () => void;
 }
 
 // ─── Static Data ──────────────────────────────────────────────────────────────
@@ -115,46 +132,87 @@ const DEFAULT_SETTINGS: NotificationSettings = {
 
 // ─── Store Implementation ──────────────────────────────────────────────────────
 
-export const useNotificationStore = create<NotificationState>((set, get) => ({
-	settings: DEFAULT_SETTINGS,
-	sections: DEFAULT_SECTIONS,
-	isLoading: false,
-	error: null,
+export const useNotificationStore = create<NotificationState>()(
+	persist(
+		(set, get) => ({
+			settings: DEFAULT_SETTINGS,
+			sections: DEFAULT_SECTIONS,
+			inbox: [],
+			isLoading: false,
+			error: null,
 
-	toggleSetting: (key: SettingKey) => {
-		set((state) => ({
-			settings: {
-				...state.settings,
-				[key]: !state.settings[key],
+			toggleSetting: (key: SettingKey) => {
+				set((state) => ({
+					settings: {
+						...state.settings,
+						[key]: !state.settings[key],
+					},
+				}));
 			},
-		}));
-	},
 
-	updateSetting: (key: SettingKey, value: boolean) => {
-		set((state) => ({
-			settings: {
-				...state.settings,
-				[key]: value,
+			updateSetting: (key: SettingKey, value: boolean) => {
+				set((state) => ({
+					settings: {
+						...state.settings,
+						[key]: value,
+					},
+				}));
 			},
-		}));
-	},
 
-	resetSettings: () => {
-		set({ settings: DEFAULT_SETTINGS });
-	},
+			resetSettings: () => {
+				set({ settings: DEFAULT_SETTINGS });
+			},
 
-	saveSettings: async () => {
-		set({ isLoading: true, error: null });
-		try {
-			const { settings } = get();
-			// Replace with database / API sync logic when backend is connected
-			console.log("Saving notification settings:", settings);
-			set({ isLoading: false });
-		} catch (err) {
-			set({
-				error: err instanceof Error ? err.message : "Failed to save settings",
-				isLoading: false,
-			});
-		}
-	},
-}));
+			saveSettings: async () => {
+				set({ isLoading: true, error: null });
+				try {
+					const { settings } = get();
+					console.log("Saving notification settings:", settings);
+					set({ isLoading: false });
+				} catch (err) {
+					set({
+						error:
+							err instanceof Error ? err.message : "Failed to save settings",
+						isLoading: false,
+					});
+				}
+			},
+
+			addNotification: (notification) => {
+				set((state) => ({
+					inbox: [
+						{
+							...notification,
+							id: Date.now().toString(),
+							date: new Date().toISOString(),
+							read: false,
+						},
+						...state.inbox,
+					],
+				}));
+			},
+
+			markAsRead: (id: string) => {
+				set((state) => ({
+					inbox: state.inbox.map((n) =>
+						n.id === id ? { ...n, read: true } : n,
+					),
+				}));
+			},
+
+			markAllAsRead: () => {
+				set((state) => ({
+					inbox: state.inbox.map((n) => ({ ...n, read: true })),
+				}));
+			},
+
+			clearInbox: () => {
+				set({ inbox: [] });
+			},
+		}),
+		{
+			name: "notification-store",
+			partialize: (state) => ({ settings: state.settings, inbox: state.inbox }),
+		},
+	),
+);

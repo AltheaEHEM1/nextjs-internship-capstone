@@ -87,6 +87,14 @@ export function AddTeamMemberModal({
 		}
 	}, [isOpen, teamId, storePeople, teamDetail]);
 
+	useEffect(() => {
+		if (!isOpen) {
+			setEmail("");
+			setRole("Member");
+			setPermission("member");
+		}
+	}, [isOpen]);
+
 	if (!isOpen) return null;
 
 	const selectedPerson = people.find((p) => p.email === email);

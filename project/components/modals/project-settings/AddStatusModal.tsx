@@ -60,10 +60,12 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 	};
 
 	useEffect(() => {
-		useCustomAddStatusStore
-			.getState()
-			.initialize("", "", PRESET_COLORS[0].value, onSave, onClose);
-	}, [onSave, onClose]);
+		if (!isOpen) {
+			useCustomAddStatusStore
+				.getState()
+				.initialize("", "", PRESET_COLORS[0].value, onSave, onClose);
+		}
+	}, [isOpen, onSave, onClose]);
 
 	return (
 		<BaseModal
@@ -106,8 +108,22 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 					/>
 				</div>
 				<div className="space-y-2">
-					<div className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-						Theme Color
+					<label
+						htmlFor="badge-preview"
+						className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider"
+					>
+						Status Preview & Style
+					</label>
+					<div className="mb-3">
+						<span
+							className={cn(
+								"inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border",
+								color,
+							)}
+						>
+							<Layers size={12} />
+							{name || "Preview Status"}
+						</span>
 					</div>
 					<div className="flex items-center gap-2.5 pt-0.5">
 						{PRESET_COLORS.map((c) => (
@@ -117,7 +133,7 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 								onClick={() => setColor(c.value)}
 								className={cn(
 									"h-8 w-8 rounded-full transition-all duration-200 border cursor-pointer",
-									c.value.split(" ")[0],
+									c.value,
 									color === c.value
 										? "ring-2 ring-offset-2 ring-cyan-500 scale-110 shadow-sm"
 										: "opacity-75 hover:opacity-100 hover:scale-105",

@@ -1,7 +1,7 @@
 "use client";
 
 import { UserPlus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { sendUserInvitationAction } from "@/actions/team/Invitation";
 import BaseModal from "@/components/layout/BaseModal";
 import { useToast } from "@/hooks/toast/use-toast";
@@ -16,6 +16,13 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 	const [notes, setNotes] = useState("");
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
+
+	useEffect(() => {
+		if (!opened) {
+			setAddPeopleContact("");
+			setNotes("");
+		}
+	}, [opened]);
 
 	const handleSendInvites = async () => {
 		if (!addPeopleContact.trim()) {

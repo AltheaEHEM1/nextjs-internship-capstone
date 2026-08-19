@@ -7,7 +7,7 @@ import {
 } from "@dnd-kit/sortable";
 import { use, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { getProjectDetailAction } from "@/actions/project/Project";
+import { getProjectDetailAction, reorderStatusesAction } from "@/actions/project/Project";
 import { reorderTasksAction } from "@/actions/task/Task";
 import { ColumnContainer } from "@/components/board/ColumnContainer";
 import type { Task } from "@/components/board/TaskCard";
@@ -114,8 +114,11 @@ export default function BoardPage({
 
 		// Allow Zustand state to update first
 		setTimeout(() => {
-			const updatedTasks = useProjectBoardStore.getState().tasks;
-			const payload = updatedTasks
+			const state = useProjectBoardStore.getState();
+			
+			// Handle task reordering
+			const updatedTasks = state.tasks;
+			const taskPayload = updatedTasks
 				.map((t, index) => ({
 					id: t.id,
 					statusId: statusesMap[t.status],
@@ -123,8 +126,21 @@ export default function BoardPage({
 				}))
 				.filter((t) => t.statusId);
 
-			if (payload.length > 0) {
-				reorderTasksAction(payload, id);
+			if (taskPayload.length > 0) {
+				reorderTasksAction(taskPayload, id);
+			}
+
+			// Handle column/status reordering
+			const updatedColumns = state.kanbanColumns;
+			const columnPayload = updatedColumns
+				.map((colName, index) => ({
+					id: statusesMap[colName],
+					position: index,
+				}))
+				.filter((c) => c.id);
+
+			if (columnPayload.length > 0) {
+				reorderStatusesAction(columnPayload, id);
 			}
 		}, 0);
 	};

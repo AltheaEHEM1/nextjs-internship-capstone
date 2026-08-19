@@ -1,6 +1,5 @@
 "use client";
 import {
-	AlertCircle,
 	ArrowLeft,
 	Check,
 	Edit,
@@ -10,9 +9,9 @@ import {
 	X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import { AddLabelModal } from "@/components/modals/project-settings/AddLabelModal";
 import { AddStatusModal } from "@/components/modals/project-settings/AddStatusModal";
+import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import {
 	useInitializeProjectSettings,
 	useProjectSettings,
@@ -248,35 +247,15 @@ export default function ProjectSettingsForm({
 				</div>
 
 				{/* Delete Alert & Actions Footer */}
-				{isDeleteAlertOpen && (
-					<Alert
-						variant="destructive"
-						className="bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50"
-					>
-						<AlertCircle className="h-4 w-4" />
-						<AlertTitle>Confirm Deletion</AlertTitle>
-						<AlertDescription>
-							Are you sure you want to delete this project? This action cannot
-							be undone.
-							<div className="flex justify-end gap-3 mt-4">
-								<button
-									type="button"
-									onClick={() => setIsDeleteAlertOpen(false)}
-									className="px-4 py-2 text-xs font-semibold rounded-lg bg-white dark:bg-outer_space-800 text-outer_space-600 dark:text-platinum-300 border border-french_gray-200 dark:border-payne's_gray-600 hover:bg-gray-50 dark:hover:bg-outer_space-700 transition"
-								>
-									Cancel
-								</button>
-								<button
-									type="button"
-									onClick={handleDeleteConfirm}
-									className="px-4 py-2 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
-								>
-									Confirm Delete
-								</button>
-							</div>
-						</AlertDescription>
-					</Alert>
-				)}
+				<ConfirmDialog
+					opened={isDeleteAlertOpen}
+					onClose={() => setIsDeleteAlertOpen(false)}
+					onConfirm={handleDeleteConfirm}
+					title="Confirm Deletion"
+					description="Are you sure you want to delete this project? This action cannot be undone."
+					confirmLabel="Confirm Delete"
+					variant="danger"
+				/>
 
 				<div className="flex items-center justify-between pt-4 border-t border-french_gray-200/60 dark:border-payne's_gray-800">
 					<button

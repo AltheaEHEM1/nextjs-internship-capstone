@@ -3,7 +3,7 @@
 import { CheckSquare, FolderKanban, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import CreateTaskModal from "@/components/modals/task/CreateTaskModal";
+import CreateTaskModal from "@/components/modals/task/create-task-modal/CreateTaskModal";
 import { useCustomProjectHeaderStore } from "../../stores/project/custom-project-header-store";
 
 export interface ProjectHeaderProps {

@@ -9,7 +9,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { priorityEnum, roleEnum, sizeEnum } from "./enums";
+import { priorityEnum, sizeEnum } from "./enums";
 import { teams, users } from "./index";
 
 export const projects = pgTable(
@@ -41,34 +41,11 @@ export const projects = pgTable(
 			.defaultNow()
 			.$onUpdate(() => new Date())
 			.notNull(),
+		deletedAt: timestamp("deleted_at"),
 	},
 	(table) => ({
 		ownerIdx: index("projects_owner_id_idx").on(table.ownerId),
 		teamIdx: index("projects_team_id_idx").on(table.teamId),
-	}),
-);
-
-export const projectMembers = pgTable(
-	"project_members",
-	{
-		id: uuid("id").defaultRandom().primaryKey(),
-		projectId: uuid("project_id")
-			.references(() => projects.id, { onDelete: "cascade" })
-			.notNull(),
-		userId: uuid("user_id")
-			.references(() => users.id, { onDelete: "cascade" })
-			.notNull(),
-		role: text("role").default("Member"),
-		permission: roleEnum("permission").default("member").notNull(),
-		joinedAt: timestamp("joined_at").defaultNow().notNull(),
-	},
-	(table) => ({
-		projectIdx: index("project_members_project_id_idx").on(table.projectId),
-		userIdx: index("project_members_user_id_idx").on(table.userId),
-		projectUserUnique: uniqueIndex("project_members_project_user_unique").on(
-			table.projectId,
-			table.userId,
-		),
 	}),
 );
 
@@ -90,14 +67,15 @@ export const projectStatuses = pgTable(
 			.defaultNow()
 			.$onUpdate(() => new Date())
 			.notNull(),
+		deletedAt: timestamp("deleted_at"),
 	},
 	(table) => ({
 		projectIdx: index("project_statuses_project_id_idx").on(table.projectId),
 	}),
 );
 
-export const projectLabels = pgTable(
-	"project_labels",
+export const labels = pgTable(
+	"labels",
 	{
 		id: uuid("id").defaultRandom().primaryKey(),
 		name: text("name").notNull(),
@@ -110,9 +88,10 @@ export const projectLabels = pgTable(
 			.defaultNow()
 			.$onUpdate(() => new Date())
 			.notNull(),
+		deletedAt: timestamp("deleted_at"),
 	},
 	(table) => ({
-		projectIdx: index("project_labels_project_id_idx").on(table.projectId),
+		projectIdx: index("labels_project_id_idx").on(table.projectId),
 	}),
 );
 
@@ -140,6 +119,7 @@ export const tasks = pgTable(
 			.defaultNow()
 			.$onUpdate(() => new Date())
 			.notNull(),
+		deletedAt: timestamp("deleted_at"),
 	},
 	(table) => ({
 		statusIdx: index("tasks_status_id_idx").on(table.statusId),
@@ -155,7 +135,7 @@ export const taskLabels = pgTable(
 			.references(() => tasks.id, { onDelete: "cascade" })
 			.notNull(),
 		labelId: uuid("label_id")
-			.references(() => projectLabels.id, { onDelete: "cascade" })
+			.references(() => labels.id, { onDelete: "cascade" })
 			.notNull(),
 	},
 	(table) => ({
@@ -184,14 +164,15 @@ export const comments = pgTable(
 			.defaultNow()
 			.$onUpdate(() => new Date())
 			.notNull(),
+		deletedAt: timestamp("deleted_at"),
 	},
 	(table) => ({
 		taskIdx: index("comments_task_id_idx").on(table.taskId),
 	}),
 );
 
-export const taskActivities = pgTable(
-	"task_activities",
+export const taskHistory = pgTable(
+	"task_history",
 	{
 		id: uuid("id").defaultRandom().primaryKey(),
 		action: text("action").notNull(),
@@ -204,27 +185,17 @@ export const taskActivities = pgTable(
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 	},
 	(table) => ({
-		taskIdx: index("task_activities_task_id_idx").on(table.taskId),
+		taskIdx: index("task_history_task_id_idx").on(table.taskId),
 	}),
 );
+
+// ─── Relations ────────────────────────────────────────────────────────────────
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
 	owner: one(users, { fields: [projects.ownerId], references: [users.id] }),
 	team: one(teams, { fields: [projects.teamId], references: [teams.id] }),
 	statuses: many(projectStatuses),
-	labels: many(projectLabels),
-	members: many(projectMembers),
-}));
-
-export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
-	project: one(projects, {
-		fields: [projectMembers.projectId],
-		references: [projects.id],
-	}),
-	user: one(users, {
-		fields: [projectMembers.userId],
-		references: [users.id],
-	}),
+	labels: many(labels),
 }));
 
 export const projectStatusesRelations = relations(
@@ -238,16 +209,13 @@ export const projectStatusesRelations = relations(
 	}),
 );
 
-export const projectLabelsRelations = relations(
-	projectLabels,
-	({ one, many }) => ({
-		project: one(projects, {
-			fields: [projectLabels.projectId],
-			references: [projects.id],
-		}),
-		taskLabels: many(taskLabels),
+export const labelsRelations = relations(labels, ({ one, many }) => ({
+	project: one(projects, {
+		fields: [labels.projectId],
+		references: [projects.id],
 	}),
-);
+	taskLabels: many(taskLabels),
+}));
 
 export const tasksRelations = relations(tasks, ({ one, many }) => ({
 	status: one(projectStatuses, {
@@ -258,14 +226,14 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
 	reporter: one(users, { fields: [tasks.reporterId], references: [users.id] }),
 	comments: many(comments),
 	taskLabels: many(taskLabels),
-	activities: many(taskActivities),
+	activities: many(taskHistory),
 }));
 
 export const taskLabelsRelations = relations(taskLabels, ({ one }) => ({
 	task: one(tasks, { fields: [taskLabels.taskId], references: [tasks.id] }),
-	label: one(projectLabels, {
+	label: one(labels, {
 		fields: [taskLabels.labelId],
-		references: [projectLabels.id],
+		references: [labels.id],
 	}),
 }));
 
@@ -274,10 +242,16 @@ export const commentsRelations = relations(comments, ({ one }) => ({
 	author: one(users, { fields: [comments.authorId], references: [users.id] }),
 }));
 
-export const taskActivitiesRelations = relations(taskActivities, ({ one }) => ({
-	task: one(tasks, { fields: [taskActivities.taskId], references: [tasks.id] }),
-	author: one(users, {
-		fields: [taskActivities.authorId],
-		references: [users.id],
+export const taskHistoryRelations = relations(
+	taskHistory,
+	({ one }) => ({
+		task: one(tasks, {
+			fields: [taskHistory.taskId],
+			references: [tasks.id],
+		}),
+		author: one(users, {
+			fields: [taskHistory.authorId],
+			references: [users.id],
+		}),
 	}),
-}));
+);

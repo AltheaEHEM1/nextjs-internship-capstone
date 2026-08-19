@@ -2,8 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 import ProjectHeader from "@/components/project-component/ProjectHeader";
 import ProjectNav from "@/components/project-component/ProjectNavigation";
+import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
 
 interface BaseProjectProps {
 	children: ReactNode;
@@ -19,6 +21,13 @@ export default function BaseProject({
 	const { id } = params;
 	const pathname = usePathname();
 	const isProjectSettings = pathname?.includes("/project-settings");
+	const setMapping = useBreadcrumbStore((state) => state.setMapping);
+
+	useEffect(() => {
+		if (projectDetails?.name) {
+			setMapping(id, projectDetails.name);
+		}
+	}, [projectDetails?.name, id, setMapping]);
 
 	return (
 		<div className="flex h-full flex-col">

@@ -1,4 +1,5 @@
 import {
+	type AppNotification,
 	type NotificationSection,
 	type NotificationSettings,
 	type SettingKey,
@@ -8,34 +9,51 @@ import {
 export interface UseNotificationReturn {
 	settings: NotificationSettings;
 	sections: NotificationSection[];
+	inbox: AppNotification[];
 	isLoading: boolean;
 	error: string | null;
 	handleToggle: (key: SettingKey) => void;
 	handleUpdateSetting: (key: SettingKey, value: boolean) => void;
 	handleReset: () => void;
 	handleSave: () => Promise<void>;
+	addNotification: (
+		notification: Omit<AppNotification, "id" | "date" | "read">,
+	) => void;
+	markAsRead: (id: string) => void;
+	markAllAsRead: () => void;
+	clearInbox: () => void;
 }
 
 export function useNotification(): UseNotificationReturn {
 	const {
 		settings,
 		sections,
+		inbox,
 		isLoading,
 		error,
 		toggleSetting,
 		updateSetting,
 		resetSettings,
 		saveSettings,
+		addNotification,
+		markAsRead,
+		markAllAsRead,
+		clearInbox,
 	} = useNotificationStore();
 
 	return {
 		settings,
 		sections,
+		inbox,
 		isLoading,
 		error,
 		handleToggle: toggleSetting,
 		handleUpdateSetting: updateSetting,
 		handleReset: resetSettings,
 		handleSave: saveSettings,
+		addNotification,
+		markAsRead,
+		markAllAsRead,
+		clearInbox,
 	};
 }

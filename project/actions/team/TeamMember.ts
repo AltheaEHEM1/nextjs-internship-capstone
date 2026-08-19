@@ -1,12 +1,11 @@
 "use server";
 
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
 import {
 	invitations,
-	projectMembers,
 	projects,
 	teamMembers,
 	teams,
@@ -81,16 +80,8 @@ export async function getPersonDetailAction(personId: string) {
 			.innerJoin(teams, eq(teamMembers.teamId, teams.id))
 			.where(eq(teamMembers.userId, person.id));
 
-		// Fetch projects the person is part of or owns
-		const userProjectsFromMembers = await db
-			.select({
-				id: projects.id,
-				name: projects.name,
-				role: projectMembers.role,
-			})
-			.from(projectMembers)
-			.innerJoin(projects, eq(projectMembers.projectId, projects.id))
-			.where(eq(projectMembers.userId, person.id));
+		// Derive projects from team membership and ownership
+		const userTeamIds = userTeams.map((t) => t.id);
 
 		const ownedProjects = await db
 			.select({
@@ -98,9 +89,10 @@ export async function getPersonDetailAction(personId: string) {
 				name: projects.name,
 			})
 			.from(projects)
-			.where(eq(projects.ownerId, person.id));
+			.where(
+				and(eq(projects.ownerId, person.id), isNull(projects.deletedAt)),
+			);
 
-		const userTeamIds = userTeams.map((t) => t.id);
 		const teamProjects =
 			userTeamIds.length > 0
 				? await db
@@ -109,7 +101,12 @@ export async function getPersonDetailAction(personId: string) {
 							name: projects.name,
 						})
 						.from(projects)
-						.where(inArray(projects.teamId, userTeamIds))
+						.where(
+							and(
+								inArray(projects.teamId, userTeamIds),
+								isNull(projects.deletedAt),
+							),
+						)
 				: [];
 
 		const projectMap = new Map<
@@ -117,24 +114,13 @@ export async function getPersonDetailAction(personId: string) {
 			{ id: string; name: string; role: string; status: string }
 		>();
 
-		for (const p of userProjectsFromMembers) {
+		for (const p of ownedProjects) {
 			projectMap.set(p.id, {
 				id: p.id,
 				name: p.name,
-				role: p.role || "Member",
+				role: "Owner",
 				status: "Active",
 			});
-		}
-
-		for (const p of ownedProjects) {
-			if (!projectMap.has(p.id)) {
-				projectMap.set(p.id, {
-					id: p.id,
-					name: p.name,
-					role: "Owner",
-					status: "Active",
-				});
-			}
 		}
 
 		for (const p of teamProjects) {

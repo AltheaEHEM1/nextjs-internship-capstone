@@ -1,7 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { updateProjectSettingsAction } from "@/actions/project/Project";
+import {
+	deleteProjectAction,
+	updateProjectSettingsAction,
+} from "@/actions/project/Project";
 import { getTeamDetailAction } from "@/actions/team/Team";
 import { useToast } from "@/hooks/toast/use-toast";
 import type {
@@ -32,6 +36,7 @@ export function useProjectSettingsFormActions(
 ) {
 	const store = useProjectSettingsStore();
 	const { toast } = useToast();
+	const router = useRouter();
 
 	const handleSaveDone = async () => {
 		const result = await updateProjectSettingsAction(projectId, {
@@ -98,14 +103,24 @@ export function useProjectSettingsFormActions(
 		});
 	};
 
-	const handleDeleteConfirm = () => {
-		onDelete?.();
-		toast({
-			title: "Project deleted",
-			description: "Project has been successfully deleted.",
-			variant: "success",
-		});
-		store.setIsDeleteAlertOpen(false);
+	const handleDeleteConfirm = async () => {
+		const result = await deleteProjectAction(projectId);
+		if (result.success) {
+			toast({
+				title: "Project deleted",
+				description: "Project has been successfully deleted.",
+				variant: "success",
+			});
+			store.setIsDeleteAlertOpen(false);
+			onDelete?.();
+			router.push("/projects");
+		} else {
+			toast({
+				title: "Error",
+				description: result.error || "Failed to delete project.",
+				variant: "destructive",
+			});
+		}
 	};
 
 	return {
@@ -172,20 +187,26 @@ export function useTaskStatusesWidgetActions() {
 	const { statuses, setIsStatusModalOpen, handleDeleteStatus } =
 		useProjectSettingsStore();
 	const { toast } = useToast();
+	const [deleteStatusIdx, setDeleteStatusIdx] = useState<number | null>(null);
 
-	const onRemoveStatus = (idx: number) => {
-		handleDeleteStatus(idx);
-		toast({
-			title: "Status removed",
-			description: "Status has been removed.",
-			variant: "success",
-		});
+	const confirmRemoveStatus = () => {
+		if (deleteStatusIdx !== null) {
+			handleDeleteStatus(deleteStatusIdx);
+			toast({
+				title: "Status removed",
+				description: "Status has been removed.",
+				variant: "success",
+			});
+			setDeleteStatusIdx(null);
+		}
 	};
 
 	return {
 		statuses,
 		setIsStatusModalOpen,
-		onRemoveStatus,
+		deleteStatusIdx,
+		setDeleteStatusIdx,
+		confirmRemoveStatus,
 	};
 }
 
@@ -193,20 +214,26 @@ export function useProjectLabelsWidgetActions() {
 	const { labels, setIsLabelModalOpen, handleDeleteLabel } =
 		useProjectSettingsStore();
 	const { toast } = useToast();
+	const [deleteLabelIdx, setDeleteLabelIdx] = useState<number | null>(null);
 
-	const onRemoveLabel = (idx: number) => {
-		handleDeleteLabel(idx);
-		toast({
-			title: "Label removed",
-			description: "Label has been removed.",
-			variant: "success",
-		});
+	const confirmRemoveLabel = () => {
+		if (deleteLabelIdx !== null) {
+			handleDeleteLabel(deleteLabelIdx);
+			toast({
+				title: "Label removed",
+				description: "Label has been removed.",
+				variant: "success",
+			});
+			setDeleteLabelIdx(null);
+		}
 	};
 
 	return {
 		labels,
 		setIsLabelModalOpen,
-		onRemoveLabel,
+		deleteLabelIdx,
+		setDeleteLabelIdx,
+		confirmRemoveLabel,
 	};
 }
 

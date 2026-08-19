@@ -36,6 +36,7 @@ export const teamMembers = pgTable(
 		role: text("role").default("Member"),
 		permission: roleEnum("permission").default("member").notNull(),
 		joinedAt: timestamp("joined_at").defaultNow().notNull(),
+		deletedAt: timestamp("deleted_at"),
 	},
 	(table) => ({
 		teamIdx: index("team_members_team_id_idx").on(table.teamId),

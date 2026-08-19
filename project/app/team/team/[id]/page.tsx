@@ -9,17 +9,20 @@ import {
 	UserPlus,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import EditRoleModal from "@/components/modals/team/EditRoleModal";
 import { EditTeamModal } from "@/components/modals/team/EditTeamModal";
 import { useTeamDetailManagement } from "@/hooks/team/useTeamManagement";
+import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
 
 export default function SpecificTeam() {
 	const params = useParams();
 	const router = useRouter();
 	const teamId = params.id as string;
+	const setMapping = useBreadcrumbStore((state) => state.setMapping);
 
 	const {
 		teamDetail,
@@ -43,6 +46,12 @@ export default function SpecificTeam() {
 		closeEditTeamModal,
 		submitEditTeam,
 	} = useTeamDetailManagement(teamId);
+
+	useEffect(() => {
+		if (teamDetail?.name) {
+			setMapping(teamId, teamDetail.name);
+		}
+	}, [teamDetail?.name, teamId, setMapping]);
 
 	if (loading) {
 		return (

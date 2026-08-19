@@ -66,12 +66,14 @@ export function AddLabelModal({ isOpen, onClose, onSave }: AddLabelProps) {
 		});
 	};
 
-	// Initialize store with callbacks when component mounts/updates
+	// Initialize store with callbacks when component unmounts or closes
 	useEffect(() => {
-		useCustomLabelStore
-			.getState()
-			.initialize("", LABEL_COLORS[0].class, onSave, onClose);
-	}, [onSave, onClose]);
+		if (!isOpen) {
+			useCustomLabelStore
+				.getState()
+				.initialize("", LABEL_COLORS[0].class, onSave, onClose);
+		}
+	}, [isOpen, onSave, onClose]);
 
 	return (
 		<BaseModal

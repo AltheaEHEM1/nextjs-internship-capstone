@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import { checkProjectNameUniqueAction } from "@/actions/project/Project";
 import { getUserTeamsAction } from "@/actions/team/Team";
+import { Alert, AlertDescription } from "@/components/alert/alert";
 import BaseModal from "@/components/layout/BaseModal";
 import { useMinDate } from "@/hooks/project/useMinDate";
 
@@ -51,13 +52,17 @@ export default function CreateProject1({
 	const [isCheckingName, setIsCheckingName] = useState(false);
 	const [isNameUnique, setIsNameUnique] = useState<boolean | null>(null);
 
+	const [isLoadingTeams, setIsLoadingTeams] = useState(true);
+
 	useEffect(() => {
 		async function fetchTeams() {
 			if (opened) {
+				setIsLoadingTeams(true);
 				const result = await getUserTeamsAction();
 				if (result.success && result.data) {
 					setTeamsList(result.data);
 				}
+				setIsLoadingTeams(false);
 			}
 		}
 		fetchTeams();
@@ -124,6 +129,13 @@ export default function CreateProject1({
 			}
 		>
 			<div className="space-y-6">
+				{!isLoadingTeams && teamsList.length === 0 && (
+					<Alert variant="destructive">
+						<AlertDescription>
+							You need to invite and create a team first before you can create a project.
+						</AlertDescription>
+					</Alert>
+				)}
 				{/* Project Name */}
 				<div>
 					<label

@@ -6,11 +6,12 @@ import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
 import {
 	comments,
-	projectLabels,
+	labels,
 	projectStatuses,
-	taskActivities,
+	taskHistory,
 	taskLabels,
 	tasks,
+	users,
 } from "@/lib/db/schema";
 import { pusherServer } from "@/lib/pusher-server";
 
@@ -49,10 +50,10 @@ export async function createTaskAction(data: {
 
 		// If a label is provided, find its ID and insert into taskLabels
 		if (data.labelName) {
-			const label = await db.query.projectLabels.findFirst({
+			const label = await db.query.labels.findFirst({
 				where: and(
-					eq(projectLabels.projectId, data.projectId),
-					eq(projectLabels.name, data.labelName),
+					eq(labels.projectId, data.projectId),
+					eq(labels.name, data.labelName),
 				),
 			});
 
@@ -64,7 +65,7 @@ export async function createTaskAction(data: {
 			}
 		}
 
-		await db.insert(taskActivities).values({
+		await db.insert(taskHistory).values({
 			taskId,
 			action: "created the task",
 			authorId: dbUser.id,
@@ -78,6 +79,19 @@ export async function createTaskAction(data: {
 				"task-updated",
 				{},
 			);
+
+			if (data.assigneeId && data.assigneeId !== dbUser.id) {
+				const assignee = await db.query.users.findFirst({
+					where: eq(users.id, data.assigneeId),
+				});
+				if (assignee?.clerkId) {
+					await pusherServer.trigger(
+						`user-${assignee.clerkId}`,
+						"task-assigned",
+						{ taskTitle: data.title, assignerName: dbUser.name || "Someone" },
+					);
+				}
+			}
 		}
 
 		return { success: true, data: newTask[0] };
@@ -109,6 +123,10 @@ export async function updateTaskAction(
 			return { success: false, error: "Missing task ID" };
 		}
 
+		const oldTask = await db.query.tasks.findFirst({
+			where: eq(tasks.id, id),
+		});
+
 		const updatedTask = await db
 			.update(tasks)
 			.set({
@@ -127,21 +145,21 @@ export async function updateTaskAction(
 			.returning();
 
 		if (data.title !== undefined) {
-			await db.insert(taskActivities).values({
+			await db.insert(taskHistory).values({
 				taskId: id,
 				action: `updated the title to "${data.title}"`,
 				authorId: dbUser.id,
 			});
 		}
 		if (data.description !== undefined) {
-			await db.insert(taskActivities).values({
+			await db.insert(taskHistory).values({
 				taskId: id,
 				action: "updated the description",
 				authorId: dbUser.id,
 			});
 		}
 		if (data.priority !== undefined) {
-			await db.insert(taskActivities).values({
+			await db.insert(taskHistory).values({
 				taskId: id,
 				action: `changed priority to ${data.priority}`,
 				authorId: dbUser.id,
@@ -156,6 +174,27 @@ export async function updateTaskAction(
 					"task-updated",
 					{},
 				);
+
+				if (
+					data.assigneeId &&
+					oldTask &&
+					oldTask.assigneeId !== data.assigneeId &&
+					data.assigneeId !== dbUser.id
+				) {
+					const assignee = await db.query.users.findFirst({
+						where: eq(users.id, data.assigneeId),
+					});
+					if (assignee?.clerkId) {
+						await pusherServer.trigger(
+							`user-${assignee.clerkId}`,
+							"task-assigned",
+							{
+								taskTitle: data.title || oldTask.title,
+								assignerName: dbUser.name || "Someone",
+							},
+						);
+					}
+				}
 			}
 		}
 
@@ -195,7 +234,7 @@ export async function reorderTasksAction(
 					where: eq(projectStatuses.id, t.statusId),
 				});
 				if (newStatus) {
-					await db.insert(taskActivities).values({
+					await db.insert(taskHistory).values({
 						taskId: t.id,
 						action: `moved task to ${newStatus.name}`,
 						authorId: dbUser.id,
@@ -290,8 +329,8 @@ export async function getTaskHistoryAction(taskId: string) {
 	try {
 		await getAuthenticatedDbUser();
 
-		const history = await db.query.taskActivities.findMany({
-			where: eq(taskActivities.taskId, taskId),
+		const history = await db.query.taskHistory.findMany({
+			where: eq(taskHistory.taskId, taskId),
 			with: {
 				author: {
 					columns: {
@@ -300,7 +339,7 @@ export async function getTaskHistoryAction(taskId: string) {
 					},
 				},
 			},
-			orderBy: (taskActivities, { asc }) => [asc(taskActivities.createdAt)],
+			orderBy: (taskHistory, { asc }) => [asc(taskHistory.createdAt)],
 		});
 
 		return { success: true, data: history };
