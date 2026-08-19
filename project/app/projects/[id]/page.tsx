@@ -7,12 +7,15 @@ import {
 } from "@dnd-kit/sortable";
 import { use, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { getProjectDetailAction, reorderStatusesAction } from "@/actions/project/Project";
+import {
+	getProjectDetailAction,
+	reorderStatusesAction,
+} from "@/actions/project/Project";
 import { reorderTasksAction } from "@/actions/task/Task";
 import { ColumnContainer } from "@/components/board/ColumnContainer";
 import type { Task } from "@/components/board/TaskCard";
 import { TaskCardDisplay } from "@/components/board/TaskCard";
-import ViewTaskModal from "@/components/modals/task/view-task-modal/ViewTaskModal";
+import TaskModal from "@/components/modals/task/task-modal/TaskModal";
 import { useProjectBoard } from "@/hooks/project/(tabs)/useProjectBoard";
 import { pusherClient } from "@/lib/pusher-client";
 import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
@@ -115,7 +118,7 @@ export default function BoardPage({
 		// Allow Zustand state to update first
 		setTimeout(() => {
 			const state = useProjectBoardStore.getState();
-			
+
 			// Handle task reordering
 			const updatedTasks = state.tasks;
 			const taskPayload = updatedTasks
@@ -194,7 +197,8 @@ export default function BoardPage({
 			</DndContext>
 
 			{selectedTask && (
-				<ViewTaskModal
+				<TaskModal
+					mode="view"
 					opened={isViewTaskOpen}
 					onClose={closeViewTask}
 					taskData={selectedTask}

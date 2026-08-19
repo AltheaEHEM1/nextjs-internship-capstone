@@ -89,9 +89,7 @@ export async function getPersonDetailAction(personId: string) {
 				name: projects.name,
 			})
 			.from(projects)
-			.where(
-				and(eq(projects.ownerId, person.id), isNull(projects.deletedAt)),
-			);
+			.where(and(eq(projects.ownerId, person.id), isNull(projects.deletedAt)));
 
 		const teamProjects =
 			userTeamIds.length > 0

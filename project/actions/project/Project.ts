@@ -6,9 +6,9 @@ import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
 import {
 	labels,
+	priorityEnum,
 	projectStatuses,
 	projects,
-	priorityEnum,
 } from "@/lib/db/schema";
 
 export async function createProjectAction(data: {
@@ -476,9 +476,8 @@ export async function getProjectMembersAction(projectId: string) {
 		if (!project) return { success: false, error: "Project not found" };
 
 		// Use team members as the single source of truth
-		const members = project.team?.members
-			?.filter((tm) => tm.user)
-			.map((tm) => tm.user) ?? [];
+		const members =
+			project.team?.members?.filter((tm) => tm.user).map((tm) => tm.user) ?? [];
 
 		return { success: true, data: members };
 	} catch (err: unknown) {

@@ -242,16 +242,13 @@ export const commentsRelations = relations(comments, ({ one }) => ({
 	author: one(users, { fields: [comments.authorId], references: [users.id] }),
 }));
 
-export const taskHistoryRelations = relations(
-	taskHistory,
-	({ one }) => ({
-		task: one(tasks, {
-			fields: [taskHistory.taskId],
-			references: [tasks.id],
-		}),
-		author: one(users, {
-			fields: [taskHistory.authorId],
-			references: [users.id],
-		}),
+export const taskHistoryRelations = relations(taskHistory, ({ one }) => ({
+	task: one(tasks, {
+		fields: [taskHistory.taskId],
+		references: [tasks.id],
 	}),
-);
+	author: one(users, {
+		fields: [taskHistory.authorId],
+		references: [users.id],
+	}),
+}));

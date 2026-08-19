@@ -16,7 +16,8 @@ export const InviteEmail: React.FC<InviteEmailProps> = ({
 	<div
 		style={{
 			backgroundColor: "#f9fafb",
-			fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+			fontFamily:
+				'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
 			padding: "40px 20px",
 			color: "#1f2937",
 		}}
@@ -52,7 +53,8 @@ export const InviteEmail: React.FC<InviteEmailProps> = ({
 					margin: "0 0 20px 0",
 				}}
 			>
-				<strong>{inviterName}</strong> has invited you to collaborate on their team. Click the button below to accept and get started.
+				<strong>{inviterName}</strong> has invited you to collaborate on their
+				team. Click the button below to accept and get started.
 			</p>
 
 			{/* Optional Notes Box */}
@@ -110,7 +112,8 @@ export const InviteEmail: React.FC<InviteEmailProps> = ({
 					margin: "0",
 				}}
 			>
-				If you weren't expecting this invitation, you can safely ignore this email.
+				If you weren't expecting this invitation, you can safely ignore this
+				email.
 			</p>
 		</div>
 	</div>

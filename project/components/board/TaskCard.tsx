@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useSortableItem } from "../../hooks/components/useSortableItem";
 
 export interface Task {
@@ -68,13 +69,18 @@ export function TaskCardDisplay({
 }
 
 export function TaskCard({ taskData, onClick, isOverlay }: TaskCardProps) {
+	const data = useMemo(
+		() => ({
+			type: "Task",
+			task: taskData,
+		}),
+		[taskData],
+	);
+
 	const { setNodeRef, attributes, listeners, isDragging, style } =
 		useSortableItem({
 			id: taskData.id,
-			data: {
-				type: "Task",
-				task: taskData,
-			},
+			data,
 		});
 
 	if (isDragging) {

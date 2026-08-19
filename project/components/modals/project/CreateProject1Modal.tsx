@@ -132,7 +132,8 @@ export default function CreateProject1({
 				{!isLoadingTeams && teamsList.length === 0 && (
 					<Alert variant="destructive">
 						<AlertDescription>
-							You need to invite and create a team first before you can create a project.
+							You need to invite and create a team first before you can create a
+							project.
 						</AlertDescription>
 					</Alert>
 				)}

@@ -3,7 +3,7 @@
 import { CheckSquare, FolderKanban, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import CreateTaskModal from "@/components/modals/task/create-task-modal/CreateTaskModal";
+import TaskModal from "@/components/modals/task/task-modal/TaskModal";
 import { useCustomProjectHeaderStore } from "../../stores/project/custom-project-header-store";
 
 export interface ProjectHeaderProps {
@@ -83,9 +83,10 @@ export default function ProjectHeader({
 				</div>
 			</header>
 
-			{/* Create Task Modal */}
+			{/* Task Modal (Create) */}
 			{isCreateTaskOpen && (
-				<CreateTaskModal
+				<TaskModal
+					mode="create"
 					opened={isCreateTaskOpen}
 					onClose={() => setIsCreateTaskOpen(false)}
 					onOpenAddPriority={onOpenAddPriority}

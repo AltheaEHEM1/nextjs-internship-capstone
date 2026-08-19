@@ -16,7 +16,9 @@ import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore"
 
 export function useProjectBoard() {
 	const kanbanColumns = useProjectBoardStore((state) => state.kanbanColumns);
-	const setKanbanColumns = useProjectBoardStore((state) => state.setKanbanColumns);
+	const setKanbanColumns = useProjectBoardStore(
+		(state) => state.setKanbanColumns,
+	);
 	const tasks = useProjectBoardStore((state) => state.tasks);
 	const setTasks = useProjectBoardStore((state) => state.setTasks);
 	const activeColumn = useProjectBoardStore((state) => state.activeColumn);
@@ -126,8 +128,8 @@ export function useProjectBoard() {
 
 			// Reorder columns
 			if (activeData?.type === "Column" && overData?.type === "Column") {
-				const activeIndex = kanbanColumns.findIndex((c) => c === activeId);
-				const overIndex = kanbanColumns.findIndex((c) => c === overId);
+				const activeIndex = kanbanColumns.indexOf(activeId as string);
+				const overIndex = kanbanColumns.indexOf(overId as string);
 				if (activeIndex !== -1 && overIndex !== -1) {
 					setKanbanColumns(arrayMove(kanbanColumns, activeIndex, overIndex));
 				}
@@ -143,7 +145,14 @@ export function useProjectBoard() {
 				}
 			}
 		},
-		[tasks, setTasks, kanbanColumns, setKanbanColumns, setActiveColumn, setActiveTask],
+		[
+			tasks,
+			setTasks,
+			kanbanColumns,
+			setKanbanColumns,
+			setActiveColumn,
+			setActiveTask,
+		],
 	);
 
 	const handleOpenTask = useCallback(

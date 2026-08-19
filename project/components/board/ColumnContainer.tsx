@@ -4,7 +4,7 @@ import {
 	SortableContext,
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-
+import { useMemo } from "react";
 import { useSortableItem } from "../../hooks/components/useSortableItem";
 import { type Task, TaskCard } from "./TaskCard";
 
@@ -19,13 +19,20 @@ export function ColumnContainer({
 	tasks,
 	onOpenTask,
 }: ColumnContainerProps) {
+	const data = useMemo(
+		() => ({
+			type: "Column",
+			columnTitle,
+		}),
+		[columnTitle],
+	);
+
+	const taskIds = useMemo(() => tasks.map((t) => t.id), [tasks]);
+
 	const { setNodeRef, attributes, listeners, isDragging, style } =
 		useSortableItem({
 			id: columnTitle,
-			data: {
-				type: "Column",
-				columnTitle,
-			},
+			data,
 		});
 
 	if (isDragging) {
@@ -37,8 +44,6 @@ export function ColumnContainer({
 			/>
 		);
 	}
-
-	const taskIds = tasks.map((t) => t.id);
 
 	return (
 		<div

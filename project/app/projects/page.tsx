@@ -1,6 +1,6 @@
 "use client";
 
-import { Filter, Plus, Search } from "lucide-react";
+import { Filter, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { getProjectsAction } from "@/actions/project/Project";
@@ -125,7 +125,10 @@ export default function ProjectsPage() {
 					type="button"
 					className="inline-flex items-center justify-center gap-2 rounded-xl border border-french_gray-300 bg-white px-4 py-2.5 text-sm font-medium text-outer_space-700 shadow-sm transition-all duration-200 hover:bg-platinum-50 hover:text-outer_space-900 focus:outline-none focus:ring-2 focus:ring-blue_munsell-500/20 active:scale-[0.98] dark:border-payne's_gray-700 dark:bg-outer_space-900 dark:text-platinum-100 dark:hover:bg-payne's_gray-800 dark:hover:text-white"
 				>
-					<Filter size={16} className="text-payne's_gray-400 dark:text-french_gray-400" />
+					<Filter
+						size={16}
+						className="text-payne's_gray-400 dark:text-french_gray-400"
+					/>
 					<span>Filter</span>
 				</button>
 			</div>
@@ -162,7 +165,9 @@ export default function ProjectsPage() {
 									<div className="mb-5 flex flex-wrap items-center justify-between gap-3">
 										<div className="inline-flex items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-gray-700 backdrop-blur-sm dark:border-gray-700/80 dark:bg-gray-800/50 dark:text-gray-300 max-w-full">
 											<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500"></span>
-											<span className="truncate">Team: {project.teamName || "Personal"}</span>
+											<span className="truncate">
+												Team: {project.teamName || "Personal"}
+											</span>
 										</div>
 
 										<div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
