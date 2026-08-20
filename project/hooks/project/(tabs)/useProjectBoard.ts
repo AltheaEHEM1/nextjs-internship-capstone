@@ -10,11 +10,14 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { useCallback, useMemo } from "react";
 import type { Task } from "@/components/board/TaskCard";
 import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
+import { updateTaskAction } from "@/actions/task/Task";
+import { useToast } from "@/hooks/toast/use-toast";
 
 //Custom hook that encapsulates all Kanban board logic:
 //drag-and-drop handling, task selection, and modal state.
 
 export function useProjectBoard() {
+	const { toast } = useToast();
 	const kanbanColumns = useProjectBoardStore((state) => state.kanbanColumns);
 	const setKanbanColumns = useProjectBoardStore(
 		(state) => state.setKanbanColumns,
@@ -164,16 +167,43 @@ export function useProjectBoard() {
 	);
 
 	const handleUpdateTask = useCallback(
-		(updatedFields: Record<string, unknown>) => {
+		async (updatedFields: Record<string, unknown>, projectId?: string) => {
 			if (!selectedTask) return;
+
+			// Optimistic UI update
 			setTasks(
 				tasks.map((t) =>
 					t.id === selectedTask.id ? { ...t, ...updatedFields } : t,
 				),
 			);
 			setSelectedTask({ ...selectedTask, ...updatedFields } as Task);
+
+			// Server update
+			if (projectId) {
+				try {
+					const res = await updateTaskAction(selectedTask.id, {
+						...updatedFields,
+						projectId,
+					});
+					if (res.success) {
+						toast({
+							title: "Saved",
+							description: "Your changes have been saved.",
+							variant: "success",
+						});
+					} else {
+						toast({
+							title: "Error",
+							description: res.error || "Failed to save changes.",
+							variant: "destructive",
+						});
+					}
+				} catch (error) {
+					console.error("Failed to update task", error);
+				}
+			}
 		},
-		[tasks, selectedTask, setTasks, setSelectedTask],
+		[tasks, selectedTask, setTasks, setSelectedTask, toast],
 	);
 
 	const closeViewTask = useCallback(() => {

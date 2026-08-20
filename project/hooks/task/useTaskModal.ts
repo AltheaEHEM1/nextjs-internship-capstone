@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getProjectSettingsAction } from "@/actions/project/Project";
-import { createTaskAction } from "@/actions/task/Task";
+import { createTaskAction, deleteTaskAction } from "@/actions/task/Task";
 import { useToast } from "@/hooks/toast/use-toast";
 import {
 	type TaskData,
@@ -128,11 +128,54 @@ export function useTaskModal({
 		}
 	}, [opened, reset]);
 
+	const handleDelete = async () => {
+		const { taskId } = useTaskModalStore.getState();
+		if (mode !== "view" || !projectId || !taskId) return;
+
+		const confirmed = window.confirm(
+			"Are you sure you want to delete this task? This action cannot be undone.",
+		);
+		if (!confirmed) return;
+
+		setIsSubmitting(true);
+		setError(null);
+
+		try {
+			const result = await deleteTaskAction(taskId, projectId);
+			if (result.success) {
+				toast({
+					title: "Task deleted",
+					description: "The task was successfully deleted.",
+					variant: "success",
+				});
+				onClose();
+			} else {
+				setError(result.error || "Failed to delete task");
+				toast({
+					title: "Error",
+					description: result.error || "Failed to delete task",
+					variant: "destructive",
+				});
+			}
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : "An error occurred";
+			setError(msg);
+			toast({
+				title: "Error",
+				description: msg,
+				variant: "destructive",
+			});
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
 	return {
 		projectData,
 		isLoading,
 		isSubmitting,
 		error,
 		handleCreate,
+		handleDelete,
 	};
 }

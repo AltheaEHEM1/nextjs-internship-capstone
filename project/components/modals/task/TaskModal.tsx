@@ -1,11 +1,11 @@
 "use client";
 
-import { AlertCircle, History, MessageSquare, Plus } from "lucide-react";
+import { AlertCircle, History, MessageSquare, Plus, Trash2 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import BaseModal from "@/components/layout/BaseModal";
-import TaskModalLeft from "@/components/modals/task/task-modal/TaskModalLeft";
-import TaskModalRight from "@/components/modals/task/task-modal/TaskModalRight";
+import TaskModalLeft from "@/components/modals/task/TaskModalLeft";
+import TaskModalRight from "@/components/modals/task/TaskModalRight";
 import { useTaskModal } from "@/hooks/task/useTaskModal";
 import {
 	type TaskData,
@@ -44,7 +44,7 @@ export default function TaskModal({
 		handleAddComment,
 		taskId,
 	} = useTaskModalStore();
-	const { projectData, isLoading, isSubmitting, error, handleCreate } =
+	const { projectData, isLoading, isSubmitting, error, handleCreate, handleDelete } =
 		useTaskModal({
 			mode,
 			opened,
@@ -98,7 +98,26 @@ export default function TaskModal({
 							{isSubmitting ? "Creating..." : "Create Task"}
 						</button>
 					</>
-				) : null // Hide footer in view mode, or you can add a "Close" button if you want
+				) : (
+					<div className="flex justify-between w-full">
+						<button
+							type="button"
+							onClick={handleDelete}
+							disabled={isSubmitting}
+							className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 transition-colors disabled:opacity-50"
+						>
+							<Trash2 size={16} />
+							Delete Task
+						</button>
+						<button
+							type="button"
+							onClick={onClose}
+							className="rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors"
+						>
+							Close
+						</button>
+					</div>
+				)
 			}
 		>
 			{error && (
@@ -111,7 +130,7 @@ export default function TaskModal({
 			<form id="task-modal-form" onSubmit={handleCreate}>
 				<div className="grid grid-cols-12 gap-6">
 					<div className="col-span-12 md:col-span-7">
-						<TaskModalLeft projectId={projectId} />
+						<TaskModalLeft />
 					</div>
 					<div className="col-span-12 md:col-span-5">
 						<TaskModalRight
@@ -139,22 +158,20 @@ export default function TaskModal({
 						<button
 							type="button"
 							onClick={() => setActiveTab("comments")}
-							className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${
-								activeTab === "comments"
+							className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${activeTab === "comments"
 									? "border-cyan-500 text-cyan-600 dark:text-cyan-400"
 									: "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-							}`}
+								}`}
 						>
 							<MessageSquare size={14} /> Comments ({comments.length})
 						</button>
 						<button
 							type="button"
 							onClick={() => setActiveTab("history")}
-							className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${
-								activeTab === "history"
+							className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${activeTab === "history"
 									? "border-cyan-500 text-cyan-600 dark:text-cyan-400"
 									: "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-							}`}
+								}`}
 						>
 							<History size={14} /> History ({history.length})
 						</button>

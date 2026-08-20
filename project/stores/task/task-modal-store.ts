@@ -29,6 +29,7 @@ export type TaskData = {
 	title: string;
 	description: string;
 	status: string;
+	statusId?: string;
 	assignee: string;
 	priority: "low" | "medium" | "high" | "urgent";
 	dueDate: string;
@@ -186,7 +187,7 @@ export const useTaskModalStore = create<TaskModalState>()(
 				taskId: taskData.id || null,
 				taskName: taskData.title || "",
 				description: taskData.description || "",
-				status: taskData.status || "",
+				status: taskData.statusId || taskData.status || "",
 				assignee: taskData.assignee || "",
 				priority: taskData.priority || "low",
 				dueDate: taskData.dueDate ? taskData.dueDate.split("T")[0] : "",

@@ -14,6 +14,7 @@ import {
 	users,
 } from "@/lib/db/schema";
 import { pusherServer } from "@/lib/pusher-server";
+import { notifyProjectMembers } from "@/lib/notifications/notify-project";
 
 export async function createTaskAction(data: {
 	title: string;
@@ -92,6 +93,17 @@ export async function createTaskAction(data: {
 					);
 				}
 			}
+
+			// Notify project members about the new task
+			await notifyProjectMembers(
+				data.projectId,
+				"task-added",
+				{
+					taskTitle: data.title,
+					creatorName: dbUser.name || "Someone",
+				},
+				dbUser.clerkId,
+			);
 		}
 
 		return { success: true, data: newTask[0] };
@@ -135,7 +147,9 @@ export async function updateTaskAction(
 					description: data.description,
 				}),
 				...(data.statusId !== undefined && { statusId: data.statusId }),
-				...(data.assigneeId !== undefined && { assigneeId: data.assigneeId }),
+				...(data.assigneeId !== undefined && {
+					assigneeId: data.assigneeId === "" ? null : data.assigneeId,
+				}),
 				...(data.priority !== undefined && { priority: data.priority }),
 				...(data.dueDate !== undefined && {
 					dueDate: data.dueDate ? new Date(data.dueDate) : null,
@@ -175,6 +189,12 @@ export async function updateTaskAction(
 					{},
 				);
 
+				await pusherServer.trigger(
+					`project-${data.projectId}`,
+					"task-updated",
+					{},
+				);
+
 				if (
 					data.assigneeId &&
 					oldTask &&
@@ -196,6 +216,17 @@ export async function updateTaskAction(
 					}
 				}
 			}
+
+			// Notify project members about the task edit
+			await notifyProjectMembers(
+				data.projectId,
+				"task-edited",
+				{
+					taskTitle: data.title || oldTask?.title || "A task",
+					editorName: dbUser.name || "Someone",
+				},
+				dbUser.clerkId,
+			);
 		}
 
 		return { success: true, data: updatedTask[0] };
@@ -204,6 +235,54 @@ export async function updateTaskAction(
 		return {
 			success: false,
 			error: err instanceof Error ? err.message : "Failed to update task",
+		};
+	}
+}
+
+export async function deleteTaskAction(id: string, projectId: string) {
+	try {
+		const dbUser = await getAuthenticatedDbUser();
+
+		if (!id) {
+			return { success: false, error: "Missing task ID" };
+		}
+
+		const taskToDelete = await db.query.tasks.findFirst({
+			where: eq(tasks.id, id),
+		});
+
+		if (!taskToDelete) {
+			return { success: false, error: "Task not found" };
+		}
+
+		await db
+			.update(tasks)
+			.set({ deletedAt: new Date() })
+			.where(eq(tasks.id, id));
+
+		if (projectId) {
+			revalidatePath(`/projects/${projectId}`);
+			if (pusherServer) {
+				await pusherServer.trigger(`project-${projectId}`, "task-updated", {});
+			}
+
+			await notifyProjectMembers(
+				projectId,
+				"task-deleted",
+				{
+					taskTitle: taskToDelete.title,
+					deleterName: dbUser.name || "Someone",
+				},
+				dbUser.clerkId,
+			);
+		}
+
+		return { success: true };
+	} catch (err: unknown) {
+		console.error("deleteTaskAction Error:", err);
+		return {
+			success: false,
+			error: err instanceof Error ? err.message : "Failed to delete task",
 		};
 	}
 }
@@ -313,6 +392,20 @@ export async function createTaskCommentAction(
 			if (pusherServer) {
 				await pusherServer.trigger(`project-${projectId}`, "task-updated", {});
 			}
+
+			const task = await db.query.tasks.findFirst({
+				where: eq(tasks.id, taskId),
+			});
+
+			await notifyProjectMembers(
+				projectId,
+				"task-commented",
+				{
+					taskTitle: task?.title || "A task",
+					commenterName: dbUser.name || "Someone",
+				},
+				dbUser.clerkId,
+			);
 		}
 
 		return { success: true, data: newComment[0] };

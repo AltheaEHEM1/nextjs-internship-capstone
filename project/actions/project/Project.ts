@@ -10,6 +10,7 @@ import {
 	projectStatuses,
 	projects,
 } from "@/lib/db/schema";
+import { notifyProjectMembers } from "@/lib/notifications/notify-project";
 
 export async function createProjectAction(data: {
 	name: string;
@@ -491,7 +492,12 @@ export async function getProjectMembersAction(projectId: string) {
 
 export async function deleteProjectAction(id: string) {
 	try {
-		await getAuthenticatedDbUser();
+		const dbUser = await getAuthenticatedDbUser();
+
+		// Get project details before deleting so we can use its name in the notification
+		const projectToDelete = await db.query.projects.findFirst({
+			where: eq(projects.id, id),
+		});
 
 		await db
 			.update(projects)
@@ -499,6 +505,18 @@ export async function deleteProjectAction(id: string) {
 			.where(eq(projects.id, id));
 
 		revalidatePath("/projects");
+
+		if (projectToDelete) {
+			await notifyProjectMembers(
+				id,
+				"project-deleted",
+				{
+					projectName: projectToDelete.name,
+					deleterName: dbUser.name || "Someone",
+				},
+				dbUser.clerkId,
+			);
+		}
 
 		return { success: true };
 	} catch (err: unknown) {

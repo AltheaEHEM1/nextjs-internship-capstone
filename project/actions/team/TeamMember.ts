@@ -11,6 +11,7 @@ import {
 	teams,
 	users,
 } from "@/lib/db/schema";
+import { notifyTeamMembers } from "@/lib/notifications/notify-team";
 import { sendUserInvitationAction } from "./Invitation";
 
 export async function getAcceptedInvitesAction() {
@@ -252,6 +253,12 @@ export async function addMemberToTeamAction(data: {
 		revalidatePath(`/team/team/${data.teamId}`);
 		revalidatePath("/team");
 
+		await notifyTeamMembers(
+			data.teamId,
+			"team-member-added",
+			{ teamId: data.teamId },
+		);
+
 		return { success: true };
 	} catch (err: unknown) {
 		console.error("addMemberToTeamAction Error:", err);
@@ -316,6 +323,13 @@ export async function updateTeamMemberAction(data: {
 
 			revalidatePath(`/team/team/${data.teamId}`);
 			revalidatePath("/team");
+
+			await notifyTeamMembers(
+				data.teamId,
+				"team-member-updated",
+				{ teamId: data.teamId },
+				dbUser.clerkId,
+			);
 		}
 
 		return { success: true };
@@ -359,6 +373,13 @@ export async function removeTeamMemberAction(
 
 		revalidatePath(`/team/team/${teamId}`);
 		revalidatePath("/team");
+
+		await notifyTeamMembers(
+			teamId,
+			"team-member-removed",
+			{ teamId },
+			dbUser.clerkId,
+		);
 
 		return { success: true };
 	} catch (err: unknown) {

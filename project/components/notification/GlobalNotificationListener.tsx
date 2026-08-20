@@ -3,7 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { ToastAction } from "@/components/toast/toast";
+
 import { useNotification } from "@/hooks/notification/useNotification";
 import { useToast } from "@/hooks/toast/use-toast";
 import { pusherClient } from "@/lib/pusher-client";
@@ -31,14 +31,135 @@ export function GlobalNotificationListener() {
 				toast({
 					title,
 					description,
-					action: (
-						<ToastAction
-							altText="View Notifications"
-							onClick={() => router.push("/notification")}
-						>
-							View
-						</ToastAction>
-					),
+
+				});
+			},
+		);
+
+		channel.bind(
+			"task-added",
+			(data: { taskTitle: string; creatorName: string }) => {
+				const title = "New Task Created";
+				const description = `${data.creatorName} added a new task "${data.taskTitle}"`;
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
+
+				});
+			},
+		);
+
+		channel.bind(
+			"task-commented",
+			(data: { taskTitle: string; commenterName: string }) => {
+				const title = "New Comment on Task";
+				const description = `${data.commenterName} commented on "${data.taskTitle}"`;
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
+
+				});
+			},
+		);
+
+		channel.bind(
+			"task-edited",
+			(data: { taskTitle: string; editorName: string }) => {
+				const title = "Task Edited";
+				const description = `${data.editorName} edited "${data.taskTitle}"`;
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
+
+				});
+			},
+		);
+
+		channel.bind(
+			"task-deleted",
+			(data: { taskTitle: string; deleterName: string }) => {
+				const title = "Task Deleted";
+				const description = `${data.deleterName} deleted the task "${data.taskTitle}"`;
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
+
+				});
+			},
+		);
+
+		channel.bind(
+			"project-deleted",
+			(data: { projectName: string; deleterName: string }) => {
+				const title = "Project Deleted";
+				const description = `${data.deleterName} deleted the project "${data.projectName}"`;
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
+
+				});
+			},
+		);
+
+		channel.bind(
+			"team-member-added",
+			(data: { teamId: string }) => {
+				const title = "Team Member Added";
+				const description = "A new member was added to your team.";
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
+
+				});
+			},
+		);
+
+		channel.bind(
+			"team-member-updated",
+			(data: { teamId: string }) => {
+				const title = "Team Member Updated";
+				const description = "A member's role or access was updated.";
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
+
+				});
+			},
+		);
+
+		channel.bind(
+			"team-member-removed",
+			(data: { teamId: string }) => {
+				const title = "Team Member Removed";
+				const description = "A member was removed from your team.";
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
+
 				});
 			},
 		);

@@ -67,7 +67,16 @@ export default function TaskModalRight({
 				<select
 					id="status"
 					value={status}
-					onChange={(e) => handleChange("status", e.target.value, setStatus)}
+					onChange={(e) => {
+						const selectedStatus = projectData?.statuses.find(s => s.id === e.target.value);
+						setStatus(e.target.value);
+						if (mode === "view" && selectedStatus) {
+							// Update backend with ID
+							handleFieldChange("statusId", e.target.value);
+							// Update local optimistic UI with Name
+							handleFieldChange("status", selectedStatus.name);
+						}
+					}}
 					className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
 					disabled={isLoading}
 				>
@@ -106,8 +115,8 @@ export default function TaskModalRight({
 					{!isLoading &&
 						projectData?.members.map((m) => (
 							<option
-								key={mode === "view" ? m.id : m.userId}
-								value={mode === "view" ? m.id : m.userId}
+								key={m.userId}
+								value={m.userId}
 							>
 								{m.name}
 							</option>

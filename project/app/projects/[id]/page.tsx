@@ -15,7 +15,7 @@ import { reorderTasksAction } from "@/actions/task/Task";
 import { ColumnContainer } from "@/components/board/ColumnContainer";
 import type { Task } from "@/components/board/TaskCard";
 import { TaskCardDisplay } from "@/components/board/TaskCard";
-import TaskModal from "@/components/modals/task/task-modal/TaskModal";
+import TaskModal from "@/components/modals/task/TaskModal";
 import { useProjectBoard } from "@/hooks/project/(tabs)/useProjectBoard";
 import { pusherClient } from "@/lib/pusher-client";
 import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
@@ -52,6 +52,7 @@ export default function BoardPage({
 								title: t.title || "Untitled Task",
 								description: t.description || "",
 								status: s.name,
+								statusId: s.id,
 								priority: (t.priority === "urgent"
 									? "high"
 									: t.priority || "low") as "low" | "medium" | "high",
@@ -187,7 +188,7 @@ export default function BoardPage({
 							{activeTask && (
 								<TaskCardDisplay
 									taskData={activeTask}
-									onClick={() => {}}
+									onClick={() => { }}
 									isOverlay
 								/>
 							)}
@@ -202,8 +203,8 @@ export default function BoardPage({
 					opened={isViewTaskOpen}
 					onClose={closeViewTask}
 					taskData={selectedTask}
-					onUpdateTask={handleUpdateTask}
-					projectId={id}
+					onUpdateTask={(updates) => handleUpdateTask(updates, id as string)}
+					projectId={id as string}
 				/>
 			)}
 		</div>
