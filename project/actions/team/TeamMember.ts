@@ -1,17 +1,17 @@
 "use server";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
 import {
 	invitations,
-	projectMembers,
 	projects,
 	teamMembers,
 	teams,
 	users,
 } from "@/lib/db/schema";
+import { notifyTeamMembers, notifyUser } from "@/lib/notifications/notify-team";
 import { sendUserInvitationAction } from "./Invitation";
 
 export async function getAcceptedInvitesAction() {
@@ -38,11 +38,14 @@ export async function getAcceptedInvitesAction() {
 			);
 
 		return { success: true, data: acceptedList };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("getAcceptedInvitesAction Error:", err);
 		return {
 			success: false,
-			error: err?.message || "Failed to fetch accepted invites.",
+			error:
+				err instanceof Error
+					? err.message
+					: "Failed to fetch accepted invites.",
 		};
 	}
 }
@@ -71,22 +74,15 @@ export async function getPersonDetailAction(personId: string) {
 				id: teams.id,
 				name: teams.name,
 				icon: teams.icon,
+				coverUrl: teams.coverUrl,
 				role: teamMembers.role,
 			})
 			.from(teamMembers)
 			.innerJoin(teams, eq(teamMembers.teamId, teams.id))
 			.where(eq(teamMembers.userId, person.id));
 
-		// Fetch projects the person is part of or owns
-		const userProjectsFromMembers = await db
-			.select({
-				id: projects.id,
-				name: projects.name,
-				role: projectMembers.role,
-			})
-			.from(projectMembers)
-			.innerJoin(projects, eq(projectMembers.projectId, projects.id))
-			.where(eq(projectMembers.userId, person.id));
+		// Derive projects from team membership and ownership
+		const userTeamIds = userTeams.map((t) => t.id);
 
 		const ownedProjects = await db
 			.select({
@@ -94,28 +90,44 @@ export async function getPersonDetailAction(personId: string) {
 				name: projects.name,
 			})
 			.from(projects)
-			.where(eq(projects.ownerId, person.id));
+			.where(and(eq(projects.ownerId, person.id), isNull(projects.deletedAt)));
+
+		const teamProjects =
+			userTeamIds.length > 0
+				? await db
+						.select({
+							id: projects.id,
+							name: projects.name,
+						})
+						.from(projects)
+						.where(
+							and(
+								inArray(projects.teamId, userTeamIds),
+								isNull(projects.deletedAt),
+							),
+						)
+				: [];
 
 		const projectMap = new Map<
 			string,
 			{ id: string; name: string; role: string; status: string }
 		>();
 
-		for (const p of userProjectsFromMembers) {
+		for (const p of ownedProjects) {
 			projectMap.set(p.id, {
 				id: p.id,
 				name: p.name,
-				role: p.role || "Member",
+				role: "Owner",
 				status: "Active",
 			});
 		}
 
-		for (const p of ownedProjects) {
+		for (const p of teamProjects) {
 			if (!projectMap.has(p.id)) {
 				projectMap.set(p.id, {
 					id: p.id,
 					name: p.name,
-					role: "Owner",
+					role: "Team Member",
 					status: "Active",
 				});
 			}
@@ -141,16 +153,18 @@ export async function getPersonDetailAction(personId: string) {
 					id: t.id,
 					name: t.name,
 					icon: t.icon || "💻",
+					coverUrl: t.coverUrl,
 					role: t.role || "Member",
 				})),
 				projects: personProjects,
 			},
 		};
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("getPersonDetailAction Error:", err);
 		return {
 			success: false,
-			error: err?.message || "Failed to fetch person detail.",
+			error:
+				err instanceof Error ? err.message : "Failed to fetch person detail.",
 		};
 	}
 }
@@ -177,11 +191,11 @@ export async function removePersonAction(personId: string) {
 		await db.delete(teamMembers).where(eq(teamMembers.userId, personId));
 
 		return { success: true };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("removePersonAction Error:", err);
 		return {
 			success: false,
-			error: err?.message || "Failed to remove person.",
+			error: err instanceof Error ? err.message : "Failed to remove person.",
 		};
 	}
 }
@@ -194,7 +208,22 @@ export async function addMemberToTeamAction(data: {
 	permission?: "administrator" | "member" | "viewer";
 }): Promise<{ success: boolean; error?: string }> {
 	try {
-		await getAuthenticatedDbUser();
+		const dbUser = await getAuthenticatedDbUser();
+
+		// Check if the current user is an administrator of the team
+		const currentUserMember = await db.query.teamMembers.findFirst({
+			where: and(
+				eq(teamMembers.teamId, data.teamId),
+				eq(teamMembers.userId, dbUser.id),
+			),
+		});
+
+		if (currentUserMember?.permission !== "administrator") {
+			return {
+				success: false,
+				error: "Only team administrators can add new members.",
+			};
+		}
 
 		let targetUserId = data.userId;
 
@@ -207,9 +236,20 @@ export async function addMemberToTeamAction(data: {
 			}
 		}
 
+		const team = await db.query.teams.findFirst({
+			where: eq(teams.id, data.teamId),
+		});
+
 		if (!targetUserId) {
 			if (data.email) {
-				const inviteRes = await sendUserInvitationAction(data.email);
+				const inviteRes = await sendUserInvitationAction(data.email, undefined);
+				if (inviteRes.success) {
+					await notifyTeamMembers(data.teamId, "team-member-invited", {
+						teamId: data.teamId,
+						teamName: team?.name,
+						email: data.email,
+					});
+				}
 				return {
 					success: inviteRes.success,
 					error: inviteRes.error,
@@ -236,15 +276,46 @@ export async function addMemberToTeamAction(data: {
 			permission: data.permission || "member",
 		});
 
-		revalidatePath(`/team/${data.teamId}`);
+		revalidatePath(`/team/team/${data.teamId}`);
 		revalidatePath("/team");
 
+		const addedUser = await db.query.users.findFirst({
+			where: eq(users.id, targetUserId),
+		});
+
+		const notificationPayload = {
+			teamId: data.teamId,
+			teamName: team?.name,
+			targetName: addedUser?.name || addedUser?.email,
+		};
+
+		if (addedUser?.clerkId) {
+			await notifyUser(addedUser.clerkId, "you-were-added", {
+				teamName: team?.name,
+			});
+
+			// Notify other team members, excluding the added user
+			await notifyTeamMembers(
+				data.teamId,
+				"team-member-added",
+				notificationPayload,
+				addedUser.clerkId,
+			);
+		} else {
+			await notifyTeamMembers(
+				data.teamId,
+				"team-member-added",
+				notificationPayload,
+			);
+		}
+
 		return { success: true };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("addMemberToTeamAction Error:", err);
 		return {
 			success: false,
-			error: err?.message || "Failed to add member to team.",
+			error:
+				err instanceof Error ? err.message : "Failed to add member to team.",
 		};
 	}
 }
@@ -266,10 +337,7 @@ export async function updateTeamMemberAction(data: {
 			),
 		});
 
-		if (
-			!currentUserMember ||
-			currentUserMember?.permission !== "administrator"
-		) {
+		if (currentUserMember?.permission !== "administrator") {
 			return {
 				success: false,
 				error: "Only team administrators can update members.",
@@ -288,7 +356,7 @@ export async function updateTeamMemberAction(data: {
 			return { success: false, error: "Team member not found." };
 		}
 
-		const updateData: any = {};
+		const updateData: Record<string, unknown> = {};
 		if (data.role !== undefined) updateData.role = data.role;
 		if (data.permission !== undefined) updateData.permission = data.permission;
 
@@ -303,16 +371,24 @@ export async function updateTeamMemberAction(data: {
 					),
 				);
 
-			revalidatePath(`/team/${data.teamId}`);
+			revalidatePath(`/team/team/${data.teamId}`);
 			revalidatePath("/team");
+
+			await notifyTeamMembers(
+				data.teamId,
+				"team-member-updated",
+				{ teamId: data.teamId },
+				dbUser.clerkId,
+			);
 		}
 
 		return { success: true };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("updateTeamMemberAction Error:", err);
 		return {
 			success: false,
-			error: err?.message || "Failed to update team member.",
+			error:
+				err instanceof Error ? err.message : "Failed to update team member.",
 		};
 	}
 }
@@ -332,15 +408,20 @@ export async function removeTeamMemberAction(
 			),
 		});
 
-		if (
-			!currentUserMember ||
-			currentUserMember?.permission !== "administrator"
-		) {
+		if (currentUserMember?.permission !== "administrator") {
 			return {
 				success: false,
 				error: "Only team administrators can remove members.",
 			};
 		}
+
+		const targetUser = await db.query.users.findFirst({
+			where: eq(users.id, userId),
+		});
+
+		const team = await db.query.teams.findFirst({
+			where: eq(teams.id, teamId),
+		});
 
 		await db
 			.delete(teamMembers)
@@ -348,15 +429,33 @@ export async function removeTeamMemberAction(
 				and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)),
 			);
 
-		revalidatePath(`/team/${teamId}`);
+		revalidatePath(`/team/team/${teamId}`);
 		revalidatePath("/team");
 
+		if (targetUser?.clerkId) {
+			await notifyUser(targetUser.clerkId, "you-were-removed", {
+				teamName: team?.name,
+			});
+		}
+
+		await notifyTeamMembers(
+			teamId,
+			"team-member-removed",
+			{
+				teamId,
+				teamName: team?.name,
+				targetName: targetUser?.name || targetUser?.email,
+			},
+			dbUser.clerkId,
+		);
+
 		return { success: true };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("removeTeamMemberAction Error:", err);
 		return {
 			success: false,
-			error: err?.message || "Failed to remove team member.",
+			error:
+				err instanceof Error ? err.message : "Failed to remove team member.",
 		};
 	}
 }

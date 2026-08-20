@@ -2,15 +2,15 @@
 
 import { Tldraw } from "tldraw";
 import "tldraw/tldraw.css";
-import { useWhiteboardStore } from "@/stores/project/whiteboard-store";
+import { useWhiteBoard } from "@/hooks/project/(tabs)/useWhiteBoard";
 
 export default function WhiteBoard() {
-	const persistenceKey = useWhiteboardStore((state) => state.persistenceKey);
+	const { persistenceKey } = useWhiteBoard();
 
 	return (
 		<div className="space-y-4 pb-12">
 			{/* Header Info */}
-			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
 						Project Collaborative Whiteboard
@@ -23,7 +23,7 @@ export default function WhiteBoard() {
 			</div>
 
 			{/* Whiteboard Container */}
-			<div className="relative h-[700px] w-full z-10 overflow-hidden rounded-xl border border-french_gray-200 shadow-xs dark:border-payne's_gray-600">
+			<div className="relative z-10 h-[700px] w-full overflow-hidden rounded-xl border border-french_gray-200 shadow-xs dark:border-payne's_gray-600">
 				<Tldraw persistenceKey={persistenceKey} />
 			</div>
 		</div>

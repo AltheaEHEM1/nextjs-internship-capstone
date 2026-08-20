@@ -45,6 +45,7 @@ export default function RootLayout({
 		<ClerkProvider>
 			<html lang="en" suppressHydrationWarning>
 				<body
+					suppressHydrationWarning
 					className={`${poppins.className} ${geistSans.variable} ${geistMono.variable}`}
 				>
 					<LayoutWrapper>{children}</LayoutWrapper>

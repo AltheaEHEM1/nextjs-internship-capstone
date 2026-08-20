@@ -1,13 +1,5 @@
 import type { IconType } from "react-icons";
-import {
-	FaCog,
-	FaFolderOpen,
-	FaHome,
-	FaLock,
-	FaPaintBrush,
-	FaUser,
-	FaUsers,
-} from "react-icons/fa";
+import { FaCog, FaFolderOpen, FaHome, FaUsers } from "react-icons/fa";
 
 export interface NavItem {
 	link?: string;
@@ -42,13 +34,13 @@ export const NAV_CONFIG: NavItem[] = [
 		current: false,
 		links: [
 			{
-				link: "team",
+				link: "team?tab=people",
 				label: "People",
 				description: "View all people",
 				icon: FaUsers,
 			},
 			{
-				link: "team/your-teams",
+				link: "team?tab=teams",
 				label: "Your Teams",
 				description: "View your specific teams",
 				icon: FaFolderOpen,

@@ -1,3 +1,5 @@
+"use client";
+
 import {
 	BarChart3,
 	CalendarClock,
@@ -8,89 +10,236 @@ import {
 	PlusCircle,
 	Users,
 } from "lucide-react";
+import { use, useCallback, useEffect, useState } from "react";
+import { getProjectDetailAction } from "@/actions/project/Project";
+import {
+	type RecentActivity,
+	type StatusOverviewItem,
+	type TeamWorkloadMember,
+	useSummary,
+	type WorkTypeItem,
+} from "@/hooks/project/(tabs)/useSummary";
+import { pusherClient } from "@/lib/pusher-client";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+export default function Summary({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
+	const { id } = use(params);
+	const {
+		recentActivities,
+		statusOverview,
+		workTypes,
+		teamWorkload,
+		setSummaryData,
+	} = useSummary();
 
-interface ProgressItem {
-	label: string;
-	count: number;
-	percentage: number;
-	color: string;
-}
+	const [projectInfo, setProjectInfo] = useState({
+		name: "Loading...",
+		description: "",
+		progress: 0,
+		completedCount: 0,
+		createdCount: 0,
+		dueSoonCount: 0,
+		editedCount: 0,
+	});
 
-interface TeamMember {
-	name: string;
-	tasks: number;
-	load: string;
-}
+	const fetchProjectData = useCallback(() => {
+		getProjectDetailAction(id).then((res) => {
+			if (res.success && res.data) {
+				const project = res.data;
+				const statuses = project.statuses || [];
+				const allTasks = statuses.flatMap((s) =>
+					(s.tasks || []).map((t) => ({ ...t, statusName: s.name })),
+				);
 
-interface ActivityItem {
-	id: string;
-	title: string;
-	author: string;
-	time: string;
-}
+				const now = new Date();
+				const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+				const sevenDaysFromNow = new Date(
+					now.getTime() + 7 * 24 * 60 * 60 * 1000,
+				);
 
-// ─── Static Data ──────────────────────────────────────────────────────────────
+				let completedCount = 0;
+				let createdCount = 0;
+				let editedCount = 0;
+				let dueSoonCount = 0;
+				let doneTasks = 0;
 
-const STATUS_OVERVIEW: ProgressItem[] = [
-	{ label: "Done", count: 14, percentage: 45, color: "bg-emerald-500" },
-	{ label: "In Progress", count: 9, percentage: 29, color: "bg-blue-500" },
-	{ label: "In Review", count: 4, percentage: 13, color: "bg-amber-500" },
-	{ label: "Todo", count: 4, percentage: 13, color: "bg-slate-400" },
-];
+				allTasks.forEach((t) => {
+					const createdAt = new Date(t.createdAt);
+					const updatedAt = new Date(t.updatedAt);
+					const dueDate = t.dueDate ? new Date(t.dueDate) : null;
 
-const WORK_TYPES: ProgressItem[] = [
-	{ label: "Feature", count: 12, percentage: 40, color: "bg-indigo-500" },
-	{ label: "Bug Fix", count: 8, percentage: 27, color: "bg-red-500" },
-	{ label: "Improvement", count: 6, percentage: 20, color: "bg-purple-500" },
-	{ label: "Chore", count: 4, percentage: 13, color: "bg-slate-400" },
-];
+					if (t.statusName === "Done") {
+						doneTasks++;
+						if (updatedAt >= sevenDaysAgo) completedCount++;
+					}
 
-const TEAM_WORKLOAD: TeamMember[] = [
-	{ name: "Alice", tasks: 7, load: "High" },
-	{ name: "Bob", tasks: 5, load: "Medium" },
-	{ name: "Carol", tasks: 4, load: "Medium" },
-	{ name: "Dave", tasks: 2, load: "Low" },
-	{ name: "Eve", tasks: 1, load: "Low" },
-];
+					if (createdAt >= sevenDaysAgo) createdCount++;
+					if (updatedAt >= sevenDaysAgo) editedCount++;
 
-const RECENT_ACTIVITIES: ActivityItem[] = [
-	{
-		id: "a1",
-		title: "Completed task: Design system tokens",
-		author: "Alice",
-		time: "2 min ago",
-	},
-	{
-		id: "a2",
-		title: "Moved 'API Integration' to In Review",
-		author: "Bob",
-		time: "14 min ago",
-	},
-	{
-		id: "a3",
-		title: "Added comment on 'Auth flow' task",
-		author: "Carol",
-		time: "1 hr ago",
-	},
-	{
-		id: "a4",
-		title: "Created task: Write unit tests",
-		author: "Dave",
-		time: "3 hrs ago",
-	},
-	{
-		id: "a5",
-		title: "Updated sprint deadline to Aug 20",
-		author: "Alice",
-		time: "Yesterday",
-	},
-];
+					if (
+						dueDate &&
+						dueDate >= now &&
+						dueDate <= sevenDaysFromNow &&
+						t.statusName !== "Done"
+					) {
+						dueSoonCount++;
+					}
+				});
 
-// ─── Page Component ───────────────────────────────────────────────────────────
+				const progress =
+					allTasks.length > 0
+						? Math.round((doneTasks / allTasks.length) * 100)
+						: 0;
 
-export default function Summary() {
+				setProjectInfo({
+					name: project.name,
+					description:
+						project.description ||
+						"Tracking core development metrics, task velocity, and team contributions for the current cycle.",
+					progress,
+					completedCount,
+					createdCount,
+					dueSoonCount,
+					editedCount,
+				});
+
+				const statusOverviewData = statuses.map((s) => ({
+					label: s.name,
+					count: s.tasks?.length || 0,
+					percentage:
+						allTasks.length > 0
+							? Math.round(((s.tasks?.length || 0) / allTasks.length) * 100)
+							: 0,
+					color: s.color?.includes("emerald")
+						? "bg-emerald-500"
+						: s.color?.includes("blue")
+							? "bg-blue_munsell-500"
+							: s.color?.includes("amber")
+								? "bg-amber-500"
+								: "bg-purple-500",
+				}));
+
+				const priorityCounts: Record<string, number> = {
+					high: 0,
+					medium: 0,
+					low: 0,
+				};
+				allTasks.forEach((t) => {
+					const p = t.priority === "urgent" ? "high" : t.priority || "low";
+					priorityCounts[p]++;
+				});
+				const workTypesData = [
+					{
+						label: "High Priority",
+						count: priorityCounts.high,
+						percentage:
+							allTasks.length > 0
+								? Math.round((priorityCounts.high / allTasks.length) * 100)
+								: 0,
+						color: "bg-rose-500",
+					},
+					{
+						label: "Medium Priority",
+						count: priorityCounts.medium,
+						percentage:
+							allTasks.length > 0
+								? Math.round((priorityCounts.medium / allTasks.length) * 100)
+								: 0,
+						color: "bg-amber-500",
+					},
+					{
+						label: "Low Priority",
+						count: priorityCounts.low,
+						percentage:
+							allTasks.length > 0
+								? Math.round((priorityCounts.low / allTasks.length) * 100)
+								: 0,
+						color: "bg-blue_munsell-500",
+					},
+				].filter((w) => w.count > 0);
+
+				const workloadMap: Record<string, number> = {};
+				allTasks.forEach((t) => {
+					if (
+						t.statusName !== "Done" &&
+						(t as { assignee?: { name?: string } }).assignee
+					) {
+						const assigneeName =
+							(t as { assignee?: { name?: string } }).assignee?.name ||
+							"Unknown";
+						workloadMap[assigneeName] = (workloadMap[assigneeName] || 0) + 1;
+					}
+				});
+				const totalActiveTasks = Object.values(workloadMap).reduce(
+					(a, b) => a + b,
+					0,
+				);
+				const teamWorkloadData = Object.entries(workloadMap)
+					.map(([name, tasks]) => ({
+						name,
+						tasks,
+						load:
+							totalActiveTasks > 0
+								? `${Math.round((tasks / totalActiveTasks) * 100)}%`
+								: "0%",
+					}))
+					.sort((a, b) => b.tasks - a.tasks);
+
+				const sortedTasks = [...allTasks]
+					.sort(
+						(a, b) =>
+							new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+					)
+					.slice(0, 5);
+				const recentActivitiesData = sortedTasks.map((t, idx) => ({
+					id: idx + 1,
+					time: new Date(t.updatedAt).toLocaleDateString(),
+					author:
+						(t as { assignee?: { name?: string } }).assignee?.name || "System",
+					title: `Updated task: ${t.title}`,
+				}));
+
+				setSummaryData({
+					statusOverview: statusOverviewData,
+					workTypes:
+						workTypesData.length > 0
+							? workTypesData
+							: [
+									{
+										label: "No tasks",
+										count: 0,
+										percentage: 0,
+										color: "bg-gray-500",
+									},
+								],
+					teamWorkload: teamWorkloadData,
+					recentActivities: recentActivitiesData,
+				});
+			}
+		});
+	}, [id, setSummaryData]);
+
+	useEffect(() => {
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
+
 	return (
 		<div className="space-y-6 pb-12">
 			{/* 1. Project Information Banner */}
@@ -101,11 +250,10 @@ export default function Summary() {
 							Active Sprint Overview
 						</span>
 						<h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
-							Website Redesign Phase 2
+							{projectInfo.name}
 						</h2>
 						<p className="mt-1 text-sm text-outer_space-500 dark:text-platinum-400">
-							Tracking core development metrics, task velocity, and team
-							contributions for the current cycle.
+							{projectInfo.description}
 						</p>
 					</div>
 					<div className="flex items-center gap-3">
@@ -114,7 +262,7 @@ export default function Summary() {
 								Sprint Progress
 							</span>
 							<span className="text-lg font-bold text-blue_munsell-600 dark:text-blue_munsell-400">
-								72%
+								{projectInfo.progress}%
 							</span>
 						</div>
 					</div>
@@ -135,10 +283,7 @@ export default function Summary() {
 					</div>
 					<div className="mt-4 flex items-baseline gap-2">
 						<span className="text-3xl font-bold text-outer_space-800 dark:text-platinum-100">
-							14
-						</span>
-						<span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-							+12% vs last week
+							{projectInfo.completedCount}
 						</span>
 					</div>
 				</div>
@@ -155,10 +300,7 @@ export default function Summary() {
 					</div>
 					<div className="mt-4 flex items-baseline gap-2">
 						<span className="text-3xl font-bold text-outer_space-800 dark:text-platinum-100">
-							8
-						</span>
-						<span className="text-xs font-medium text-blue_munsell-600 dark:text-blue_munsell-400">
-							New backlog items
+							{projectInfo.createdCount}
 						</span>
 					</div>
 				</div>
@@ -175,10 +317,7 @@ export default function Summary() {
 					</div>
 					<div className="mt-4 flex items-baseline gap-2">
 						<span className="text-3xl font-bold text-outer_space-800 dark:text-platinum-100">
-							5
-						</span>
-						<span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-							Requires attention
+							{projectInfo.dueSoonCount}
 						</span>
 					</div>
 				</div>
@@ -195,10 +334,7 @@ export default function Summary() {
 					</div>
 					<div className="mt-4 flex items-baseline gap-2">
 						<span className="text-3xl font-bold text-outer_space-800 dark:text-platinum-100">
-							32
-						</span>
-						<span className="text-xs font-medium text-purple-600 dark:text-purple-400">
-							Active revisions
+							{projectInfo.editedCount}
 						</span>
 					</div>
 				</div>
@@ -208,20 +344,20 @@ export default function Summary() {
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 				{/* Status Overview */}
 				<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-					<div className="flex items-center justify-between mb-4">
-						<h3 className="font-semibold text-outer_space-800 dark:text-platinum-100 flex items-center gap-2">
+					<div className="mb-4 flex items-center justify-between">
+						<h3 className="flex items-center gap-2 font-semibold text-outer_space-800 dark:text-platinum-100">
 							<BarChart3 size={18} className="text-blue_munsell-500" /> Status
 							Overview
 						</h3>
 					</div>
 					<div className="space-y-4">
-						{STATUS_OVERVIEW.map((item: ProgressItem) => (
+						{statusOverview.map((item: StatusOverviewItem) => (
 							<div key={item.label}>
-								<div className="flex justify-between text-xs font-medium mb-1 text-outer_space-600 dark:text-platinum-300">
+								<div className="mb-1 flex justify-between text-xs font-medium text-outer_space-600 dark:text-platinum-300">
 									<span>{item.label}</span>
 									<span>{item.count} tasks</span>
 								</div>
-								<div className="h-2 w-full rounded-full bg-french_gray-100 dark:bg-payne's_gray-400 overflow-hidden">
+								<div className="h-2 w-full overflow-hidden rounded-full bg-french_gray-100 dark:bg-payne's_gray-400">
 									<div
 										className={`h-full rounded-full ${item.color}`}
 										style={{ width: `${item.percentage}%` }}
@@ -234,19 +370,19 @@ export default function Summary() {
 
 				{/* Types of Work */}
 				<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-					<div className="flex items-center justify-between mb-4">
-						<h3 className="font-semibold text-outer_space-800 dark:text-platinum-100 flex items-center gap-2">
+					<div className="mb-4 flex items-center justify-between">
+						<h3 className="flex items-center gap-2 font-semibold text-outer_space-800 dark:text-platinum-100">
 							<PieChart size={18} className="text-purple-500" /> Types of Work
 						</h3>
 					</div>
 					<div className="space-y-4">
-						{WORK_TYPES.map((item: ProgressItem) => (
+						{workTypes.map((item: WorkTypeItem) => (
 							<div key={item.label}>
-								<div className="flex justify-between text-xs font-medium mb-1 text-outer_space-600 dark:text-platinum-300">
+								<div className="mb-1 flex justify-between text-xs font-medium text-outer_space-600 dark:text-platinum-300">
 									<span>{item.label}</span>
 									<span>{item.count} items</span>
 								</div>
-								<div className="h-2 w-full rounded-full bg-french_gray-100 dark:bg-payne's_gray-400 overflow-hidden">
+								<div className="h-2 w-full overflow-hidden rounded-full bg-french_gray-100 dark:bg-payne's_gray-400">
 									<div
 										className={`h-full rounded-full ${item.color}`}
 										style={{ width: `${item.percentage}%` }}
@@ -259,16 +395,16 @@ export default function Summary() {
 
 				{/* Team Workload */}
 				<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-					<div className="flex items-center justify-between mb-4">
-						<h3 className="font-semibold text-outer_space-800 dark:text-platinum-100 flex items-center gap-2">
+					<div className="mb-4 flex items-center justify-between">
+						<h3 className="flex items-center gap-2 font-semibold text-outer_space-800 dark:text-platinum-100">
 							<Users size={18} className="text-emerald-500" /> Team Workload
 						</h3>
 					</div>
 					<div className="space-y-3">
-						{TEAM_WORKLOAD.map((member: TeamMember) => (
+						{teamWorkload.map((member: TeamWorkloadMember) => (
 							<div
 								key={member.name}
-								className="flex items-center justify-between p-2 rounded-lg bg-platinum-100/50 dark:bg-outer_space-400/50"
+								className="flex items-center justify-between rounded-lg bg-platinum-100/50 p-2 dark:bg-outer_space-400/50"
 							>
 								<div className="flex items-center gap-3">
 									<div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue_munsell-500 text-xs font-semibold text-white">
@@ -294,8 +430,8 @@ export default function Summary() {
 
 			{/* 4. Recent Activity Feed */}
 			<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-				<div className="flex items-center justify-between mb-4">
-					<h3 className="font-semibold text-outer_space-800 dark:text-platinum-100 flex items-center gap-2">
+				<div className="mb-4 flex items-center justify-between">
+					<h3 className="flex items-center gap-2 font-semibold text-outer_space-800 dark:text-platinum-100">
 						<Clock size={18} className="text-blue_munsell-500" /> Recent
 						Activity Log
 					</h3>
@@ -304,18 +440,18 @@ export default function Summary() {
 					</span>
 				</div>
 				<div className="divide-y divide-french_gray-100 dark:divide-payne's_gray-400">
-					{RECENT_ACTIVITIES.map((act: ActivityItem) => (
+					{recentActivities.map((act: RecentActivity) => (
 						<div
 							key={act.id}
-							className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 first:pt-0 last:pb-0 gap-1 sm:gap-4"
+							className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
 						>
 							<div className="flex items-center gap-3">
-								<div className="h-2 w-2 rounded-full bg-blue_munsell-500 flex-shrink-0" />
+								<div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue_munsell-500" />
 								<p className="text-sm font-medium text-outer_space-700 dark:text-platinum-200">
 									{act.title}
 								</p>
 							</div>
-							<div className="flex items-center gap-2 pl-5 sm:pl-0 text-xs text-outer_space-400 dark:text-platinum-400">
+							<div className="flex items-center gap-2 pl-5 text-xs text-outer_space-400 sm:pl-0 dark:text-platinum-400">
 								<span className="font-medium text-blue_munsell-600 dark:text-blue_munsell-400">
 									{act.author}
 								</span>

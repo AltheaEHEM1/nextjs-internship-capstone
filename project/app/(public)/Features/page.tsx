@@ -11,120 +11,6 @@ import {
 	Zap,
 } from "lucide-react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Metric {
-	label: string;
-	value: string;
-}
-
-interface CoreModule {
-	moduleLabel: string;
-	statusLabel: string;
-	title: string;
-	description: string;
-	metrics: Metric[];
-	features: string[];
-}
-
-interface FeatureModule {
-	moduleLabel: string;
-	statusLabel: string;
-	title: string;
-	description: string;
-	features: string[];
-}
-
-interface UxModule {
-	moduleLabel: string;
-	title: string;
-	description: string;
-	metaLabel: string;
-	items: string[];
-}
-
-interface RoadmapModule {
-	moduleLabel: string;
-	title: string;
-	description: string;
-	metaLabel: string;
-	items: string[];
-}
-
-// ─── Static Data ──────────────────────────────────────────────────────────────
-
-const SYSTEM_HEALTH = "All Systems Operational";
-
-const CORE_MODULE: CoreModule = {
-	moduleLabel: "Core Engine",
-	statusLabel: "Live",
-	title: "Intelligent Task Management",
-	description:
-		"A unified workspace for organizing, prioritizing, and tracking all your tasks and projects — designed for clarity and speed.",
-	metrics: [
-		{ label: "Avg. Resolution Time", value: "2.4h" },
-		{ label: "Task Completion Rate", value: "98.1%" },
-		{ label: "Integrations", value: "40+" },
-		{ label: "Uptime SLA", value: "99.9%" },
-	],
-	features: [
-		"Drag-and-drop kanban boards",
-		"Smart priority queues",
-		"Recurring task automation",
-		"Multi-project views",
-		"Custom workflows",
-		"Deadline tracking",
-	],
-};
-
-const TEAM_MODULE: FeatureModule = {
-	moduleLabel: "Team Controls",
-	statusLabel: "Beta",
-	title: "Real-Time Collaboration",
-	description:
-		"Keep your entire team in sync with live updates, role-based access, and streamlined communication tools.",
-	features: [
-		"Role-based permissions",
-		"Live activity feed",
-		"@mention notifications",
-		"Shared workspaces",
-	],
-};
-
-const UX_MODULE: UxModule = {
-	moduleLabel: "UX Layer",
-	title: "Polished & Accessible",
-	description:
-		"Designed with accessibility in mind — every interaction is smooth, every surface is responsive, and every workflow feels effortless.",
-	metaLabel: "WCAG 2.1 AA",
-	items: [
-		"Keyboard-first navigation",
-		"Dark & light mode",
-		"Responsive at any breakpoint",
-		"Reduced motion support",
-		"Screen-reader friendly",
-		"Focus-visible states",
-	],
-};
-
-const ROADMAP_MODULE: RoadmapModule = {
-	moduleLabel: "Roadmap",
-	title: "Advanced Engine",
-	description:
-		"A next-generation processing layer coming soon — featuring AI-assisted prioritization, predictive analytics, and deeper integrations.",
-	metaLabel: "Coming Soon",
-	items: [
-		"AI task suggestions",
-		"Predictive deadlines",
-		"Resource planning",
-		"Custom reporting",
-		"Webhook automations",
-		"API v2 access",
-	],
-};
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export function Features() {
 	return (
 		<section className="relative py-16 sm:py-24 lg:py-28 px-4 sm:px-6 lg:px-8 bg-slate-950 text-slate-100 overflow-hidden font-sans">
@@ -151,9 +37,7 @@ export function Features() {
 						<Activity className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
 						<span className="text-xs font-medium text-slate-300">
 							System Health:{" "}
-							<strong className="text-emerald-400 font-bold">
-								{SYSTEM_HEALTH}
-							</strong>
+							<strong className="text-emerald-400 font-bold">99.99%</strong>
 						</span>
 					</div>
 				</div>
@@ -169,42 +53,53 @@ export function Features() {
 						<div>
 							<div className="flex flex-wrap items-center justify-between gap-2 mb-6">
 								<span className="px-3 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold">
-									{CORE_MODULE.moduleLabel}
+									Module 01 • Core Engine
 								</span>
 								<span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
 									<span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-									{CORE_MODULE.statusLabel}
+									Live & Active
 								</span>
 							</div>
 
 							<h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-								{CORE_MODULE.title}
+								Core Workflow Engine
 							</h3>
 							<p className="text-slate-400 text-xs sm:text-sm max-w-xl mb-6 sm:mb-8">
-								{CORE_MODULE.description}
+								The primary operations layer handling state persistence, project
+								lifecycles, kanban views, and assignment indexing.
 							</p>
 
 							{/* Metrics */}
 							<div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 max-w-md">
-								{CORE_MODULE.metrics.map((metric: Metric) => (
-									<div
-										key={metric.label}
-										className="bg-slate-950/60 border border-slate-800 p-3 sm:p-4 rounded-xl"
-									>
-										<span className="text-xs text-slate-500 block">
-											{metric.label}
-										</span>
-										<span className="text-lg sm:text-xl font-bold text-white">
-											{metric.value}
-										</span>
-									</div>
-								))}
+								<div className="bg-slate-950/60 border border-slate-800 p-3 sm:p-4 rounded-xl">
+									<span className="text-xs text-slate-500 block">
+										Data Latency
+									</span>
+									<span className="text-lg sm:text-xl font-bold text-white">
+										&lt; 45ms
+									</span>
+								</div>
+								<div className="bg-slate-950/60 border border-slate-800 p-3 sm:p-4 rounded-xl">
+									<span className="text-xs text-slate-500 block">
+										State Sync
+									</span>
+									<span className="text-lg sm:text-xl font-bold text-white">
+										Realtime
+									</span>
+								</div>
 							</div>
 						</div>
 
 						{/* Checklist */}
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6 border-t border-slate-800/80">
-							{CORE_MODULE.features.map((feat: string) => (
+							{[
+								"User auth & protected routes",
+								"Project CRUD engine",
+								"Interactive Kanban board",
+								"Priority scoring & due dates",
+								"Activity audit history",
+								"Multi-attribute global fuzzy search",
+							].map((feat) => (
 								<div
 									key={feat}
 									className="flex items-center gap-2 text-xs text-slate-300"
@@ -221,10 +116,10 @@ export function Features() {
 						<div>
 							<div className="flex items-center justify-between mb-6 gap-2">
 								<span className="px-3 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold">
-									{TEAM_MODULE.moduleLabel}
+									Module 02
 								</span>
 								<span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-									{TEAM_MODULE.statusLabel}
+									In Development
 								</span>
 							</div>
 
@@ -233,21 +128,27 @@ export function Features() {
 							</div>
 
 							<h3 className="text-lg sm:text-xl font-bold text-white mb-2">
-								{TEAM_MODULE.title}
+								Team & Workspace Controls
 							</h3>
 							<p className="text-slate-400 text-xs sm:text-sm mb-6">
-								{TEAM_MODULE.description}
+								Manage enterprise permissions, team roles, and multi-tenant
+								notification pipelines.
 							</p>
 						</div>
 
 						<div className="space-y-2 pt-6 border-t border-slate-800/80">
-							{TEAM_MODULE.features.map((feature: string) => (
+							{[
+								"Team onboarding & invites",
+								"RBAC (Admin, Member, Viewer)",
+								"Automated workflow triggers",
+								"Real-time notifications",
+							].map((f) => (
 								<div
-									key={feature}
+									key={f}
 									className="flex items-center gap-2 text-xs text-slate-300"
 								>
 									<CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-									<span>{feature}</span>
+									<span>{f}</span>
 								</div>
 							))}
 						</div>
@@ -262,26 +163,28 @@ export function Features() {
 								</div>
 								<div>
 									<span className="text-xs text-emerald-400 font-bold block">
-										{UX_MODULE.moduleLabel}
+										Module 03
 									</span>
 									<h3 className="text-base sm:text-lg font-bold text-white">
-										{UX_MODULE.title}
+										UX Layer
 									</h3>
 								</div>
 							</div>
 							<span className="text-xs text-slate-400 font-mono shrink-0">
-								{UX_MODULE.metaLabel}
+								FCP Speed: 0.2s
 							</span>
 						</div>
 
 						<p className="text-slate-400 text-xs sm:text-sm mb-6">
-							{UX_MODULE.description}
+							Designed to reduce friction with instantaneous transitions,
+							persistent themes, and modal workflows.
 						</p>
 
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
-							{UX_MODULE.items.map((item: string) => (
-								<div key={item}>• {item}</div>
-							))}
+							<div>• Responsive layout system</div>
+							<div>• Dark/Light system sync</div>
+							<div>• Side-drawer management</div>
+							<div>• Structural deep links</div>
 						</div>
 					</div>
 
@@ -294,28 +197,37 @@ export function Features() {
 								</div>
 								<div>
 									<span className="text-xs text-slate-400 font-bold block">
-										{ROADMAP_MODULE.moduleLabel}
+										Module 04
 									</span>
 									<h3 className="text-base sm:text-lg font-bold text-white">
-										{ROADMAP_MODULE.title}
+										Advanced Engine Roadmap
 									</h3>
 								</div>
 							</div>
 							<span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-400 shrink-0">
-								{ROADMAP_MODULE.metaLabel}
+								Target: Q4 2026
 							</span>
 						</div>
 
 						<p className="text-slate-400 text-xs sm:text-sm mb-6">
-							{ROADMAP_MODULE.description}
+							Future architectural enhancements focusing on WebSockets, hotkey
+							execution, and optimistic UI.
 						</p>
 
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-400">
-							{ROADMAP_MODULE.items.map((item: string) => (
-								<div key={item} className="flex items-center gap-2">
-									<Clock className="w-3.5 h-3.5 shrink-0" /> {item}
-								</div>
-							))}
+							<div className="flex items-center gap-2">
+								<Clock className="w-3.5 h-3.5 shrink-0" /> WebSocket multi-sync
+							</div>
+							<div className="flex items-center gap-2">
+								<Clock className="w-3.5 h-3.5 shrink-0" /> Optimistic UI
+								rendering
+							</div>
+							<div className="flex items-center gap-2">
+								<Clock className="w-3.5 h-3.5 shrink-0" /> Power-user hotkeys
+							</div>
+							<div className="flex items-center gap-2">
+								<Clock className="w-3.5 h-3.5 shrink-0" /> E2E test suite
+							</div>
 						</div>
 					</div>
 				</div>

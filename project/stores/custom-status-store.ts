@@ -1,6 +1,6 @@
-// stores/custom-status-store.ts
 "use client";
 
+import { arrayMove } from "@dnd-kit/sortable";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -21,6 +21,11 @@ export interface CustomStatusState {
 	// Actions
 	handleAdd: (category: keyof StatusShape) => void;
 	handleRemove: (category: keyof StatusShape, index: number) => void;
+	handleReorder: (
+		category: keyof StatusShape,
+		fromIndex: number,
+		toIndex: number,
+	) => void;
 	addPrompted: (category: keyof StatusShape, label: string) => void;
 	// Initializer – called from component when props become available
 	initialize: (status: StatusShape, onChange: (s: StatusShape) => void) => void;
@@ -53,6 +58,13 @@ export const useCustomStatusStore = create<CustomStatusState>()(
 			onChangeStatus({
 				...status,
 				[category]: status[category].filter((_, i) => i !== index),
+			});
+		},
+		handleReorder: (category, fromIndex, toIndex) => {
+			const { status, onChangeStatus } = get();
+			onChangeStatus({
+				...status,
+				[category]: arrayMove(status[category], fromIndex, toIndex),
 			});
 		},
 		addPrompted: (category, label) => {

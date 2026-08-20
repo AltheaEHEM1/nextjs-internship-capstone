@@ -1,193 +1,96 @@
 "use client";
 
-import { useState } from "react";
+import { Check, CheckCircle2, Inbox } from "lucide-react";
 import { PageHeader } from "@/components/page-header/PageHeader";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type SettingKey =
-	| "projectUpdates"
-	| "taskAssignments"
-	| "taskComments"
-	| "dueDateReminders"
-	| "teamInvitations"
-	| "memberActivity"
-	| "emailDigest"
-	| "browserPush";
-
-interface NotificationToggle {
-	key: SettingKey;
-	title: string;
-	description: string;
-}
-
-interface NotificationSection {
-	title: string;
-	description: string;
-	toggles: NotificationToggle[];
-}
-
-type NotificationSettings = Record<SettingKey, boolean>;
-
-// ─── Static Data ──────────────────────────────────────────────────────────────
-
-const SECTIONS: NotificationSection[] = [
-	{
-		title: "Project Notifications",
-		description: "Control alerts related to your projects and their status.",
-		toggles: [
-			{
-				key: "projectUpdates",
-				title: "Project Updates",
-				description: "Receive notifications when a project status changes.",
-			},
-			{
-				key: "taskAssignments",
-				title: "Task Assignments",
-				description: "Get notified when a task is assigned to you.",
-			},
-			{
-				key: "taskComments",
-				title: "Task Comments",
-				description: "Be alerted when someone comments on your tasks.",
-			},
-			{
-				key: "dueDateReminders",
-				title: "Due Date Reminders",
-				description: "Reminders 24 hours before a task is due.",
-			},
-		],
-	},
-	{
-		title: "Team Notifications",
-		description: "Stay informed about team activity and membership changes.",
-		toggles: [
-			{
-				key: "teamInvitations",
-				title: "Team Invitations",
-				description: "Notifications for new team invitations.",
-			},
-			{
-				key: "memberActivity",
-				title: "Member Activity",
-				description: "Updates when team members complete or create tasks.",
-			},
-		],
-	},
-	{
-		title: "Delivery Preferences",
-		description: "Choose how and where you receive your notifications.",
-		toggles: [
-			{
-				key: "emailDigest",
-				title: "Email Digest",
-				description: "Receive a daily summary of activity via email.",
-			},
-			{
-				key: "browserPush",
-				title: "Browser Push",
-				description: "Enable push notifications in your browser.",
-			},
-		],
-	},
-];
-
-const DEFAULT_SETTINGS: NotificationSettings = {
-	projectUpdates: true,
-	taskAssignments: true,
-	taskComments: false,
-	dueDateReminders: true,
-	teamInvitations: true,
-	memberActivity: false,
-	emailDigest: true,
-	browserPush: false,
-};
-
-// ─── Page Component ───────────────────────────────────────────────────────────
+import { useNotification } from "@/hooks/notification/useNotification";
 
 export default function NotificationsPage() {
-	const [settings, setSettings] =
-		useState<NotificationSettings>(DEFAULT_SETTINGS);
-
-	const handleToggle = (key: SettingKey) => {
-		setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
-	};
+	const { inbox, markAsRead, markAllAsRead, clearInbox } = useNotification();
 
 	return (
-		<div className="space-y-6 max-w-4xl">
-			<PageHeader
-				title="Notifications"
-				description="Manage how you receive updates about your projects, tasks, and team activity."
-			/>
-
-			<div className="space-y-6 divide-y divide-gray-200 dark:divide-gray-800">
-				{SECTIONS.map((section: NotificationSection, index: number) => (
-					<div
-						key={section.title}
-						className={index === 0 ? "pt-4 first:pt-0" : "pt-6"}
-					>
-						<h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-							{section.title}
-						</h3>
-						<p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-							{section.description}
-						</p>
-						<div className="space-y-4">
-							{section.toggles.map((toggle: NotificationToggle) => (
-								<ToggleItem
-									key={toggle.key}
-									title={toggle.title}
-									description={toggle.description}
-									checked={settings[toggle.key]}
-									onChange={() => handleToggle(toggle.key)}
-								/>
-							))}
-						</div>
-					</div>
-				))}
-			</div>
-		</div>
-	);
-}
-
-// ─── Sub-component ────────────────────────────────────────────────────────────
-
-function ToggleItem({
-	title,
-	description,
-	checked,
-	onChange,
-}: {
-	title: string;
-	description: string;
-	checked: boolean;
-	onChange: () => void;
-}) {
-	return (
-		<div className="flex items-center justify-between">
-			<div className="space-y-0.5">
-				<span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-					{title}
-				</span>
-				<p className="text-sm text-gray-500 dark:text-gray-400">
-					{description}
-				</p>
-			</div>
-			<button
-				type="button"
-				role="switch"
-				aria-checked={checked}
-				onClick={onChange}
-				className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${
-					checked ? "bg-indigo-600" : "bg-gray-200 dark:bg-gray-700"
-				}`}
-			>
-				<span
-					className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-						checked ? "translate-x-5" : "translate-x-0"
-					}`}
+		<div className="max-w-4xl space-y-6">
+			<div className="flex items-start justify-between">
+				<PageHeader
+					title="Notifications"
+					description="Stay updated with your latest alerts."
 				/>
-			</button>
+				{inbox.length > 0 && (
+					<div className="flex gap-2 mt-2">
+						<button
+							type="button"
+							onClick={markAllAsRead}
+							className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
+						>
+							<CheckCircle2 className="w-4 h-4" />
+							Mark all read
+						</button>
+						<button
+							type="button"
+							onClick={clearInbox}
+							className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 dark:bg-slate-800 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
+						>
+							Clear all
+						</button>
+					</div>
+				)}
+			</div>
+
+			<div className="pt-4">
+				<div className="space-y-3">
+					{inbox.length === 0 ? (
+						<div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed rounded-xl border-slate-200 dark:border-slate-800">
+							<div className="flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-slate-100 dark:bg-slate-800">
+								<Inbox className="w-6 h-6 text-slate-400" />
+							</div>
+							<h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
+								You're all caught up
+							</h3>
+							<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+								No new notifications to show right now.
+							</p>
+						</div>
+					) : (
+						inbox.map((notification) => (
+							<div
+								key={notification.id}
+								className={`flex items-start justify-between p-4 rounded-xl border transition-all ${
+									notification.read
+										? "bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 opacity-70"
+										: "bg-cyan-50/50 border-cyan-100 dark:bg-cyan-900/10 dark:border-cyan-900/30 shadow-sm"
+								}`}
+							>
+								<div className="space-y-1">
+									<h4
+										className={`text-sm font-semibold ${
+											notification.read
+												? "text-slate-700 dark:text-slate-300"
+												: "text-slate-900 dark:text-slate-100"
+										}`}
+									>
+										{notification.title}
+									</h4>
+									<p className="text-sm text-slate-600 dark:text-slate-400">
+										{notification.description}
+									</p>
+									<span className="block pt-1 text-xs text-slate-500">
+										{new Date(notification.date).toLocaleString()}
+									</span>
+								</div>
+								{!notification.read && (
+									<button
+										type="button"
+										onClick={() => markAsRead(notification.id)}
+										className="p-1.5 text-cyan-600 hover:bg-cyan-100 rounded-lg transition-colors dark:text-cyan-400 dark:hover:bg-cyan-900/30"
+										title="Mark as read"
+									>
+										<Check className="w-4 h-4" />
+									</button>
+								)}
+							</div>
+						))
+					)}
+				</div>
+			</div>
 		</div>
 	);
 }

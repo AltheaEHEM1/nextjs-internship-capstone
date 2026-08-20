@@ -22,11 +22,12 @@ export function useBreadcrumbs(): { breadcrumbs: Breadcrumb[] } {
 	const breadcrumbs = useMemo(() => {
 		const segments = pathname.split("/").filter(Boolean);
 
-		// Skip the first segment if it's "dashboard" (already shown as a static link)
-		const filtered = segments[0] === "dashboard" ? segments.slice(1) : segments;
+		const isDashboard = segments[0] === "dashboard";
+		const filtered = isDashboard ? segments.slice(1) : segments;
 
-		return filtered.map((segment, index) => {
-			const href = `/${segments.slice(0, segments.indexOf(segment) + 1).join("/")}`;
+		const rawBreadcrumbs = filtered.map((segment, index) => {
+			const actualIndex = isDashboard ? index + 1 : index;
+			const href = `/${segments.slice(0, actualIndex + 1).join("/")}`;
 
 			let label = mappings[segment];
 
@@ -44,10 +45,18 @@ export function useBreadcrumbs(): { breadcrumbs: Breadcrumb[] } {
 				}
 			}
 
-			const isCurrent = index === filtered.length - 1;
-
-			return { href, label, isCurrent };
+			return { href, label, isCurrent: false };
 		});
+
+		const finalBreadcrumbs = rawBreadcrumbs.filter(
+			(bc, i, arr) => i === 0 || arr[i - 1].label !== bc.label,
+		);
+
+		if (finalBreadcrumbs.length > 0) {
+			finalBreadcrumbs[finalBreadcrumbs.length - 1].isCurrent = true;
+		}
+
+		return finalBreadcrumbs;
 	}, [pathname, mappings]);
 
 	return { breadcrumbs };

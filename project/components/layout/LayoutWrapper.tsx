@@ -2,6 +2,7 @@
 
 "use client";
 import type React from "react";
+import { GlobalNotificationListener } from "@/components/notification/GlobalNotificationListener";
 import { useLayoutWrapper } from "@/hooks/layout/useLayoutWrapper";
 import BaseAdmin from "./BaseAdmin";
 import BaseAuth from "./BaseAuth";
@@ -12,17 +13,37 @@ export default function LayoutWrapper({
 }: {
 	children: React.ReactNode;
 }) {
-	const { isAdminPath, isAuthPath, disableAdminPadding } = useLayoutWrapper();
+	const { isAdminPath, isAuthPath, isStandalonePath, disableAdminPadding } =
+		useLayoutWrapper();
+
+	if (isStandalonePath) {
+		return <>{children}</>;
+	}
 
 	if (isAuthPath) {
-		return <BaseAuth>{children}</BaseAuth>;
+		return (
+			<>
+				<GlobalNotificationListener />
+				<BaseAuth>{children}</BaseAuth>
+			</>
+		);
 	}
 
 	if (isAdminPath) {
 		return (
-			<BaseAdmin disableMainPadding={disableAdminPadding}>{children}</BaseAdmin>
+			<>
+				<GlobalNotificationListener />
+				<BaseAdmin disableMainPadding={disableAdminPadding}>
+					{children}
+				</BaseAdmin>
+			</>
 		);
 	}
 
-	return <BasePublic>{children}</BasePublic>;
+	return (
+		<>
+			<GlobalNotificationListener />
+			<BasePublic>{children}</BasePublic>
+		</>
+	);
 }

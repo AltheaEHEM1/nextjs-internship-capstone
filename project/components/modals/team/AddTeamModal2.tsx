@@ -41,14 +41,14 @@ export default function AddTeamModal2({
 	useEffect(() => {
 		if (opened) {
 			getAcceptedInvitesAction()
-				.then((res: any) => {
+				.then((res: Record<string, unknown> | unknown[]) => {
 					// Handles both raw array returns or standard { success, data } server action wrappers
 					if (Array.isArray(res)) {
-						setAcceptedUsers(res);
+						setAcceptedUsers(res as AcceptedUser[]);
 					} else if (res?.success && Array.isArray(res.data)) {
-						setAcceptedUsers(res.data);
+						setAcceptedUsers(res.data as AcceptedUser[]);
 					} else if (Array.isArray(res?.users)) {
-						setAcceptedUsers(res.users);
+						setAcceptedUsers(res.users as AcceptedUser[]);
 					}
 				})
 				.catch(console.error);
@@ -61,7 +61,7 @@ export default function AddTeamModal2({
 			userId: currentMember,
 			role: currentRole,
 			permission: currentAccessibility,
-		} as any);
+		} as Parameters<typeof addMemberToList>[0]);
 		// Reset form fields
 		setCurrentMember("");
 		setCurrentRole("Member");
@@ -109,10 +109,14 @@ export default function AddTeamModal2({
 					</h4>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 						<div className="sm:col-span-2">
-							<label className="text-xs font-medium text-outer_space-500">
+							<label
+								htmlFor="selectMember"
+								className="text-xs font-medium text-outer_space-500"
+							>
 								Select Member
 							</label>
 							<select
+								id="selectMember"
 								value={currentMember}
 								onChange={(e) => setCurrentMember(e.target.value)}
 								className="w-full mt-1 rounded-lg border border-french_gray-300 p-2 text-sm"
@@ -120,7 +124,11 @@ export default function AddTeamModal2({
 								<option value="">Choose accepted user...</option>
 								{acceptedUsers
 									// hide users already queued so they can't be added twice
-									.filter((u) => !membersList.some((m) => m.userId === u.id))
+									.filter(
+										(u, index, self) =>
+											index === self.findIndex((t) => t.id === u.id) &&
+											!membersList.some((m) => m.userId === u.id),
+									)
 									.map((u) => (
 										<option key={u.id} value={u.id}>
 											{u.name} ({u.email})
@@ -129,10 +137,14 @@ export default function AddTeamModal2({
 							</select>
 						</div>
 						<div>
-							<label className="text-xs font-medium text-outer_space-500">
+							<label
+								htmlFor="role"
+								className="text-xs font-medium text-outer_space-500"
+							>
 								Role / Designation
 							</label>
 							<input
+								id="role"
 								type="text"
 								placeholder="e.g. Frontend Engineer"
 								value={currentRole}
@@ -141,11 +153,15 @@ export default function AddTeamModal2({
 							/>
 						</div>
 						<div>
-							<label className="flex items-center gap-1.5 text-xs font-medium text-outer_space-500">
+							<label
+								htmlFor="permission"
+								className="flex items-center gap-1.5 text-xs font-medium text-outer_space-500"
+							>
 								<Shield size={14} className="text-blue_munsell-500" />
 								Permission
 							</label>
 							<select
+								id="permission"
 								value={currentAccessibility}
 								onChange={(e) =>
 									setCurrentAccessibility(

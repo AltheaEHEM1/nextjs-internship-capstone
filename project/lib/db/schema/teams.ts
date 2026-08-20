@@ -36,6 +36,7 @@ export const teamMembers = pgTable(
 		role: text("role").default("Member"),
 		permission: roleEnum("permission").default("member").notNull(),
 		joinedAt: timestamp("joined_at").defaultNow().notNull(),
+		deletedAt: timestamp("deleted_at"),
 	},
 	(table) => ({
 		teamIdx: index("team_members_team_id_idx").on(table.teamId),
@@ -51,7 +52,6 @@ export const invitations = pgTable("invitations", {
 	id: uuid("id").defaultRandom().primaryKey(),
 	email: text("email").notNull(),
 	notes: text("notes"),
-	teamId: uuid("team_id").references(() => teams.id, { onDelete: "cascade" }),
 	invitedById: uuid("invited_by_id")
 		.references(() => users.id, { onDelete: "cascade" })
 		.notNull(),
@@ -83,10 +83,6 @@ export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
-	team: one(teams, {
-		fields: [invitations.teamId],
-		references: [teams.id],
-	}),
 	invitedBy: one(users, {
 		fields: [invitations.invitedById],
 		references: [users.id],

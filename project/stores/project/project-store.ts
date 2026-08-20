@@ -10,6 +10,7 @@ export interface ProjectForm {
 	description: string;
 	access: AccessRole;
 	team: string;
+	dueDate: string;
 }
 
 export interface ProjectState {
@@ -31,6 +32,7 @@ export const useProjectStore = create<ProjectState>()(
 			description: "",
 			access: "administrator",
 			team: "",
+			dueDate: "",
 		},
 		setModalStep: (step) => set({ modalStep: step }),
 		setFormField: (key, value) =>
@@ -45,6 +47,7 @@ export const useProjectStore = create<ProjectState>()(
 					description: "",
 					access: "administrator",
 					team: "",
+					dueDate: "",
 				},
 			}),
 	})),

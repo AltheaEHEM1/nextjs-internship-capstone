@@ -13,45 +13,108 @@ export const InviteEmail: React.FC<InviteEmailProps> = ({
 	acceptLink,
 	notes,
 }) => (
-	<div style={{ fontFamily: "sans-serif", padding: "24px", color: "#333" }}>
-		<h2>You&apos;ve been invited to join {teamName}!</h2>
-		<p>
-			<strong>{inviterName}</strong> has invited you to collaborate on their
-			team.
-		</p>
-
-		{notes && (
-			<div
+	<div
+		style={{
+			backgroundColor: "#f9fafb",
+			fontFamily:
+				'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+			padding: "40px 20px",
+			color: "#1f2937",
+		}}
+	>
+		<div
+			style={{
+				maxWidth: "560px",
+				margin: "0 auto",
+				backgroundColor: "#ffffff",
+				borderRadius: "8px",
+				border: "1px solid #e5e7eb",
+				padding: "40px",
+			}}
+		>
+			{/* Heading */}
+			<h2
 				style={{
-					margin: "16px 0",
-					padding: "12px 16px",
-					backgroundColor: "#f4f4f5",
-					borderLeft: "4px solid #0070f3",
-					borderRadius: "4px",
-					color: "#555",
-					fontSize: "14px",
-					fontStyle: "italic",
-				}}
-			>
-				&ldquo;{notes}&rdquo;
-			</div>
-		)}
-
-		<div style={{ marginTop: "24px" }}>
-			<a
-				href={acceptLink}
-				style={{
-					backgroundColor: "#0070f3",
-					color: "#ffffff",
-					padding: "12px 24px",
-					borderRadius: "6px",
-					textDecoration: "none",
+					fontSize: "22px",
 					fontWeight: "bold",
-					display: "inline-block",
+					color: "#111827",
+					margin: "0 0 16px 0",
 				}}
 			>
-				Accept Invitation
-			</a>
+				You&apos;ve been invited to join {teamName}!
+			</h2>
+
+			{/* Body Copy */}
+			<p
+				style={{
+					fontSize: "16px",
+					lineHeight: "24px",
+					color: "#4b5563",
+					margin: "0 0 20px 0",
+				}}
+			>
+				<strong>{inviterName}</strong> has invited you to collaborate on their
+				team. Click the button below to accept and get started.
+			</p>
+
+			{/* Optional Notes Box */}
+			{notes && (
+				<div
+					style={{
+						margin: "24px 0",
+						padding: "16px",
+						backgroundColor: "#f3f4f6",
+						borderLeft: "4px solid #2563eb",
+						borderRadius: "4px",
+						color: "#374151",
+						fontSize: "15px",
+						fontStyle: "italic",
+						lineHeight: "22px",
+					}}
+				>
+					&ldquo;{notes}&rdquo;
+				</div>
+			)}
+
+			{/* CTA Button */}
+			<div style={{ margin: "32px 0 24px 0" }}>
+				<a
+					href={acceptLink}
+					style={{
+						backgroundColor: "#2563eb",
+						color: "#ffffff",
+						padding: "12px 28px",
+						borderRadius: "6px",
+						textDecoration: "none",
+						fontWeight: "600",
+						fontSize: "16px",
+						display: "inline-block",
+						textAlign: "center",
+					}}
+				>
+					Accept Invitation
+				</a>
+			</div>
+
+			{/* Footer Divider & Notice */}
+			<hr
+				style={{
+					border: "none",
+					borderTop: "1px solid #e5e7eb",
+					margin: "32px 0 20px 0",
+				}}
+			/>
+			<p
+				style={{
+					fontSize: "13px",
+					color: "#9ca3af",
+					lineHeight: "18px",
+					margin: "0",
+				}}
+			>
+				If you weren't expecting this invitation, you can safely ignore this
+				email.
+			</p>
 		</div>
 	</div>
 );

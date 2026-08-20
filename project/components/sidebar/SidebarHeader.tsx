@@ -21,11 +21,11 @@ export default function SidebarHeader({
 	onLogout,
 }: SidebarHeaderProps) {
 	const { theme, setTheme } = useTheme();
-	const router = useRouter();
+	const _router = useRouter();
 	const { isSearchOpen, setIsSearchOpen, searchQuery, setSearchQuery } =
 		useCustomSidebarHeaderStore();
 
-	const handleLogout = () => {
+	const _handleLogout = () => {
 		if (onLogout) {
 			onLogout();
 		} else {
@@ -38,6 +38,7 @@ export default function SidebarHeader({
 			{/* Mobile Menu Trigger & Breadcrumbs */}
 			<div className="flex items-center gap-x-4">
 				<button
+					type="button"
 					onClick={onMenuClick}
 					className="rounded-lg p-2 text-slate-500 transition-all duration-150 hover:bg-slate-100 hover:text-slate-900 active:scale-95 lg:hidden"
 					aria-label="Open sidebar"
@@ -76,6 +77,7 @@ export default function SidebarHeader({
 
 				{/* Theme Toggle Button */}
 				<button
+					type="button"
 					onClick={() => setTheme(theme === "light" ? "dark" : "light")}
 					className="rounded-xl p-2.5 text-slate-500 transition-all duration-150 hover:bg-slate-100 hover:text-slate-900 active:scale-95"
 					aria-label="Toggle theme"

@@ -1,18 +1,107 @@
 "use client";
 
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { DndContext, type DragEndEvent, DragOverlay } from "@dnd-kit/core";
 import {
 	horizontalListSortingStrategy,
 	SortableContext,
 } from "@dnd-kit/sortable";
+import { use, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import {
+	getProjectDetailAction,
+	reorderStatusesAction,
+} from "@/actions/project/Project";
+import { reorderTasksAction } from "@/actions/task/Task";
 import { ColumnContainer } from "@/components/board/ColumnContainer";
 import type { Task } from "@/components/board/TaskCard";
-import { TaskCard } from "@/components/board/TaskCard";
-import ViewTaskModal from "@/components/modals/task/view-task-modal/ViewTaskModal";
-import { useProjectBoard } from "@/hooks/project/useProjectBoard";
+import { TaskCardDisplay } from "@/components/board/TaskCard";
+import TaskModal from "@/components/modals/task/TaskModal";
+import { useProjectBoard } from "@/hooks/project/(tabs)/useProjectBoard";
+import { pusherClient } from "@/lib/pusher-client";
+import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
 
-export default function BoardPage() {
+export default function BoardPage({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
+	const { id } = use(params);
+	const [isMounted, setIsMounted] = useState(false);
+	const setKanbanColumns = useProjectBoardStore(
+		(state) => state.setKanbanColumns,
+	);
+	const setTasks = useProjectBoardStore((state) => state.setTasks);
+
+	const [statusesMap, setStatusesMap] = useState<Record<string, string>>({});
+	const [currentUserPermission, setCurrentUserPermission] =
+		useState<string>("viewer");
+
+	const fetchProjectData = useCallback(() => {
+		getProjectDetailAction(id).then((res) => {
+			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+				setKanbanColumns(res.data.statuses.map((s) => s.name));
+				const sMap: Record<string, string> = {};
+				res.data.statuses.forEach((s) => {
+					sMap[s.name] = s.id;
+				});
+				setStatusesMap(sMap);
+				setCurrentUserPermission(res.data.currentUserPermission || "viewer");
+
+				const allTasks = res.data.statuses.flatMap((s) =>
+					(s.tasks || []).map(
+						(t) =>
+							({
+								id: t.id,
+								title: t.title || "Untitled Task",
+								description: t.description || "",
+								status: s.name,
+								statusId: s.id,
+								priority: (t.priority === "urgent"
+									? "high"
+									: t.priority || "low") as "low" | "medium" | "high",
+								assignee: t.assigneeId || "",
+								assigneeName:
+									(t as { assignee?: { name?: string } }).assignee?.name ||
+									"UN",
+								dueDate: t.dueDate ? new Date(t.dueDate).toISOString() : "",
+								workType: "Task",
+								label:
+									(t as { taskLabels?: { label?: { name: string } }[] })
+										.taskLabels?.[0]?.label?.name || "",
+								startDate: t.createdAt
+									? new Date(t.createdAt).toISOString()
+									: "",
+								reporter:
+									(t as { reporter?: { name?: string } }).reporter?.name ||
+									"System",
+							}) as Task,
+					),
+				);
+
+				setTasks(allTasks);
+			}
+		});
+	}, [id, setKanbanColumns, setTasks]);
+
+	useEffect(() => {
+		setIsMounted(true);
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
+
 	const {
 		kanbanColumns,
 		tasks,
@@ -29,13 +118,53 @@ export default function BoardPage() {
 		closeViewTask,
 	} = useProjectBoard();
 
+	const handleDragEnd = (event: DragEndEvent) => {
+		onDragEnd(event);
+
+		// Allow Zustand state to update first
+		setTimeout(() => {
+			const state = useProjectBoardStore.getState();
+
+			// Handle task reordering
+			const updatedTasks = state.tasks;
+			const taskPayload = updatedTasks
+				.map((t, index) => ({
+					id: t.id,
+					statusId: statusesMap[t.status],
+					position: index,
+				}))
+				.filter((t) => t.statusId);
+
+			if (taskPayload.length > 0) {
+				reorderTasksAction(taskPayload, id);
+			}
+
+			// Handle column/status reordering
+			const updatedColumns = state.kanbanColumns;
+			const columnPayload = updatedColumns
+				.map((colName, index) => ({
+					id: statusesMap[colName],
+					position: index,
+				}))
+				.filter((c) => c.id);
+
+			if (columnPayload.length > 0) {
+				reorderStatusesAction(columnPayload, id);
+			}
+		}, 0);
+	};
+
+	if (!isMounted) {
+		return null;
+	}
+
 	return (
 		<div className="flex gap-6 overflow-x-auto px-4 py-6">
 			<DndContext
 				sensors={sensors}
 				onDragStart={onDragStart}
 				onDragOver={onDragOver}
-				onDragEnd={onDragEnd}
+				onDragEnd={handleDragEnd}
 			>
 				<div className="flex gap-6">
 					<SortableContext
@@ -62,7 +191,11 @@ export default function BoardPage() {
 								</div>
 							)}
 							{activeTask && (
-								<TaskCard taskData={activeTask} onClick={() => {}} isOverlay />
+								<TaskCardDisplay
+									taskData={activeTask}
+									onClick={() => {}}
+									isOverlay
+								/>
 							)}
 						</DragOverlay>,
 						document.body,
@@ -70,11 +203,14 @@ export default function BoardPage() {
 			</DndContext>
 
 			{selectedTask && (
-				<ViewTaskModal
+				<TaskModal
+					mode="view"
 					opened={isViewTaskOpen}
 					onClose={closeViewTask}
 					taskData={selectedTask}
-					onUpdateTask={handleUpdateTask}
+					onUpdateTask={(updates) => handleUpdateTask(updates, id as string)}
+					projectId={id as string}
+					currentUserPermission={currentUserPermission}
 				/>
 			)}
 		</div>

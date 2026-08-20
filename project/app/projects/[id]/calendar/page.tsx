@@ -1,12 +1,64 @@
 "use client";
 
+import { use, useCallback, useEffect } from "react";
 import { Calendar as BigCalendar } from "react-big-calendar";
+import { getProjectDetailAction } from "@/actions/project/Project";
+import { pusherClient } from "@/lib/pusher-client";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { calendarLocalizer } from "@/hooks/project/useCalendar";
-import { useCalendarStore } from "@/stores/project/calendar-store";
+import { calendarLocalizer } from "@/hooks/project/(tabs)/useCalendar";
+import { useCalendarStore } from "@/stores/project/(tabs)/CalendarStore";
 
-export default function Calendar() {
+export default function Calendar({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
+	const { id } = use(params);
 	const events = useCalendarStore((state) => state.events);
+	const setEvents = useCalendarStore((state) => state.setEvents);
+
+	const fetchProjectData = useCallback(() => {
+		getProjectDetailAction(id).then((res) => {
+			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+				const allEvents = res.data.statuses.flatMap((s) =>
+					(s.tasks || [])
+						.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
+						.map((t) => {
+							const start = t.createdAt
+								? new Date(t.createdAt)
+								: new Date(t.dueDate || "");
+							const end = t.dueDate ? new Date(t.dueDate) : start;
+							return {
+								id: t.id,
+								title: t.title || "Untitled Task",
+								start,
+								end,
+							};
+						}),
+				);
+
+				setEvents(allEvents);
+			}
+		});
+	}, [id, setEvents]);
+
+	useEffect(() => {
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
 	const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
 		const title = window.prompt("Enter new event title:");
 		if (title) {

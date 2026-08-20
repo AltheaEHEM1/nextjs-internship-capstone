@@ -1,12 +1,67 @@
 "use client";
-
-import { ChevronRight, Sparkles } from "lucide-react";
+import {
+	ChevronRight,
+	Compass,
+	ShieldAlert,
+	Sparkles,
+	Target,
+	Zap,
+} from "lucide-react";
 import Image from "next/image";
-import { useAbout } from "@/hooks/public/useAbout";
+import { useAboutTab } from "@/hooks/public/usePublic";
 
-export default function AboutPage() {
-	const { features, activeTab, setActiveTab, activeFeature, ActiveIcon } =
-		useAbout();
+export function About() {
+	const features = [
+		{
+			id: "story",
+			title: "Brand Story",
+			quote:
+				"Projectnify is built for modern teams who want a clean, collaborative workspace...",
+			tag: "Origins",
+			icon: Compass,
+			gradient: "from-teal-500 via-cyan-500 to-blue-500",
+			accentBg: "bg-cyan-50 border-cyan-200 text-cyan-600",
+			glowColor: "bg-cyan-400/20",
+		},
+		{
+			id: "mission",
+			title: "Our Mission",
+			quote:
+				"Make project management effortless with powerful visual tools, intuitive workflows, and real-time collaboration.",
+			tag: "Purpose",
+			icon: Target,
+			gradient: "from-blue-600 via-indigo-500 to-purple-500",
+			accentBg: "bg-indigo-50 border-indigo-200 text-indigo-600",
+			glowColor: "bg-indigo-400/20",
+		},
+		{
+			id: "problems",
+			title: "Problems We Solve",
+			quote:
+				"Eliminate scattered tasks, unclear priorities, and friction-filled team communication.",
+			tag: "Solution",
+			icon: ShieldAlert,
+			gradient: "from-violet-600 via-purple-500 to-fuchsia-500",
+			accentBg: "bg-purple-50 border-purple-200 text-purple-600",
+			glowColor: "bg-purple-400/20",
+		},
+		{
+			id: "value",
+			title: "Our Value",
+			quote:
+				"Fast setup, flexible boards, and a polished interface that makes work feel truly effortless.",
+			tag: "Advantage",
+			icon: Zap,
+			gradient: "from-emerald-500 via-teal-500 to-cyan-500",
+			accentBg: "bg-emerald-50 border-emerald-200 text-emerald-600",
+			glowColor: "bg-emerald-400/20",
+		},
+	];
+
+	const { activeTab, setActiveTab } = useAboutTab(features.length);
+
+	const activeFeature = features[activeTab];
+	const ActiveIcon = activeFeature.icon;
 
 	return (
 		<section className="relative px-4 sm:px-8 lg:px-12 py-12 sm:py-20 bg-slate-50 text-slate-900 font-sans overflow-hidden border-t border-slate-200/80">
@@ -20,7 +75,6 @@ export default function AboutPage() {
 						backgroundSize: "28px 28px",
 					}}
 				/>
-
 				{/* Floating Pastel Gradient Blobs */}
 				<div className="absolute top-10 left-1/4 w-[280px] h-[280px] sm:w-[500px] sm:h-[500px] bg-cyan-200/40 blur-[80px] sm:blur-[120px] rounded-full animate-pulse" />
 				<div className="absolute bottom-10 right-1/4 w-[280px] h-[280px] sm:w-[500px] sm:h-[500px] bg-purple-200/40 blur-[80px] sm:blur-[120px] rounded-full animate-pulse [animation-delay:2s]" />
@@ -64,9 +118,10 @@ export default function AboutPage() {
 				<div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
 					{/* Navigation Tabs */}
 					<div className="lg:col-span-5 space-y-2.5 sm:space-y-3">
-						{features.map((item: any, index: number) => {
+						{features.map((item, index) => {
 							const Icon = item.icon;
 							const isActive = activeTab === index;
+
 							return (
 								<button
 									type="button"
@@ -88,6 +143,7 @@ export default function AboutPage() {
 										>
 											<Icon className="w-4 h-4 sm:w-5 sm:h-5" />
 										</div>
+
 										<div className="min-w-0">
 											<h4
 												className={`text-sm sm:text-base font-bold transition-colors truncate ${isActive ? "text-slate-900" : "text-slate-600"}`}
@@ -131,18 +187,18 @@ export default function AboutPage() {
 								<h3 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
 									{activeFeature.title}
 								</h3>
-
 								<p className="text-base sm:text-xl text-slate-700 leading-relaxed italic font-light">
 									&ldquo;{activeFeature.quote}&rdquo;
 								</p>
 
 								{/* Progress bar indicator */}
 								<div className="pt-4 sm:pt-6 border-t border-slate-100 flex items-center gap-2">
-									{features.map((_: any, idx: number) => (
+									{features.map((feature, idx) => (
 										<button
 											type="button"
-											key={idx}
+											key={feature.id}
 											onClick={() => setActiveTab(idx)}
+											aria-label={`View ${feature.title}`}
 											className={`h-1.5 rounded-full cursor-pointer transition-all duration-500 ${
 												idx === activeTab
 													? `w-8 bg-gradient-to-r ${activeFeature.gradient}`
@@ -159,3 +215,5 @@ export default function AboutPage() {
 		</section>
 	);
 }
+
+export default About;

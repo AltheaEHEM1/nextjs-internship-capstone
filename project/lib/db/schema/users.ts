@@ -1,12 +1,6 @@
 import { relations } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import {
-	comments,
-	projectMembers,
-	projects,
-	tasks,
-	teamMembers,
-} from "./index";
+import { comments, projects, tasks, teamMembers } from "./index";
 
 export const users = pgTable(
 	"users",
@@ -32,5 +26,4 @@ export const usersRelations = relations(users, ({ many }) => ({
 	assignedTasks: many(tasks),
 	comments: many(comments),
 	teamMemberships: many(teamMembers),
-	projectMemberships: many(projectMembers),
 }));

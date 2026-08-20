@@ -1,19 +1,9 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
 
-const isProtectedRoute = createRouteMatcher([
-	"/dashboard(.*)",
-	"/projects(.*)",
-	"/team(.*)",
-	"/notification(.*)",
-]);
+const clerkHandler = clerkMiddleware();
 
-const clerkHandler = clerkMiddleware(async (auth, req) => {
-	if (isProtectedRoute(req)) {
-		await auth.protect();
-	}
-});
-
-export default function proxy(req: any, evt: any) {
+export default function proxy(req: NextRequest, evt: NextFetchEvent) {
 	return clerkHandler(req, evt);
 }
 

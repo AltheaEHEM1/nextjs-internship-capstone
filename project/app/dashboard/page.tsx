@@ -1,152 +1,35 @@
 "use client";
 
-import {
-	BarChart3,
-	CheckSquare,
-	Clock,
-	type LucideIcon,
-	Plus,
-	TrendingUp,
-	Users,
-	Zap,
-} from "lucide-react";
+import { BarChart3, Plus, TrendingUp } from "lucide-react";
 import { PageHeader } from "@/components/page-header/PageHeader";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Stat {
-	name: string;
-	value: string;
-	change: string;
-	icon: LucideIcon;
-}
-
-interface RecentProject {
-	id: string;
-	name: string;
-	lastUpdated: string;
-	progressPercent: number;
-}
-
-interface QuickAction {
-	label: string;
-	variant: "primary" | "secondary";
-}
-
-interface UpcomingDeadline {
-	title: string;
-	type: string;
-	date: string;
-}
-
-interface AnalyticsMetric {
-	title: string;
-	value: string;
-	unit: string;
-	color: string;
-	icon: LucideIcon;
-}
-
-// ─── Static Data ──────────────────────────────────────────────────────────────
-
-const IMPLEMENTATION_TASKS: string[] = [
-	"Connect stats to real project/task counts from the database",
-	"Implement recent projects list with live data",
-	"Add quick action functionality (create project, create task)",
-	"Build upcoming deadlines from task due dates",
-];
-
-const STATS: Stat[] = [
-	{ name: "Total Projects", value: "12", change: "+2", icon: BarChart3 },
-	{ name: "Active Tasks", value: "48", change: "+5", icon: CheckSquare },
-	{ name: "Team Members", value: "8", change: "+1", icon: Users },
-	{ name: "Completed Today", value: "6", change: "+3", icon: Zap },
-];
-
-const RECENT_PROJECTS: RecentProject[] = [
-	{
-		id: "1",
-		name: "Website Redesign",
-		lastUpdated: "2 hours ago",
-		progressPercent: 65,
-	},
-	{
-		id: "2",
-		name: "Mobile App",
-		lastUpdated: "Yesterday",
-		progressPercent: 40,
-	},
-	{
-		id: "3",
-		name: "API Integration",
-		lastUpdated: "3 days ago",
-		progressPercent: 80,
-	},
-];
-
-const QUICK_ACTIONS: QuickAction[] = [
-	{ label: "New Project", variant: "primary" },
-	{ label: "Create Task", variant: "secondary" },
-	{ label: "Invite Member", variant: "secondary" },
-];
-
-const UPCOMING_DEADLINES: UpcomingDeadline[] = [
-	{
-		title: "Website Redesign – Phase 1",
-		type: "Project Milestone",
-		date: "Aug 10",
-	},
-	{ title: "Q3 Performance Review", type: "Team Event", date: "Aug 15" },
-	{ title: "API v2 Launch", type: "Deployment", date: "Aug 20" },
-];
-
-const ANALYTICS_TASKS: string[] = [
-	"Task 5.1: Implement project velocity tracking",
-	"Task 5.2: Add team productivity metrics",
-	"Task 5.3: Build burndown chart with Recharts",
-	"Task 5.4: Create exportable reports",
-];
-
-const ANALYTICS_METRICS: AnalyticsMetric[] = [
-	{
-		title: "Task Completion Rate",
-		value: "87%",
-		unit: "This month",
-		color: "blue",
-		icon: CheckSquare,
-	},
-	{
-		title: "Avg. Task Duration",
-		value: "2.4h",
-		unit: "Per task",
-		color: "green",
-		icon: Clock,
-	},
-	{
-		title: "Team Velocity",
-		value: "34",
-		unit: "Points / sprint",
-		color: "purple",
-		icon: TrendingUp,
-	},
-	{
-		title: "Active Members",
-		value: "8",
-		unit: "Contributors",
-		color: "orange",
-		icon: Users,
-	},
-];
-
-// ─── Page Component ───────────────────────────────────────────────────────────
+import { useDashboard } from "@/hooks/dashboard/useDashboard";
+import type {
+	AnalyticsMetric,
+	QuickAction,
+	RecentProject,
+	Stat,
+	UpcomingDeadline,
+} from "@/stores/dashboard/DashboardStore";
 
 export default function DashboardPage() {
+	const {
+		stats,
+		recentProjects,
+		quickActions,
+		upcomingDeadlines,
+		analyticsMetrics,
+		implementationTasks,
+		analyticsTasks,
+		handleQuickAction,
+	} = useDashboard();
+
 	return (
 		<div className="space-y-6">
 			<PageHeader
 				title="Dashboard"
 				description="Welcome back! Here's an overview of your projects and tasks."
 			/>
+
 			{/* Implementation Status Banner */}
 			<div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
 				<div className="flex items-start">
@@ -161,7 +44,7 @@ export default function DashboardPage() {
 						</h3>
 						<div className="mt-2 text-sm text-blue-800 dark:text-blue-200">
 							<ul className="list-inside list-disc space-y-1">
-								{IMPLEMENTATION_TASKS.map((task: string) => (
+								{implementationTasks.map((task: string) => (
 									<li key={task}>{task}</li>
 								))}
 							</ul>
@@ -170,9 +53,9 @@ export default function DashboardPage() {
 				</div>
 			</div>
 
-			{/* Stats Grid - Placeholder */}
+			{/* Stats Grid */}
 			<div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-				{STATS.map((stat: Stat) => (
+				{stats.map((stat: Stat) => (
 					<div
 						key={stat.name}
 						className="overflow-hidden rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500"
@@ -211,7 +94,7 @@ export default function DashboardPage() {
 						Recent Projects
 					</h3>
 					<div className="space-y-3">
-						{RECENT_PROJECTS.map((project: RecentProject) => (
+						{recentProjects.map((project: RecentProject) => (
 							<div
 								key={project.id}
 								className="flex items-center justify-between rounded-lg bg-platinum-800 p-3 dark:bg-outer_space-400"
@@ -246,10 +129,11 @@ export default function DashboardPage() {
 						Quick Actions
 					</h3>
 					<div className="space-y-3">
-						{QUICK_ACTIONS.map((action: QuickAction) => (
+						{quickActions.map((action: QuickAction) => (
 							<button
 								key={action.label}
 								type="button"
+								onClick={() => handleQuickAction(action.label)}
 								className={
 									action.variant === "primary"
 										? "flex w-full items-center justify-center rounded-lg bg-blue_munsell-500 px-4 py-3 text-white transition-colors hover:bg-blue_munsell-600"
@@ -276,7 +160,7 @@ export default function DashboardPage() {
 					Upcoming Deadlines
 				</h3>
 				<div className="space-y-3">
-					{UPCOMING_DEADLINES.map((event: UpcomingDeadline) => (
+					{upcomingDeadlines.map((event: UpcomingDeadline) => (
 						<div
 							key={event.title}
 							className="flex items-center justify-between rounded-lg bg-platinum-100 p-3 dark:bg-outer_space-400"
@@ -308,7 +192,7 @@ export default function DashboardPage() {
 					📊 Analytics Implementation Tasks
 				</h3>
 				<ul className="space-y-1 text-sm text-yellow-700 dark:text-yellow-300">
-					{ANALYTICS_TASKS.map((task: string) => (
+					{analyticsTasks.map((task: string) => (
 						<li key={task}>• {task}</li>
 					))}
 				</ul>
@@ -316,7 +200,7 @@ export default function DashboardPage() {
 
 			{/* Analytics Cards */}
 			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-				{ANALYTICS_METRICS.map((metric: AnalyticsMetric) => (
+				{analyticsMetrics.map((metric: AnalyticsMetric) => (
 					<div
 						key={metric.title}
 						className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500"

@@ -1,9 +1,11 @@
 "use server";
 
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
-import { teamMembers, teams } from "@/lib/db/schema";
+import { teamMembers, teams, users } from "@/lib/db/schema";
+import { notifyUser } from "@/lib/notifications/notify-team";
 
 export async function createTeamWithMembersAction(data: {
 	name: string;
@@ -17,6 +19,28 @@ export async function createTeamWithMembersAction(data: {
 }) {
 	try {
 		const dbUser = await getAuthenticatedDbUser();
+
+		// Check if user already has a team with this name
+		const existingTeam = await db
+			.select()
+			.from(teams)
+			.innerJoin(teamMembers, eq(teams.id, teamMembers.teamId))
+			.where(
+				and(
+					eq(teams.name, data.name.trim()),
+					eq(teamMembers.userId, dbUser.id),
+					isNull(teams.deletedAt),
+				),
+			)
+			.limit(1);
+
+		if (existingTeam.length > 0) {
+			return {
+				success: false,
+				error: "You already have a team with this name.",
+			};
+		}
+
 		return await db.transaction(async (tx) => {
 			const [newTeam] = await tx
 				.insert(teams)
@@ -47,16 +71,30 @@ export async function createTeamWithMembersAction(data: {
 						permission: m.permission || "member",
 					})),
 				);
+
+				const userIds = additionalMembers.map((m) => m.userId);
+				const addedUsers = await tx
+					.select()
+					.from(users)
+					.where(inArray(users.id, userIds));
+
+				for (const u of addedUsers) {
+					if (u.clerkId) {
+						await notifyUser(u.clerkId, "you-were-added", {
+							teamName: newTeam.name,
+						});
+					}
+				}
 			}
 
 			revalidatePath("/team");
 			return { success: true as const, teamId: newTeam.id };
 		});
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("createTeamWithMembersAction Error:", err);
 		return {
-			success: false as const,
-			error: err?.message || "Failed to create team.",
+			success: false,
+			error: err instanceof Error ? err.message : "Failed to create team.",
 		};
 	}
 }

@@ -1,6 +1,16 @@
 "use client";
 
-import { FolderPlus, Users } from "lucide-react";
+import {
+	CheckCircle2,
+	FolderPlus,
+	Loader2,
+	Users,
+	XCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { checkProjectNameUniqueAction } from "@/actions/project/Project";
+import { getUserTeamsAction } from "@/actions/team/Team";
+import { Alert, AlertDescription } from "@/components/alert/alert";
 import BaseModal from "@/components/layout/BaseModal";
 import { useMinDate } from "@/hooks/project/useMinDate";
 
@@ -17,6 +27,8 @@ interface CreateProject1Props {
 	setTeam: (team: string) => void;
 	access: AccessRole;
 	setAccess: (role: AccessRole) => void;
+	dueDate: string;
+	setDueDate: (date: string) => void;
 	onNext: () => void;
 }
 
@@ -29,11 +41,56 @@ export default function CreateProject1({
 	setDescription,
 	team,
 	setTeam,
-	access,
-	setAccess,
+	dueDate,
+	setDueDate,
 	onNext,
 }: CreateProject1Props) {
 	const minDate = useMinDate();
+	const [teamsList, setTeamsList] = useState<{ id: string; name: string }[]>(
+		[],
+	);
+	const [isCheckingName, setIsCheckingName] = useState(false);
+	const [isNameUnique, setIsNameUnique] = useState<boolean | null>(null);
+
+	const [isLoadingTeams, setIsLoadingTeams] = useState(true);
+
+	useEffect(() => {
+		async function fetchTeams() {
+			if (opened) {
+				setIsLoadingTeams(true);
+				const result = await getUserTeamsAction("administrator");
+				if (result.success && result.data) {
+					setTeamsList(result.data);
+				}
+				setIsLoadingTeams(false);
+			}
+		}
+		fetchTeams();
+	}, [opened]);
+
+	useEffect(() => {
+		if (!projectName || projectName.trim() === "") {
+			setIsNameUnique(null);
+			setIsCheckingName(false);
+			return;
+		}
+
+		setIsCheckingName(true);
+		setIsNameUnique(null);
+
+		const timeoutId = setTimeout(async () => {
+			const res = await checkProjectNameUniqueAction(projectName);
+			setIsCheckingName(false);
+			if (res.success) {
+				setIsNameUnique(res.isUnique as boolean);
+			} else {
+				setIsNameUnique(null);
+			}
+		}, 500);
+
+		return () => clearTimeout(timeoutId);
+	}, [projectName]);
+
 	return (
 		<BaseModal
 			opened={opened}
@@ -57,7 +114,13 @@ export default function CreateProject1({
 					<button
 						type="button"
 						onClick={onNext}
-						disabled={!projectName.trim()}
+						disabled={
+							!projectName.trim() ||
+							!team ||
+							!dueDate ||
+							isNameUnique === false ||
+							isCheckingName
+						}
 						className="rounded-lg bg-[#1e9b65] px-4 py-2 text-sm font-medium text-white shadow hover:opacity-90 disabled:opacity-50 transition"
 					>
 						Next
@@ -66,6 +129,14 @@ export default function CreateProject1({
 			}
 		>
 			<div className="space-y-6">
+				{!isLoadingTeams && teamsList.length === 0 && (
+					<Alert variant="destructive">
+						<AlertDescription>
+							You need to invite and create a team first before you can create a
+							project.
+						</AlertDescription>
+					</Alert>
+				)}
 				{/* Project Name */}
 				<div>
 					<label
@@ -74,21 +145,53 @@ export default function CreateProject1({
 					>
 						Project Name <span className="text-red-500">*</span>
 					</label>
-					<input
-						type="text"
-						id="projectName"
-						value={projectName}
-						onChange={(e) => setProjectName(e.target.value)}
-						placeholder="e.g. Q3 Marketing Campaign"
-						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1e9b65] focus:outline-none focus:ring-1 focus:ring-[#1e9b65] dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-					/>
+					<div className="relative">
+						<input
+							type="text"
+							id="projectName"
+							value={projectName}
+							onChange={(e) => setProjectName(e.target.value)}
+							placeholder="e.g. Q3 Marketing Campaign"
+							className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 dark:bg-gray-700 dark:text-white pr-10 ${
+								projectName.trim() !== ""
+									? isCheckingName
+										? "border-gray-300 focus:border-gray-400 focus:ring-gray-400"
+										: isNameUnique
+											? "border-[#1e9b65] focus:border-[#1e9b65] focus:ring-[#1e9b65]"
+											: "border-red-500 focus:border-red-500 focus:ring-red-500"
+									: "border-gray-300 focus:border-[#1e9b65] focus:ring-[#1e9b65] dark:border-gray-600"
+							}`}
+						/>
+						<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+							{isCheckingName && (
+								<Loader2 size={16} className="animate-spin text-gray-400" />
+							)}
+							{!isCheckingName &&
+								projectName.trim() !== "" &&
+								isNameUnique === true && (
+									<CheckCircle2 size={16} className="text-[#1e9b65]" />
+								)}
+							{!isCheckingName &&
+								projectName.trim() !== "" &&
+								isNameUnique === false && (
+									<XCircle size={16} className="text-red-500" />
+								)}
+						</div>
+					</div>
+					{!isCheckingName &&
+						isNameUnique === false &&
+						projectName.trim() !== "" && (
+							<p className="mt-1 text-xs text-red-500 font-medium">
+								This project name is already taken.
+							</p>
+						)}
 				</div>
 
 				{/* Description */}
 				<div>
 					<label
 						htmlFor="description"
-						className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+						className="block text-sm font-medium text-gray-700 dark:text-gray-300"
 					>
 						Description{" "}
 						<span className="text-gray-400 text-xs">(optional)</span>
@@ -107,24 +210,24 @@ export default function CreateProject1({
 				<div>
 					<label
 						htmlFor="team"
-						className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+						className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300"
 					>
 						<Users size={16} className="text-[#1e9b65]" />
-						Assign Team
+						Assign Team <span className="text-red-500">*</span>
 					</label>
 					<select
 						id="team"
 						value={team}
+						required
 						onChange={(e) => setTeam(e.target.value)}
 						className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-[#1e9b65] focus:outline-none focus:ring-1 focus:ring-[#1e9b65] dark:border-gray-600 dark:bg-gray-700 dark:text-white"
 					>
 						<option value="">Select a team...</option>
-						<option value="Core Architecture Unit">
-							Core Architecture Unit
-						</option>
-						<option value="Frontend Team">Frontend Team</option>
-						<option value="Backend Team">Backend Team</option>
-						<option value="UI/UX Design">UI/UX Design</option>
+						{teamsList.map((t) => (
+							<option key={t.id} value={t.id}>
+								{t.name}
+							</option>
+						))}
 					</select>
 				</div>
 
@@ -132,15 +235,18 @@ export default function CreateProject1({
 				<div>
 					<label
 						htmlFor="dueDate"
-						className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+						className="block text-sm font-medium text-gray-700 dark:text-gray-300"
 					>
-						Due Date
+						Due Date <span className="text-red-500">*</span>
 					</label>
 					<input
 						type="date"
 						id="dueDate"
 						name="dueDate"
+						value={dueDate}
+						onChange={(e) => setDueDate(e.target.value)}
 						min={minDate}
+						required
 						className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-[#1e9b65] focus:outline-none focus:ring-1 focus:ring-[#1e9b65] dark:border-gray-600 dark:bg-gray-700 dark:text-white"
 					/>
 				</div>

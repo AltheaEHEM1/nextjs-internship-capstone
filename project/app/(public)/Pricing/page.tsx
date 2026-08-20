@@ -1,159 +1,112 @@
 "use client";
-
-import {
-	ArrowRight,
-	Check,
-	ChevronDown,
-	HelpCircle,
-	Layers,
-	Sparkles,
-} from "lucide-react";
+import { ArrowRight, Check, Layers, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useRef, useState } from "react";
+import { usePricingSpotlight } from "@/hooks/public/usePublic";
+import { usePublicStore } from "@/stores/public/PublicStore";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+export function Pricing() {
+	const isYearly = usePublicStore((state) => state.isYearly);
+	const setIsYearly = usePublicStore((state) => state.setIsYearly);
+	const _openFaq = usePublicStore((state) => state.openFaq);
+	const _setOpenFaq = usePublicStore((state) => state.setOpenFaq);
 
-interface PricingPlan {
-	name: string;
-	description: string;
-	monthlyPrice?: number;
-	yearlyPrice?: number;
-	customPrice?: string;
-	priceSubtext?: string;
-	features: string[];
-	highlighted: boolean;
-	badge?: string;
-	ctaText: string;
-	ctaHref: string;
-}
+	const { mousePosition, containerRef, handleMouseMove } =
+		usePricingSpotlight();
 
-interface FaqItem {
-	question: string;
-	answer: string;
-}
+	const plans = [
+		{
+			name: "Starter",
+			description: "Perfect for individuals and small personal projects.",
+			monthlyPrice: 9,
+			yearlyPrice: 7,
+			features: [
+				"Up to 3 active projects",
+				"Basic Kanban boards",
+				"Task management & deadlines",
+				"Limited team collaboration",
+				"Email support",
+			],
+			ctaText: "Get Started",
+			ctaHref: "#",
+			highlighted: false,
+		},
+		{
+			name: "Pro",
+			description: "Best for growing teams and active freelancers.",
+			monthlyPrice: 24,
+			yearlyPrice: 19,
+			features: [
+				"Unlimited active projects",
+				"Advanced Kanban workflows",
+				"Team collaboration tools",
+				"File attachments & comments",
+				"Progress analytics & reports",
+				"Priority email support",
+			],
+			ctaText: "Get Pro",
+			ctaHref: "#",
+			highlighted: false,
+		},
+		{
+			name: "Business",
+			badge: "Most Popular",
+			description: "Designed for companies and large-scale project teams.",
+			monthlyPrice: 79,
+			yearlyPrice: 63,
+			features: [
+				"Unlimited projects & members",
+				"Advanced permissions & roles",
+				"Real-time collaboration",
+				"Custom workflows & automation",
+				"Admin dashboard & reporting",
+				"Dedicated onboarding manager",
+			],
+			ctaText: "Get Business",
+			ctaHref: "#",
+			highlighted: true,
+		},
+		{
+			name: "Enterprise",
+			description: "For organizations with strict security and custom needs.",
+			customPrice: "Custom",
+			priceSubtext: "Tailored to your organization",
+			features: [
+				"Everything in Business",
+				"SAML/SSO and security controls",
+				"Custom API & integrations",
+				"Dedicated account manager",
+				"Custom SLA guarantees",
+			],
+			ctaText: "Contact Sales",
+			ctaHref: "#",
+			highlighted: false,
+		},
+	];
 
-// ─── Static Data ──────────────────────────────────────────────────────────────
-
-const PLANS: PricingPlan[] = [
-	{
-		name: "Free",
-		description: "Perfect for individuals just getting started.",
-		monthlyPrice: 0,
-		yearlyPrice: 0,
-		features: [
-			"Up to 3 projects",
-			"Basic task management",
-			"1 GB storage",
-			"Community support",
-		],
-		highlighted: false,
-		ctaText: "Get Started Free",
-		ctaHref: "/register",
-	},
-	{
-		name: "Starter",
-		description: "Great for small teams and freelancers.",
-		monthlyPrice: 9,
-		yearlyPrice: 7,
-		features: [
-			"Up to 10 projects",
-			"Advanced task management",
-			"10 GB storage",
-			"Email support",
-			"Team collaboration",
-		],
-		highlighted: false,
-		ctaText: "Start Starter",
-		ctaHref: "/register?plan=starter",
-	},
-	{
-		name: "Pro",
-		description: "For growing teams who need more power.",
-		monthlyPrice: 29,
-		yearlyPrice: 23,
-		features: [
-			"Unlimited projects",
-			"Priority task management",
-			"100 GB storage",
-			"Priority support",
-			"Advanced analytics",
-			"Custom integrations",
-		],
-		highlighted: true,
-		badge: "Most Popular",
-		ctaText: "Go Pro",
-		ctaHref: "/register?plan=pro",
-	},
-	{
-		name: "Enterprise",
-		description: "Custom solutions for large organizations.",
-		customPrice: "Custom",
-		priceSubtext: "Contact us for pricing",
-		features: [
-			"Unlimited everything",
-			"Dedicated account manager",
-			"SLA guarantee",
-			"SSO & advanced security",
-			"Custom onboarding",
-			"24/7 phone support",
-		],
-		highlighted: false,
-		ctaText: "Contact Sales",
-		ctaHref: "/contact",
-	},
-];
-
-const FAQS: FaqItem[] = [
-	{
-		question: "Can I switch plans at any time?",
-		answer:
-			"Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any billing differences automatically.",
-	},
-	{
-		question: "Is there a free trial for paid plans?",
-		answer:
-			"Absolutely. Every paid plan comes with a 14-day free trial — no credit card required. You can explore all features before committing.",
-	},
-	{
-		question: "What payment methods do you accept?",
-		answer:
-			"We accept all major credit and debit cards (Visa, Mastercard, Amex), as well as PayPal and bank transfers for Enterprise customers.",
-	},
-	{
-		question: "How does the yearly billing discount work?",
-		answer:
-			"Choosing yearly billing gives you 2 months free (equivalent to a 20% discount). You're billed once per year at the discounted rate shown.",
-	},
-	{
-		question: "Can I add more team members later?",
-		answer:
-			"Yes! You can invite additional team members at any time from your dashboard. Seats are billed on a per-user basis for Starter and Pro plans.",
-	},
-];
-
-// ─── Page Component ───────────────────────────────────────────────────────────
-
-export default function PricingPage() {
-	const [isYearly, setIsYearly] = useState(false);
-	const [openFaq, setOpenFaq] = useState<number | null>(null);
-	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-	const containerRef = useRef<HTMLElement>(null);
-
-	const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
-		const rect = containerRef.current?.getBoundingClientRect();
-		if (rect) {
-			setMousePosition({
-				x: e.clientX - rect.left,
-				y: e.clientY - rect.top,
-			});
-		}
-	}, []);
+	const _faqs = [
+		{
+			question: "Can I change my plan later?",
+			answer:
+				"Yes, you can upgrade, downgrade, or cancel your subscription at any time directly from your account settings page.",
+		},
+		{
+			question: "Is there a free trial available?",
+			answer:
+				"All paid plans come with a 14-day free trial. No credit card required to get started.",
+		},
+		{
+			question: "How does annual billing work?",
+			answer:
+				"When you choose yearly billing, you are billed upfront for 12 months at a 20% discount compared to monthly billing.",
+		},
+	];
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: Visual effect spotlight only
 		<section
 			ref={containerRef}
 			onMouseMove={handleMouseMove}
-			aria-label="Pricing spotlight container"
+			role="presentation"
 			className="relative px-4 py-12 sm:py-24 sm:px-8 lg:px-12 overflow-hidden bg-slate-950 font-sans text-slate-100 selection:bg-teal-500 selection:text-white border-t border-slate-800/80"
 		>
 			{/* Interactive Cursor Spotlight Glow */}
@@ -163,14 +116,11 @@ export default function PricingPage() {
 					background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(20, 184, 166, 0.15), transparent 40%)`,
 				}}
 			/>
-
 			<div className="absolute top-12 left-1/2 -translate-x-1/2 w-[320px] sm:w-[900px] h-[350px] bg-gradient-to-r from-teal-500/15 via-blue-600/15 to-indigo-600/15 blur-[100px] sm:blur-[150px] rounded-full pointer-events-none" />
 			<div className="absolute top-2/3 right-0 w-[250px] sm:w-[450px] h-[450px] bg-indigo-600/10 blur-[100px] sm:blur-[140px] rounded-full pointer-events-none" />
 			<div className="absolute bottom-10 left-0 w-[250px] sm:w-[450px] h-[450px] bg-teal-500/10 blur-[100px] sm:blur-[140px] rounded-full pointer-events-none" />
-
 			{/* Isometric/Diamond Grid Pattern Overlay */}
 			<div className="absolute inset-0 bg-[linear-gradient(to_right,#33415525_1px,transparent_1px),linear-gradient(to_bottom,#33415525_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_20%,#000_70%,transparent_100%)] pointer-events-none" />
-
 			<div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
 				{/* Header Section */}
 				<div className="text-center max-w-3xl mb-10 sm:mb-16">
@@ -179,19 +129,16 @@ export default function PricingPage() {
 						<span>Flexible Pricing</span>
 						<Sparkles className="w-3.5 h-3.5 text-teal-400 shrink-0" />
 					</div>
-
 					<h2 className="text-3xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight mb-4 sm:mb-6 leading-tight">
 						Scale your productivity. <br />
 						<span className="bg-gradient-to-r from-teal-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent">
 							Transparent plans.
 						</span>
 					</h2>
-
 					<p className="text-slate-400 text-sm sm:text-lg leading-relaxed max-w-2xl mx-auto font-normal px-2 sm:px-0">
 						Customize composition and business workflows with Projectnify.
 						Interactive billing switch, elegant and smooth.
 					</p>
-
 					{/* Interactive Toggle Switch */}
 					<div className="mt-8 sm:mt-10 inline-flex items-center p-1.5 bg-slate-900/90 rounded-full border border-slate-800 shadow-xl shadow-slate-950/50 backdrop-blur-xl relative w-full max-w-xs sm:w-auto">
 						{/* Dynamic Sliding Pill Indicator */}
@@ -200,7 +147,6 @@ export default function PricingPage() {
 								isYearly ? "left-[calc(50%+0.1875rem)]" : "left-1.5"
 							}`}
 						/>
-
 						{/* Monthly Button  */}
 						<button
 							type="button"
@@ -211,7 +157,6 @@ export default function PricingPage() {
 						>
 							Monthly
 						</button>
-
 						{/* Yearly Button */}
 						<button
 							type="button"
@@ -233,12 +178,11 @@ export default function PricingPage() {
 						</button>
 					</div>
 				</div>
-
 				{/* Pricing Cards Grid */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full items-stretch mb-16 sm:mb-24">
-					{PLANS.map((plan: PricingPlan, index: number) => (
+					{plans.map((plan) => (
 						<div
-							key={index}
+							key={plan.name}
 							className={`group relative backdrop-blur-xl rounded-3xl p-5 sm:p-7 border flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 ${
 								plan.highlighted
 									? "border-teal-400/80 shadow-[0_20px_50px_-10px_rgba(20,184,166,0.25)] ring-2 ring-teal-500/30 bg-gradient-to-b from-slate-900/90 via-teal-950/20 to-slate-900/90"
@@ -251,7 +195,6 @@ export default function PricingPage() {
 									{plan.badge}
 								</div>
 							)}
-
 							<div>
 								{/* Header Icon & Card Title */}
 								<div className="mb-6">
@@ -265,7 +208,6 @@ export default function PricingPage() {
 										{plan.description}
 									</p>
 								</div>
-
 								{/* Price Display */}
 								<div className="mb-8 min-h-[3.5rem] flex flex-col justify-center">
 									{plan.customPrice ? (
@@ -288,11 +230,10 @@ export default function PricingPage() {
 										</div>
 									)}
 								</div>
-
 								{/* Features List */}
 								<div className="space-y-3.5 mb-8 text-sm text-slate-300 border-t border-slate-800/80 pt-6">
-									{plan.features.map((feature: string, fIdx: number) => (
-										<div key={fIdx} className="flex items-start gap-3">
+									{plan.features.map((feature) => (
+										<div key={feature} className="flex items-start gap-3">
 											<div className="p-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:border-teal-500 group-hover:text-slate-950 transition-all duration-300">
 												<Check className="w-3 h-3" />
 											</div>
@@ -303,7 +244,6 @@ export default function PricingPage() {
 									))}
 								</div>
 							</div>
-
 							{/* Call To Action Buttons */}
 							<Link
 								href={plan.ctaHref}
@@ -321,74 +261,9 @@ export default function PricingPage() {
 						</div>
 					))}
 				</div>
-
-				{/* FAQ Section */}
-				<div className="w-full max-w-7xl border-t border-slate-800/80 pt-16 mt-12">
-					<div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-						{/*  Heading & Subtitle */}
-						<div className="lg:col-span-5 text-left">
-							<div className="inline-flex items-center justify-center p-3 bg-teal-500/10 rounded-2xl border border-teal-500/20 text-teal-400 mb-4 shadow-sm">
-								<HelpCircle className="w-6 h-6" />
-							</div>
-							<h3 className="text-3xl sm:text-4xl font-extrabold text-white mb-3 tracking-tight">
-								Frequently Asked Questions
-							</h3>
-							<p className="text-slate-400 text-base leading-relaxed">
-								Everything you need to know about our plans and billing options.
-							</p>
-						</div>
-
-						{/*  Accordion List */}
-						<div className="lg:col-span-7 space-y-4">
-							{FAQS.map((faq: FaqItem, index: number) => {
-								const isOpen = openFaq === index;
-								return (
-									<div
-										key={index}
-										className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
-											isOpen
-												? "bg-slate-900 border-teal-500/50 shadow-lg shadow-teal-500/5"
-												: "bg-slate-900/50 hover:bg-slate-900/80 border-slate-800 shadow-sm"
-										}`}
-									>
-										<button
-											type="button"
-											onClick={() => setOpenFaq(isOpen ? null : index)}
-											className="w-full p-5 text-left flex justify-between items-center font-semibold text-slate-200 hover:text-teal-400 transition-colors gap-4"
-										>
-											<span className="text-base sm:text-lg">
-												{faq.question}
-											</span>
-											<div
-												className={`p-1.5 rounded-full border transition-all duration-300 shrink-0 ${
-													isOpen
-														? "bg-teal-500/10 border-teal-500/20 text-teal-400 rotate-180"
-														: "bg-slate-800 border-slate-700 text-slate-400"
-												}`}
-											>
-												<ChevronDown className="w-4 h-4" />
-											</div>
-										</button>
-										<div
-											className={`grid transition-all duration-300 ease-in-out ${
-												isOpen
-													? "grid-rows-[1fr] opacity-100"
-													: "grid-rows-[0fr] opacity-0"
-											}`}
-										>
-											<div className="overflow-hidden">
-												<div className="px-5 pb-5 text-slate-400 text-sm sm:text-base leading-relaxed border-t border-slate-800/80 pt-4">
-													{faq.answer}
-												</div>
-											</div>
-										</div>
-									</div>
-								);
-							})}
-						</div>
-					</div>
-				</div>
 			</div>
 		</section>
 	);
 }
+
+export default Pricing;

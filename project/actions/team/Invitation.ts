@@ -1,31 +1,37 @@
 "use server";
 
-import dns from "node:dns";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { render } from "@react-email/render";
 import { and, eq, gt } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
+import type { Transporter } from "nodemailer";
 import nodemailer from "nodemailer";
 import React from "react";
 import { InviteEmail } from "@/components/emails/InviteEmail";
 import { db } from "@/lib/db";
-import { invitations, teamMembers } from "@/lib/db/schema";
+import { invitations } from "@/lib/db/schema";
 
-dns.setDefaultResultOrder("ipv4first");
-
-const transporter = nodemailer.createTransport({
-	host: "smtp.gmail.com",
-	port: 465,
-	secure: true,
-	auth: {
-		user: process.env.GMAIL_USER,
-		pass: process.env.GMAIL_APP_PASSWORD,
-	},
-	connectionTimeout: 10000,
-	greetingTimeout: 10000,
-	socketTimeout: 10000,
-});
+let transporter: Transporter;
+try {
+	transporter = nodemailer.createTransport({
+		host: "smtp.gmail.com",
+		port: 465,
+		secure: true,
+		auth: {
+			user: process.env.GMAIL_USER,
+			pass: process.env.GMAIL_APP_PASSWORD,
+		},
+		connectionTimeout: 15000,
+		greetingTimeout: 15000,
+		socketTimeout: 15000,
+	});
+} catch (e) {
+	console.error("Failed to create email transporter:", e);
+	throw new Error(
+		"Failed to configure email transport. Please contact support.",
+	);
+}
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -42,8 +48,24 @@ export async function sendUserInvitationAction(email: string, notes?: string) {
 			};
 		}
 
-		const dbUser = await getAuthenticatedDbUser();
+		if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+			return {
+				success: false,
+				error:
+					"Email service is not configured. Missing GMAIL_USER or GMAIL_APP_PASSWORD in server environment.",
+			};
+		}
 
+		const dbUser = await getAuthenticatedDbUser();
+		const user = await currentUser();
+
+		const sanitizedNotes = notes
+			? notes.replace(/^([\s\S]{0,100})[\s\S]*/, "$1").trim()
+			: null;
+
+		const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+		// Check if an active pending invitation already exists for this email
 		const existingPending = await db.query.invitations.findFirst({
 			where: and(
 				eq(invitations.email, normalizedEmail),
@@ -52,37 +74,47 @@ export async function sendUserInvitationAction(email: string, notes?: string) {
 			),
 		});
 
+		let token: string;
+
 		if (existingPending) {
-			return {
-				success: false,
-				error: `An invitation is already pending for ${normalizedEmail}.`,
-			};
+			// Renew the existing invitation and reuse or generate token
+			token = existingPending.token || nanoid(32);
+			await db
+				.update(invitations)
+				.set({
+					notes: sanitizedNotes,
+					invitedById: dbUser.id,
+					expiresAt,
+					token,
+				})
+				.where(eq(invitations.id, existingPending.id));
+		} else {
+			token = nanoid(32);
+			await db.insert(invitations).values({
+				email: normalizedEmail,
+				notes: sanitizedNotes,
+				invitedById: dbUser.id,
+				token,
+				expiresAt,
+				status: "pending",
+			});
 		}
 
-		const user = await currentUser();
-		const token = nanoid(32);
-		const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+		const teamName = "Projectnify";
 
-		const sanitizedNotes = notes
-			? notes.replace(/^([\s\S]{0,100})[\s\S]*/, "$1").trim()
-			: null;
-
-		await db.insert(invitations).values({
-			email: normalizedEmail,
-			notes: sanitizedNotes,
-			invitedById: dbUser.id,
-			token,
-			expiresAt,
-			status: "pending",
-		});
-
-		const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invitation/${token}`;
+		const rawAppUrl =
+			process.env.NEXT_PUBLIC_APP_URL ||
+			(process.env.VERCEL_URL
+				? `https://${process.env.VERCEL_URL}`
+				: "http://localhost:3000");
+		const appUrl = rawAppUrl.replace(/\/$/, "");
+		const inviteUrl = `${appUrl}/invitation/${token}`;
 
 		const emailHtml = await render(
 			React.createElement(InviteEmail, {
 				inviterName: user?.firstName || dbUser.name || "A teammate",
 				acceptLink: inviteUrl,
-				teamName: "Projectnify",
+				teamName,
 				notes: sanitizedNotes,
 			}),
 		);
@@ -90,16 +122,22 @@ export async function sendUserInvitationAction(email: string, notes?: string) {
 		const info = await transporter.sendMail({
 			from: `"Projectnify" <${process.env.GMAIL_USER}>`,
 			to: normalizedEmail,
-			subject: "You have been invited to join a team",
+			subject: `You have been invited to join ${teamName}`,
 			html: emailHtml,
 		});
 
-		return { success: true, messageId: info.messageId };
-	} catch (err: any) {
-		console.error("sendUserInvitationAction Exception:", err);
+		return {
+			success: true,
+			messageId: info.messageId,
+			isResend: Boolean(existingPending),
+		};
+	} catch (err: unknown) {
+		const errorMsg =
+			err instanceof Error ? err.message : "Failed to send invitation.";
+		console.error("sendUserInvitationAction Exception:", errorMsg);
 		return {
 			success: false,
-			error: err?.message || "Failed to send invitation.",
+			error: errorMsg,
 		};
 	}
 }
@@ -108,6 +146,9 @@ export async function getInvitationByTokenAction(token: string) {
 	try {
 		const invitation = await db.query.invitations.findFirst({
 			where: eq(invitations.token, token),
+			with: {
+				invitedBy: true,
+			},
 		});
 
 		if (!invitation) return { success: false, reason: "Invitation not found." };
@@ -126,7 +167,7 @@ export async function getInvitationByTokenAction(token: string) {
 		}
 
 		return { success: true, invitation };
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error("getInvitationByTokenAction Error:", err);
 		return { success: false, reason: "Failed to verify invitation." };
 	}
@@ -137,8 +178,6 @@ export async function respondToInvitation(
 	action: "accept" | "decline",
 ) {
 	try {
-		const dbUser = await getAuthenticatedDbUser();
-
 		const invite = await db.query.invitations.findFirst({
 			where: and(
 				eq(invitations.token, token),
@@ -146,45 +185,57 @@ export async function respondToInvitation(
 			),
 		});
 
-		if (!invite)
+		if (!invite) {
 			return {
 				success: false,
 				error: "Invitation token is invalid or expired.",
 			};
+		}
 
-		const newStatus = action === "accept" ? "accepted" : "declined";
+		if (invite.status === "accepted") {
+			return {
+				success: false,
+				error: "This invitation has already been accepted.",
+			};
+		}
+
+		// Handle decline action (does not require login)
+		if (action === "decline") {
+			await db
+				.update(invitations)
+				.set({ status: "declined" })
+				.where(eq(invitations.id, invite.id));
+
+			revalidatePath("/team");
+			return { success: true, status: "declined" };
+		}
+
+		// For accept action, user must be logged in
+		const { userId } = await auth();
+		if (!userId) {
+			return {
+				success: false,
+				requiresAuth: true,
+				error: "Please sign in to accept this invitation.",
+			};
+		}
+
+		const _dbUser = await getAuthenticatedDbUser();
 
 		await db
 			.update(invitations)
-			.set({ status: newStatus })
+			.set({ status: "accepted" })
 			.where(eq(invitations.id, invite.id));
 
-		if (action === "accept" && invite.teamId) {
-			const existingMember = await db.query.teamMembers.findFirst({
-				where: and(
-					eq(teamMembers.teamId, invite.teamId),
-					eq(teamMembers.userId, dbUser.id),
-				),
-			});
-
-			if (!existingMember) {
-				await db.insert(teamMembers).values({
-					teamId: invite.teamId,
-					userId: dbUser.id,
-					role: "Member",
-					permission: "member",
-				});
-			}
-		}
-
 		revalidatePath("/team");
-
-		return { success: true, status: newStatus };
-	} catch (err: any) {
-		console.error("respondToInvitation Error:", err);
+		return { success: true, status: "accepted" };
+	} catch (err: unknown) {
+		const errorMsg =
+			err instanceof Error ? err.message : "Failed to respond to invitation.";
+		console.error("respondToInvitation Error:", errorMsg);
 		return {
 			success: false,
-			error: err?.message || "Failed to respond to invitation.",
+			error: errorMsg,
 		};
 	}
 }

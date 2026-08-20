@@ -14,7 +14,7 @@ export interface ProjectHeaderState {
 	navigate: (path: string) => void;
 	setNavigate: (fn: (path: string) => void) => void;
 	// Settings navigation
-	handleSettings: () => void;
+	handleSettings: (projectId: string) => void;
 }
 
 export const useCustomProjectHeaderStore = create<ProjectHeaderState>()(
@@ -28,9 +28,8 @@ export const useCustomProjectHeaderStore = create<ProjectHeaderState>()(
 			window.location.href = path;
 		},
 		setNavigate: (fn) => set({ navigate: fn }),
-		handleSettings: () => {
-			// Navigate to project settings page (adjust route as needed)
-			get().navigate("/projects/project-settings");
+		handleSettings: (projectId: string) => {
+			get().navigate(`/projects/${projectId}/project-settings`);
 		},
 	})),
 );

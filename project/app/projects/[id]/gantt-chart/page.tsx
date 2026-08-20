@@ -1,40 +1,85 @@
 "use client";
 
 import { Gantt } from "gantt-task-react";
+import { use, useCallback, useEffect } from "react";
+import { getProjectDetailAction } from "@/actions/project/Project";
+import { pusherClient } from "@/lib/pusher-client";
 import "gantt-task-react/dist/index.css";
-import { ViewMode } from "gantt-task-react";
-import { useMemo } from "react";
-import { useGanttStore } from "@/stores/project/gantt-store";
+import { useGanttChart } from "@/hooks/project/(tabs)/useGanttChart";
 
-export default function GanttChart() {
-	const viewMode = useGanttStore((state) => state.viewMode);
-	const setViewMode = useGanttStore((state) => state.setViewMode);
-	const tasks = useGanttStore((state) => state.tasks);
-	const handleTaskChange = useGanttStore((state) => state.handleTaskChange);
-	const handleTaskDelete = useGanttStore((state) => state.handleTaskDelete);
-	const handleProgressChange = useGanttStore(
-		(state) => state.handleProgressChange,
-	);
+export default function GanttChart({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
+	const { id } = use(params);
+	const {
+		tasks,
+		setTasks,
+		viewMode,
+		columnWidth,
+		viewModeOptions,
+		setViewMode,
+		handleTaskChange,
+		handleTaskDelete,
+		handleProgressChange,
+	} = useGanttChart();
 
-	const viewModeOptions = useMemo(
-		() => [
-			{ mode: ViewMode.Day, label: "Day" },
-			{ mode: ViewMode.Week, label: "Week" },
-			{ mode: ViewMode.Month, label: "Month" },
-		],
-		[],
-	);
+	const fetchProjectData = useCallback(() => {
+		getProjectDetailAction(id).then((res) => {
+			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+				const allTasks = res.data.statuses.flatMap((s) =>
+					(s.tasks || [])
+						.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
+						.map((t) => {
+							const start = t.createdAt
+								? new Date(t.createdAt)
+								: new Date(t.dueDate || "");
+							const end = t.dueDate ? new Date(t.dueDate) : start;
+							return {
+								id: t.id,
+								name: t.title || "Untitled Task",
+								type: "task",
+								start,
+								end,
+								progress:
+									s.name === "Done" ? 100 : s.name === "In Progress" ? 50 : 0,
+								isDisabled: false,
+								styles: {
+									progressColor: "#0ea5e9",
+									progressSelectedColor: "#0284c7",
+								},
+							} as unknown as import("gantt-task-react").Task;
+						}),
+				);
 
-	const columnWidth = useMemo(() => {
-		if (viewMode === ViewMode.Month) return 150;
-		if (viewMode === ViewMode.Week) return 250;
-		return 65;
-	}, [viewMode]);
+				setTasks(allTasks.length > 0 ? allTasks : []);
+			}
+		});
+	}, [id, setTasks]);
+
+	useEffect(() => {
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
 
 	return (
 		<div className="space-y-4 pb-12">
 			{/* Header Info & View Mode Switcher */}
-			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
 						Project Gantt Chart & Timelines
@@ -67,27 +112,33 @@ export default function GanttChart() {
 			{/* Gantt Chart Container */}
 			<div className="overflow-x-auto rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-100">
 				<style jsx global>{`
-          .gantt-container {
-            font-family: inherit;
-          }
-          .dark ._313uQ {
-            background-color: #1e293b !important;
-            color: #f1f5f9 !important;
-          }
-          .dark ._3457N {
-            fill: #f1f5f9 !important;
-          }
-        `}</style>
+                    .gantt-container {
+                        font-family: inherit;
+                    }
+                    .dark ._313uQ {
+                        background-color: #1e293b !important;
+                        color: #f1f5f9 !important;
+                    }
+                    .dark ._3457N {
+                        fill: #f1f5f9 !important;
+                    }
+                `}</style>
 
-				<Gantt
-					tasks={tasks}
-					viewMode={viewMode}
-					onDateChange={handleTaskChange}
-					onDelete={handleTaskDelete}
-					onProgressChange={handleProgressChange}
-					listCellWidth="155px"
-					columnWidth={columnWidth}
-				/>
+				{tasks.length > 0 ? (
+					<Gantt
+						tasks={tasks}
+						viewMode={viewMode}
+						onDateChange={handleTaskChange}
+						onDelete={handleTaskDelete}
+						onProgressChange={handleProgressChange}
+						listCellWidth="155px"
+						columnWidth={columnWidth}
+					/>
+				) : (
+					<div className="py-12 text-center text-sm text-outer_space-500 dark:text-platinum-400">
+						No tasks scheduled in this timeline.
+					</div>
+				)}
 			</div>
 		</div>
 	);

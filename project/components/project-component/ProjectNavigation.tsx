@@ -3,7 +3,6 @@
 import {
 	Calendar,
 	Clock,
-	Code2,
 	FileText,
 	GanttChart,
 	Kanban,
@@ -12,13 +11,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import React from "react";
-import { useCustomProjectNavigationStore } from "../../stores/project/custom-project-navigation-store";
 
 export default function ProjectNavigation({
 	projectId,
+	projectViews,
 }: {
 	projectId?: string;
+	projectViews?: string[];
 }) {
 	const params = useParams() as { id?: string } | undefined;
 	const id = projectId ?? params?.id;
@@ -26,16 +25,25 @@ export default function ProjectNavigation({
 
 	if (pathname?.includes("/project-settings")) return null;
 
-	const navItems = [
-		{ label: "Summary", icon: User, slug: "summary" },
+	const allNavItems = [
+		{ label: "Dashboard", icon: User, slug: "summary" },
 		{ label: "List", icon: ListTodo, slug: "list" },
 		{ label: "Board", icon: Kanban, slug: "" },
 		{ label: "Calendar", icon: Calendar, slug: "calendar" },
 		{ label: "Whiteboard", icon: FileText, slug: "whiteboard" },
 		{ label: "Gantt Chart", icon: GanttChart, slug: "gantt-chart" },
 		{ label: "Timeline", icon: Clock, slug: "timeline" },
-		{ label: "GitHub", icon: Code2, slug: "github" },
 	];
+
+	const navItems = projectViews
+		? allNavItems.filter(
+				(item) =>
+					item.label === "Dashboard" ||
+					projectViews.some(
+						(v) => v.toLowerCase() === item.label.toLowerCase(),
+					),
+			)
+		: allNavItems;
 
 	const buildHref = (slug: string) => {
 		if (id) return `/projects/${id}${slug ? `/${slug}` : ""}`;

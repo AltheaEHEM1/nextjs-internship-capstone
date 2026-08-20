@@ -4,78 +4,15 @@ import {
 	type Cell,
 	type ColumnDef,
 	flexRender,
-	getCoreRowModel,
-	getSortedRowModel,
 	type Header,
 	type HeaderGroup,
 	type Row,
-	type SortingState,
-	useReactTable,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
-import { useState } from "react";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Task {
-	id: string;
-	title: string;
-	status: "Todo" | "In Progress" | "In Review" | "Done";
-	priority: "Low" | "Medium" | "High" | "Critical";
-	assignee: string;
-	dueDate: string;
-	estimate: string;
-}
-
-// ─── Static Data ──────────────────────────────────────────────────────────────
-
-const TASKS: Task[] = [
-	{
-		id: "TASK-001",
-		title: "Design system tokens",
-		status: "Done",
-		priority: "High",
-		assignee: "Alice",
-		dueDate: "Aug 5",
-		estimate: "3h",
-	},
-	{
-		id: "TASK-002",
-		title: "Build kanban board",
-		status: "In Progress",
-		priority: "Critical",
-		assignee: "Bob",
-		dueDate: "Aug 10",
-		estimate: "8h",
-	},
-	{
-		id: "TASK-003",
-		title: "Implement auth flow",
-		status: "In Review",
-		priority: "High",
-		assignee: "Carol",
-		dueDate: "Aug 12",
-		estimate: "5h",
-	},
-	{
-		id: "TASK-004",
-		title: "Write unit tests",
-		status: "Todo",
-		priority: "Medium",
-		assignee: "Dave",
-		dueDate: "Aug 20",
-		estimate: "4h",
-	},
-	{
-		id: "TASK-005",
-		title: "API rate limiting",
-		status: "Todo",
-		priority: "Low",
-		assignee: "Eve",
-		dueDate: "Aug 25",
-		estimate: "2h",
-	},
-];
+import { use, useCallback, useEffect, useMemo } from "react";
+import { getProjectDetailAction } from "@/actions/project/Project";
+import { type Task, useList } from "@/hooks/project/(tabs)/useList";
+import { pusherClient } from "@/lib/pusher-client";
 
 const STATUS_COLORS: Record<Task["status"], string> = {
 	Todo: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
@@ -94,101 +31,132 @@ const PRIORITY_COLORS: Record<Task["priority"], string> = {
 	Critical: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
 };
 
-// ─── Column Definitions ───────────────────────────────────────────────────────
+export default function List({ params }: { params: Promise<{ id: string }> }) {
+	const { id } = use(params);
+	const columns = useMemo<ColumnDef<Task>[]>(
+		() => [
+			{
+				accessorKey: "title",
+				header: "Title",
+				cell: ({ getValue }) => (
+					<span className="font-medium text-outer_space-700 dark:text-platinum-200">
+						{getValue<string>()}
+					</span>
+				),
+			},
+			{
+				accessorKey: "status",
+				header: "Status",
+				cell: ({ getValue }) => {
+					const status = getValue<Task["status"]>();
+					return (
+						<span
+							className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}
+						>
+							{status}
+						</span>
+					);
+				},
+			},
+			{
+				accessorKey: "priority",
+				header: "Priority",
+				cell: ({ getValue }) => {
+					const priority = getValue<Task["priority"]>();
+					return (
+						<span
+							className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${PRIORITY_COLORS[priority]}`}
+						>
+							{priority}
+						</span>
+					);
+				},
+			},
+			{
+				accessorKey: "assignee",
+				header: "Assignee",
+				cell: ({ getValue }) => (
+					<span className="text-outer_space-600 dark:text-platinum-300">
+						{getValue<string>()}
+					</span>
+				),
+			},
+			{
+				accessorKey: "dueDate",
+				header: "Due Date",
+				cell: ({ getValue }) => (
+					<span className="text-outer_space-500 dark:text-platinum-400">
+						{getValue<string>()}
+					</span>
+				),
+			},
+			{
+				accessorKey: "estimate",
+				header: "Estimate",
+				cell: ({ getValue }) => (
+					<span className="font-mono text-xs text-outer_space-400 dark:text-platinum-400">
+						{getValue<string>()}
+					</span>
+				),
+			},
+		],
+		[],
+	);
 
-const COLUMNS: ColumnDef<Task>[] = [
-	{
-		accessorKey: "id",
-		header: "ID",
-		cell: ({ getValue }) => (
-			<span className="font-mono text-xs text-outer_space-400 dark:text-platinum-400">
-				{getValue<string>()}
-			</span>
-		),
-	},
-	{
-		accessorKey: "title",
-		header: "Title",
-		cell: ({ getValue }) => (
-			<span className="font-medium text-outer_space-700 dark:text-platinum-200">
-				{getValue<string>()}
-			</span>
-		),
-	},
-	{
-		accessorKey: "status",
-		header: "Status",
-		cell: ({ getValue }) => {
-			const status = getValue<Task["status"]>();
-			return (
-				<span
-					className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}
-				>
-					{status}
-				</span>
-			);
-		},
-	},
-	{
-		accessorKey: "priority",
-		header: "Priority",
-		cell: ({ getValue }) => {
-			const priority = getValue<Task["priority"]>();
-			return (
-				<span
-					className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${PRIORITY_COLORS[priority]}`}
-				>
-					{priority}
-				</span>
-			);
-		},
-	},
-	{
-		accessorKey: "assignee",
-		header: "Assignee",
-		cell: ({ getValue }) => (
-			<span className="text-outer_space-600 dark:text-platinum-300">
-				{getValue<string>()}
-			</span>
-		),
-	},
-	{
-		accessorKey: "dueDate",
-		header: "Due Date",
-		cell: ({ getValue }) => (
-			<span className="text-outer_space-500 dark:text-platinum-400">
-				{getValue<string>()}
-			</span>
-		),
-	},
-	{
-		accessorKey: "estimate",
-		header: "Estimate",
-		cell: ({ getValue }) => (
-			<span className="font-mono text-xs text-outer_space-400 dark:text-platinum-400">
-				{getValue<string>()}
-			</span>
-		),
-	},
-];
+	const { table, setTasks } = useList(columns);
 
-// ─── Page Component ───────────────────────────────────────────────────────────
+	const fetchProjectData = useCallback(() => {
+		getProjectDetailAction(id).then((res) => {
+			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+				const allTasks = res.data.statuses.flatMap((s) =>
+					(s.tasks || []).map(
+						(t) =>
+							({
+								id: t.id,
+								title: t.title || "Untitled Task",
+								status: s.name as Task["status"],
+								priority: (t.priority === "urgent"
+									? "High"
+									: t.priority
+										? t.priority.charAt(0).toUpperCase() + t.priority.slice(1)
+										: "Low") as Task["priority"],
+								assignee:
+									(t as { assignee?: { name?: string } }).assignee?.name ||
+									"Unassigned",
+								dueDate: t.dueDate
+									? new Date(t.dueDate).toLocaleDateString()
+									: "",
+								estimate: t.size ? String(t.size) : "",
+							}) as Task,
+					),
+				);
 
-export default function List() {
-	const [sorting, setSorting] = useState<SortingState>([]);
+				setTasks(allTasks);
+			}
+		});
+	}, [id, setTasks]);
 
-	const table = useReactTable<Task>({
-		data: TASKS,
-		columns: COLUMNS,
-		state: { sorting },
-		onSortingChange: setSorting,
-		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-	});
+	useEffect(() => {
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
 
 	return (
 		<div className="space-y-4 pb-12">
-			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
 						Project Task List

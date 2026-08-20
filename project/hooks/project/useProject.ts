@@ -1,5 +1,7 @@
 import { useCallback } from "react";
+import { createProjectAction } from "@/actions/project/Project";
 import type { AccessRole } from "@/components/modals/project/CreateProject1Modal";
+import { useToast } from "@/hooks/toast/use-toast";
 import { useProjectStore } from "@/stores/project/project-store";
 
 /**
@@ -10,6 +12,7 @@ import { useProjectStore } from "@/stores/project/project-store";
 export function useProject() {
 	const { modalStep, form, setModalStep, setFormField, resetForm } =
 		useProjectStore();
+	const { toast } = useToast();
 
 	const setProjectName = useCallback(
 		(value: string) => setFormField("projectName", value),
@@ -31,6 +34,11 @@ export function useProject() {
 		[setFormField],
 	);
 
+	const setDueDate = useCallback(
+		(value: string) => setFormField("dueDate", value),
+		[setFormField],
+	);
+
 	const handleOpen = useCallback(() => setModalStep("step1"), [setModalStep]);
 
 	const handleClose = useCallback(() => resetForm(), [resetForm]);
@@ -39,11 +47,43 @@ export function useProject() {
 
 	const handleBack = useCallback(() => setModalStep("step1"), [setModalStep]);
 
-	const handleCreateFinal = useCallback(() => {
-		// TODO: persist the new project (API call / DB write)
-		console.log("Creating project:", form);
-		resetForm();
-	}, [form, resetForm]);
+	const handleCreateFinal = useCallback(
+		async (workflowData: {
+			views: string[];
+			statuses: {
+				notStarted?: string[];
+				active?: string[];
+				done?: string[];
+				closed?: string[];
+			};
+		}) => {
+			const result = await createProjectAction({
+				name: form.projectName,
+				description: form.description,
+				teamId: form.team,
+				dueDate: form.dueDate,
+				views: workflowData.views,
+				statuses: workflowData.statuses,
+			});
+
+			if (!result.success) {
+				toast({
+					title: "Error",
+					description: result.error || "Failed to create project.",
+					variant: "destructive",
+				});
+				return;
+			}
+
+			toast({
+				title: "Project created",
+				description: "Project has been successfully created.",
+				variant: "success",
+			});
+			resetForm();
+		},
+		[form, resetForm, toast],
+	);
 
 	return {
 		modalStep,
@@ -55,6 +95,8 @@ export function useProject() {
 		setAccess,
 		team: form.team,
 		setTeam,
+		dueDate: form.dueDate,
+		setDueDate,
 		handleOpen,
 		handleClose,
 		handleNext,

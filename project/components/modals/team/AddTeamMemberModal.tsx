@@ -6,6 +6,7 @@ import {
 	addMemberToTeamAction,
 	getAcceptedInvitesAction,
 } from "@/actions/team/TeamMember";
+import { useToast } from "@/hooks/toast/use-toast";
 import { useTeamStore } from "@/stores/team/useTeamStore";
 
 interface AddTeamMemberModalProps {
@@ -22,6 +23,7 @@ export function AddTeamMemberModal({
 	const storePeople = useTeamStore((s) => s.people);
 	const teamDetail = useTeamStore((s) => s.teamDetail);
 	const setTeamDetail = useTeamStore((s) => s.setTeamDetail);
+	const { toast } = useToast();
 
 	const [people, setPeople] = useState<
 		Array<{ id: string; name: string; email: string }>
@@ -37,22 +39,28 @@ export function AddTeamMemberModal({
 		"administrator" | "member" | "viewer"
 	>("member");
 	const [loading, setLoading] = useState(false);
-	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (isOpen) {
-			setErrorMsg(null);
-
 			if (storePeople && storePeople.length > 0) {
 				setPeople(storePeople);
 			}
 
 			getAcceptedInvitesAction()
-				.then((res: any) => {
-					if (res?.success && Array.isArray(res.data)) {
-						setPeople(res.data);
+				.then((res: Record<string, unknown> | unknown[]) => {
+					if (
+						res &&
+						!Array.isArray(res) &&
+						res.success &&
+						Array.isArray(res.data)
+					) {
+						setPeople(
+							res.data as Array<{ id: string; name: string; email: string }>,
+						);
 					} else if (Array.isArray(res)) {
-						setPeople(res);
+						setPeople(
+							res as Array<{ id: string; name: string; email: string }>,
+						);
 					}
 				})
 				.catch(console.error);
@@ -79,6 +87,14 @@ export function AddTeamMemberModal({
 		}
 	}, [isOpen, teamId, storePeople, teamDetail]);
 
+	useEffect(() => {
+		if (!isOpen) {
+			setEmail("");
+			setRole("Member");
+			setPermission("member");
+		}
+	}, [isOpen]);
+
 	if (!isOpen) return null;
 
 	const selectedPerson = people.find((p) => p.email === email);
@@ -94,12 +110,15 @@ export function AddTeamMemberModal({
 		if (!email) return;
 
 		if (isAlreadyInTeam) {
-			setErrorMsg("This person is already a member of this team.");
+			toast({
+				title: "Already a member",
+				description: "This person is already a member of this team.",
+				variant: "warning",
+			});
 			return;
 		}
 
 		setLoading(true);
-		setErrorMsg(null);
 		try {
 			if (teamId) {
 				const res = await addMemberToTeamAction({
@@ -111,21 +130,35 @@ export function AddTeamMemberModal({
 				});
 
 				if (!res.success) {
-					setErrorMsg(res.error || "Failed to add member to team.");
+					toast({
+						title: "Error",
+						description: res.error || "Failed to add member to team.",
+						variant: "destructive",
+					});
 					return;
 				}
+
+				toast({
+					title: "Member added",
+					description: `${selectedPerson?.name || email} has been successfully added to the team.`,
+					variant: "success",
+				});
 
 				// Refresh team detail in store
 				const refreshed = await getTeamDetailAction(teamId);
 				if (refreshed.success && refreshed.data) {
-					setTeamDetail(refreshed.data as any);
+					setTeamDetail(refreshed.data as Parameters<typeof setTeamDetail>[0]);
 				}
 			}
 
 			setEmail("");
 			onClose();
 		} catch (error) {
-			setErrorMsg((error as Error).message || "Failed to add team member");
+			toast({
+				title: "Error",
+				description: (error as Error).message || "Failed to add team member.",
+				variant: "destructive",
+			});
 		} finally {
 			setLoading(false);
 		}
@@ -137,29 +170,28 @@ export function AddTeamMemberModal({
 				<h3 className="text-lg font-bold text-outer_space-800 dark:text-platinum-100">
 					Add Team Member
 				</h3>
-				{errorMsg && (
-					<div className="mt-3 rounded-xl bg-rose-50 p-3 text-xs font-medium text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
-						{errorMsg}
-					</div>
-				)}
 				<form onSubmit={handleSubmit} className="mt-4 space-y-4">
 					<div>
-						<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+						<label
+							htmlFor="email"
+							className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+						>
 							Email Address
 						</label>
 						<select
+							id="email"
 							required
 							value={email}
 							onChange={(e) => {
 								setEmail(e.target.value);
-								setErrorMsg(null);
 							}}
 							className="mt-1 w-full rounded-xl border border-french_gray-200 p-2.5 text-sm dark:border-paynes_gray-600 dark:bg-outer_space-400 dark:text-platinum-100"
 						>
 							<option value="">Select a person...</option>
 							{people
 								.filter(
-									(person) =>
+									(person, index, self) =>
+										index === self.findIndex((t) => t.id === person.id) &&
 										!(
 											teamId &&
 											(existingEmails.has(person.email.toLowerCase()) ||
@@ -177,10 +209,14 @@ export function AddTeamMemberModal({
 					</div>
 
 					<div>
-						<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+						<label
+							htmlFor="role"
+							className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+						>
 							Role Title
 						</label>
 						<input
+							id="role"
 							type="text"
 							value={role}
 							onChange={(e) => setRole(e.target.value)}
@@ -190,10 +226,14 @@ export function AddTeamMemberModal({
 					</div>
 
 					<div>
-						<label className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300">
+						<label
+							htmlFor="permission"
+							className="block text-xs font-medium text-outer_space-500 dark:text-platinum-300"
+						>
 							Permission Level
 						</label>
 						<select
+							id="permission"
 							value={permission}
 							onChange={(e) =>
 								setPermission(

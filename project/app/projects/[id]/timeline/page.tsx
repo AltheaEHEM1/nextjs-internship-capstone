@@ -1,10 +1,72 @@
 "use client";
 
+import { use, useCallback } from "react";
+import { getProjectDetailAction } from "@/actions/project/Project";
+import { pusherClient } from "@/lib/pusher-client";
+import { useTimelineStore } from "@/stores/project/(tabs)/TimelineStore";
+
 import "vis-timeline/styles/vis-timeline-graph2d.min.css";
 import { useEffect, useRef } from "react";
+import { useTimeline } from "@/hooks/project/(tabs)/useTimeline";
 
-export default function Timeline() {
+export default function Timeline({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
+	const { id } = use(params);
 	const containerRef = useRef<HTMLDivElement>(null);
+	const { items: timelineItems, options: storeOptions } = useTimeline();
+	const setItems = useTimelineStore((state) => state.setItems);
+
+	const fetchProjectData = useCallback(() => {
+		getProjectDetailAction(id).then((res) => {
+			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+				const allItems = res.data.statuses.flatMap((s) =>
+					(s.tasks || [])
+						.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
+						.map((t) => {
+							const start = t.createdAt
+								? new Date(t.createdAt)
+								: new Date(t.dueDate || "");
+							const end = t.dueDate ? new Date(t.dueDate) : undefined;
+							return {
+								id: t.id,
+								content: t.title || "Untitled Task",
+								start,
+								end,
+								className:
+									s.name === "Done"
+										? "bg-emerald-500 text-white"
+										: s.name === "In Progress"
+											? "bg-blue-500 text-white"
+											: "bg-gray-500 text-white",
+							};
+						}),
+				);
+
+				setItems(allItems);
+			}
+		});
+	}, [id, setItems]);
+
+	useEffect(() => {
+		fetchProjectData();
+	}, [fetchProjectData]);
+
+	useEffect(() => {
+		if (!id || !pusherClient) return;
+		const channelName = `project-${id}`;
+		const channel = pusherClient.subscribe(channelName);
+
+		channel.bind("task-updated", () => {
+			fetchProjectData();
+		});
+
+		return () => {
+			pusherClient?.unsubscribe(channelName);
+		};
+	}, [id, fetchProjectData]);
 
 	useEffect(() => {
 		if (!containerRef.current) return;
@@ -13,89 +75,32 @@ export default function Timeline() {
 
 		Promise.all([import("vis-timeline/peer"), import("vis-data")]).then(
 			([{ Timeline: VisTimeline }, { DataSet }]) => {
-				if (!containerRef.current) return;
+				const container = containerRef.current;
+				if (!container) return;
 
-				const now = new Date();
-				const msInDay = 24 * 60 * 60 * 1000;
+				const items = new DataSet(timelineItems);
 
-				const items = new DataSet([
-					{
-						id: 1,
-						content: "Discovery & Planning",
-						start: new Date(now.getTime() - 30 * msInDay),
-						end: new Date(now.getTime() - 20 * msInDay),
-						group: 1,
-					},
-					{
-						id: 2,
-						content: "Design System",
-						start: new Date(now.getTime() - 22 * msInDay),
-						end: new Date(now.getTime() - 10 * msInDay),
-						group: 1,
-					},
-					{
-						id: 3,
-						content: "Frontend Development",
-						start: new Date(now.getTime() - 12 * msInDay),
-						end: new Date(now.getTime() + 8 * msInDay),
-						group: 2,
-					},
-					{
-						id: 4,
-						content: "API Integration",
-						start: new Date(now.getTime() - 5 * msInDay),
-						end: new Date(now.getTime() + 15 * msInDay),
-						group: 2,
-					},
-					{
-						id: 5,
-						content: "QA & Testing",
-						start: new Date(now.getTime() + 10 * msInDay),
-						end: new Date(now.getTime() + 22 * msInDay),
-						group: 3,
-					},
-					{
-						id: 6,
-						content: "Launch",
-						start: new Date(now.getTime() + 24 * msInDay),
-						end: new Date(now.getTime() + 26 * msInDay),
-						group: 3,
-					},
-				]);
-
-				const groups = new DataSet([
-					{ id: 1, content: "Research" },
-					{ id: 2, content: "Engineering" },
-					{ id: 3, content: "Release" },
-				]);
-
-				const options = {
+				const mergedOptions = {
 					orientation: "top" as const,
 					stack: false,
 					showMajorLabels: true,
 					showCurrentTime: true,
-					zoomMin: 1000 * 60 * 60 * 24,
-					zoomMax: 1000 * 60 * 60 * 24 * 90,
+					...storeOptions,
 				};
 
-				timeline = new VisTimeline(
-					containerRef.current!,
-					items,
-					groups,
-					options,
-				);
+				timeline = new VisTimeline(container, items, mergedOptions);
 			},
 		);
 
 		return () => {
 			timeline?.destroy();
 		};
-	}, []);
+	}, [timelineItems, storeOptions]);
 
 	return (
 		<div className="space-y-4 pb-12">
 			{/* Header Info */}
-			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
 						Project Roadmap Timeline
@@ -110,37 +115,37 @@ export default function Timeline() {
 			{/* Timeline Container Box */}
 			<div className="overflow-hidden rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-100">
 				<style jsx global>{`
-          .vis-timeline {
-            border: none !important;
-            font-family: inherit;
-          }
-          .vis-item {
-            background-color: #0ea5e9;
-            border-color: #0284c7;
-            color: #ffffff;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 500;
-          }
-          .vis-time-axis .vis-text {
-            color: inherit;
-          }
-          .dark .vis-panel.vis-center,
-          .dark .vis-panel.vis-left,
-          .dark .vis-panel.vis-right {
-            background-color: #1e293b;
-            border-color: #334155;
-          }
-          .dark .vis-time-axis .vis-text {
-            color: #f1f5f9;
-          }
-          .dark .vis-grid.vis-minor {
-            border-color: #334155;
-          }
-          .dark .vis-grid.vis-major {
-            border-color: #475569;
-          }
-        `}</style>
+                    .vis-timeline {
+                        border: none !important;
+                        font-family: inherit;
+                    }
+                    .vis-item {
+                        background-color: #0ea5e9;
+                        border-color: #0284c7;
+                        color: #ffffff;
+                        border-radius: 6px;
+                        font-size: 0.75rem;
+                        font-weight: 500;
+                    }
+                    .vis-time-axis .vis-text {
+                        color: inherit;
+                    }
+                    .dark .vis-panel.vis-center,
+                    .dark .vis-panel.vis-left,
+                    .dark .vis-panel.vis-right {
+                        background-color: #1e293b;
+                        border-color: #334155;
+                    }
+                    .dark .vis-time-axis .vis-text {
+                        color: #f1f5f9;
+                    }
+                    .dark .vis-grid.vis-minor {
+                        border-color: #334155;
+                    }
+                    .dark .vis-grid.vis-major {
+                        border-color: #475569;
+                    }
+                `}</style>
 
 				<div ref={containerRef} className="w-full" />
 			</div>
