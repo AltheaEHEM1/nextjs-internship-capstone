@@ -8,10 +8,10 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useCallback, useMemo } from "react";
-import type { Task } from "@/components/board/TaskCard";
-import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
 import { updateTaskAction } from "@/actions/task/Task";
+import type { Task } from "@/components/board/TaskCard";
 import { useToast } from "@/hooks/toast/use-toast";
+import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
 
 //Custom hook that encapsulates all Kanban board logic:
 //drag-and-drop handling, task selection, and modal state.

@@ -13,7 +13,7 @@ import { pusherServer } from "@/lib/pusher-server";
 export async function notifyTeamMembers(
 	teamId: string,
 	eventName: string,
-	payload: any,
+	payload: unknown,
 	actorClerkId?: string,
 ) {
 	try {
@@ -29,7 +29,7 @@ export async function notifyTeamMembers(
 		if (!members || members.length === 0) return;
 
 		for (const member of members) {
-			if (member.user && member.user.clerkId) {
+			if (member.user?.clerkId) {
 				if (member.user.clerkId === actorClerkId) {
 					continue;
 				}
@@ -39,5 +39,19 @@ export async function notifyTeamMembers(
 		}
 	} catch (error) {
 		console.error("Failed to notify team members:", error);
+	}
+}
+
+export async function notifyUser(
+	clerkId: string,
+	eventName: string,
+	payload: unknown,
+) {
+	try {
+		if (!pusherServer) return;
+		const channelName = `user-${clerkId}`;
+		await pusherServer.trigger(channelName, eventName, payload);
+	} catch (error) {
+		console.error("Failed to notify user:", error);
 	}
 }

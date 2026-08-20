@@ -13,8 +13,8 @@ import {
 	tasks,
 	users,
 } from "@/lib/db/schema";
-import { pusherServer } from "@/lib/pusher-server";
 import { notifyProjectMembers } from "@/lib/notifications/notify-project";
+import { pusherServer } from "@/lib/pusher-server";
 
 export async function createTaskAction(data: {
 	title: string;

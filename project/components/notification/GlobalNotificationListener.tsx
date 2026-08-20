@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+
 import { useEffect } from "react";
 
 import { useNotification } from "@/hooks/notification/useNotification";
@@ -11,7 +11,7 @@ import { pusherClient } from "@/lib/pusher-client";
 export function GlobalNotificationListener() {
 	const { user } = useUser();
 	const { toast } = useToast();
-	const router = useRouter();
+
 	const { addNotification } = useNotification();
 
 	useEffect(() => {
@@ -31,7 +31,6 @@ export function GlobalNotificationListener() {
 				toast({
 					title,
 					description,
-
 				});
 			},
 		);
@@ -47,7 +46,6 @@ export function GlobalNotificationListener() {
 				toast({
 					title,
 					description,
-
 				});
 			},
 		);
@@ -63,7 +61,6 @@ export function GlobalNotificationListener() {
 				toast({
 					title,
 					description,
-
 				});
 			},
 		);
@@ -79,7 +76,6 @@ export function GlobalNotificationListener() {
 				toast({
 					title,
 					description,
-
 				});
 			},
 		);
@@ -95,7 +91,6 @@ export function GlobalNotificationListener() {
 				toast({
 					title,
 					description,
-
 				});
 			},
 		);
@@ -111,55 +106,102 @@ export function GlobalNotificationListener() {
 				toast({
 					title,
 					description,
-
 				});
 			},
 		);
 
 		channel.bind(
 			"team-member-added",
-			(data: { teamId: string }) => {
+			(data: { teamId: string; teamName?: string; targetName?: string }) => {
 				const title = "Team Member Added";
-				const description = "A new member was added to your team.";
+				const description = data.targetName
+					? `${data.targetName} was added to the team${data.teamName ? ` "${data.teamName}"` : ""}.`
+					: "A new member was added to your team.";
 
 				addNotification({ title, description });
 
 				toast({
 					title,
 					description,
-
 				});
 			},
 		);
 
+		channel.bind("you-were-added", (data: { teamName?: string }) => {
+			const title = "Added to Team";
+			const description = data.teamName
+				? `You have been added to the team "${data.teamName}".`
+				: "You have been added to a team.";
+
+			addNotification({ title, description });
+
+			toast({
+				title,
+				description,
+			});
+		});
+
 		channel.bind(
 			"team-member-updated",
-			(data: { teamId: string }) => {
+			(data: { teamId: string; teamName?: string; targetName?: string }) => {
 				const title = "Team Member Updated";
-				const description = "A member's role or access was updated.";
+				const description = data.targetName
+					? `${data.targetName}'s role or access was updated in the team${data.teamName ? ` "${data.teamName}"` : ""}.`
+					: "A member's role or access was updated.";
 
 				addNotification({ title, description });
 
 				toast({
 					title,
 					description,
-
 				});
 			},
 		);
 
 		channel.bind(
 			"team-member-removed",
-			(data: { teamId: string }) => {
+			(data: { teamId: string; teamName?: string; targetName?: string }) => {
 				const title = "Team Member Removed";
-				const description = "A member was removed from your team.";
+				const description = data.targetName
+					? `${data.targetName} was removed from the team${data.teamName ? ` "${data.teamName}"` : ""}.`
+					: "A member was removed from your team.";
 
 				addNotification({ title, description });
 
 				toast({
 					title,
 					description,
+				});
+			},
+		);
 
+		channel.bind("you-were-removed", (data: { teamName?: string }) => {
+			const title = "Removed from Team";
+			const description = data.teamName
+				? `You are removed on this team "${data.teamName}".`
+				: "You have been removed from a team.";
+
+			addNotification({ title, description });
+
+			toast({
+				title,
+				description,
+			});
+		});
+
+		channel.bind(
+			"team-member-invited",
+			(data: { teamId: string; teamName?: string; email?: string }) => {
+				const title = "Team Member Invited";
+				const description = data.email
+					? `${data.email} was invited to the team${data.teamName ? ` "${data.teamName}"` : ""}.`
+					: "A new member was invited to your team.";
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
 				});
 			},
 		);
@@ -167,7 +209,7 @@ export function GlobalNotificationListener() {
 		return () => {
 			pusherClient?.unsubscribe(channelName);
 		};
-	}, [user, toast, router, addNotification]);
+	}, [user, toast, addNotification]);
 
 	return null;
 }

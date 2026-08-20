@@ -1,9 +1,11 @@
 "use server";
 
+import { inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
-import { teamMembers, teams } from "@/lib/db/schema";
+import { teamMembers, teams, users } from "@/lib/db/schema";
+import { notifyUser } from "@/lib/notifications/notify-team";
 
 export async function createTeamWithMembersAction(data: {
 	name: string;
@@ -47,6 +49,20 @@ export async function createTeamWithMembersAction(data: {
 						permission: m.permission || "member",
 					})),
 				);
+
+				const userIds = additionalMembers.map((m) => m.userId);
+				const addedUsers = await tx
+					.select()
+					.from(users)
+					.where(inArray(users.id, userIds));
+
+				for (const u of addedUsers) {
+					if (u.clerkId) {
+						await notifyUser(u.clerkId, "you-were-added", {
+							teamName: newTeam.name,
+						});
+					}
+				}
 			}
 
 			revalidatePath("/team");

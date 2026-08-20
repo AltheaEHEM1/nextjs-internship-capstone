@@ -3,7 +3,7 @@
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { ImagePlus, UserPlus, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import BaseModal from "@/components/layout/BaseModal";
 import { useTeamStore } from "@/stores/team/useTeamStore";
 
@@ -26,12 +26,6 @@ export default function AddTeamModal1({
 	const setCoverUrl = useTeamStore((s) => s.setCoverUrl);
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-
-	useEffect(() => {
-		if (!opened) {
-			useTeamStore.getState().resetTeamForm();
-		}
-	}, [opened]);
 
 	if (!opened) return null;
 

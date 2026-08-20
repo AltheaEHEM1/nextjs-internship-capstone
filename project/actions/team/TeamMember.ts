@@ -11,7 +11,7 @@ import {
 	teams,
 	users,
 } from "@/lib/db/schema";
-import { notifyTeamMembers } from "@/lib/notifications/notify-team";
+import { notifyTeamMembers, notifyUser } from "@/lib/notifications/notify-team";
 import { sendUserInvitationAction } from "./Invitation";
 
 export async function getAcceptedInvitesAction() {
@@ -221,9 +221,20 @@ export async function addMemberToTeamAction(data: {
 			}
 		}
 
+		const team = await db.query.teams.findFirst({
+			where: eq(teams.id, data.teamId),
+		});
+
 		if (!targetUserId) {
 			if (data.email) {
 				const inviteRes = await sendUserInvitationAction(data.email, undefined);
+				if (inviteRes.success) {
+					await notifyTeamMembers(data.teamId, "team-member-invited", {
+						teamId: data.teamId,
+						teamName: team?.name,
+						email: data.email,
+					});
+				}
 				return {
 					success: inviteRes.success,
 					error: inviteRes.error,
@@ -253,11 +264,35 @@ export async function addMemberToTeamAction(data: {
 		revalidatePath(`/team/team/${data.teamId}`);
 		revalidatePath("/team");
 
-		await notifyTeamMembers(
-			data.teamId,
-			"team-member-added",
-			{ teamId: data.teamId },
-		);
+		const addedUser = await db.query.users.findFirst({
+			where: eq(users.id, targetUserId),
+		});
+
+		const notificationPayload = {
+			teamId: data.teamId,
+			teamName: team?.name,
+			targetName: addedUser?.name || addedUser?.email,
+		};
+
+		if (addedUser?.clerkId) {
+			await notifyUser(addedUser.clerkId, "you-were-added", {
+				teamName: team?.name,
+			});
+
+			// Notify other team members, excluding the added user
+			await notifyTeamMembers(
+				data.teamId,
+				"team-member-added",
+				notificationPayload,
+				addedUser.clerkId,
+			);
+		} else {
+			await notifyTeamMembers(
+				data.teamId,
+				"team-member-added",
+				notificationPayload,
+			);
+		}
 
 		return { success: true };
 	} catch (err: unknown) {
@@ -365,6 +400,14 @@ export async function removeTeamMemberAction(
 			};
 		}
 
+		const targetUser = await db.query.users.findFirst({
+			where: eq(users.id, userId),
+		});
+
+		const team = await db.query.teams.findFirst({
+			where: eq(teams.id, teamId),
+		});
+
 		await db
 			.delete(teamMembers)
 			.where(
@@ -374,10 +417,20 @@ export async function removeTeamMemberAction(
 		revalidatePath(`/team/team/${teamId}`);
 		revalidatePath("/team");
 
+		if (targetUser?.clerkId) {
+			await notifyUser(targetUser.clerkId, "you-were-removed", {
+				teamName: team?.name,
+			});
+		}
+
 		await notifyTeamMembers(
 			teamId,
 			"team-member-removed",
-			{ teamId },
+			{
+				teamId,
+				teamName: team?.name,
+				targetName: targetUser?.name || targetUser?.email,
+			},
 			dbUser.clerkId,
 		);
 

@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertCircle, History, MessageSquare, Plus, Trash2 } from "lucide-react";
+import {
+	AlertCircle,
+	History,
+	MessageSquare,
+	Plus,
+	Trash2,
+} from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import BaseModal from "@/components/layout/BaseModal";
@@ -44,15 +50,21 @@ export default function TaskModal({
 		handleAddComment,
 		taskId,
 	} = useTaskModalStore();
-	const { projectData, isLoading, isSubmitting, error, handleCreate, handleDelete } =
-		useTaskModal({
-			mode,
-			opened,
-			onClose,
-			projectId,
-			taskData,
-			onUpdateTask,
-		});
+	const {
+		projectData,
+		isLoading,
+		isSubmitting,
+		error,
+		handleCreate,
+		handleDelete,
+	} = useTaskModal({
+		mode,
+		opened,
+		onClose,
+		projectId,
+		taskData,
+		onUpdateTask,
+	});
 
 	const modalTitle =
 		mode === "create" ? (
@@ -158,20 +170,22 @@ export default function TaskModal({
 						<button
 							type="button"
 							onClick={() => setActiveTab("comments")}
-							className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${activeTab === "comments"
+							className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${
+								activeTab === "comments"
 									? "border-cyan-500 text-cyan-600 dark:text-cyan-400"
 									: "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-								}`}
+							}`}
 						>
 							<MessageSquare size={14} /> Comments ({comments.length})
 						</button>
 						<button
 							type="button"
 							onClick={() => setActiveTab("history")}
-							className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${activeTab === "history"
+							className={`flex items-center gap-1.5 text-xs font-semibold pb-1 transition border-b-2 ${
+								activeTab === "history"
 									? "border-cyan-500 text-cyan-600 dark:text-cyan-400"
 									: "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-								}`}
+							}`}
 						>
 							<History size={14} /> History ({history.length})
 						</button>

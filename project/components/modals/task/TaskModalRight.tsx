@@ -68,7 +68,9 @@ export default function TaskModalRight({
 					id="status"
 					value={status}
 					onChange={(e) => {
-						const selectedStatus = projectData?.statuses.find(s => s.id === e.target.value);
+						const selectedStatus = projectData?.statuses.find(
+							(s) => s.id === e.target.value,
+						);
 						setStatus(e.target.value);
 						if (mode === "view" && selectedStatus) {
 							// Update backend with ID
@@ -114,10 +116,7 @@ export default function TaskModalRight({
 					<option value="">Select team member...</option>
 					{!isLoading &&
 						projectData?.members.map((m) => (
-							<option
-								key={m.userId}
-								value={m.userId}
-							>
+							<option key={m.userId} value={m.userId}>
 								{m.name}
 							</option>
 						))}

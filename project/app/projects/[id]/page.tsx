@@ -188,7 +188,7 @@ export default function BoardPage({
 							{activeTask && (
 								<TaskCardDisplay
 									taskData={activeTask}
-									onClick={() => { }}
+									onClick={() => {}}
 									isOverlay
 								/>
 							)}

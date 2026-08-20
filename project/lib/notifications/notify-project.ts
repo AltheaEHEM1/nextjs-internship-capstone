@@ -13,7 +13,7 @@ import { pusherServer } from "@/lib/pusher-server";
 export async function notifyProjectMembers(
 	projectId: string,
 	eventName: string,
-	payload: any,
+	payload: unknown,
 	actorClerkId?: string,
 ) {
 	try {
@@ -35,11 +35,11 @@ export async function notifyProjectMembers(
 			},
 		});
 
-		if (!project || !project.team || !project.team.members) return;
+		if (!project?.team?.members) return;
 
 		// Iterate through all members of the team
 		for (const member of project.team.members) {
-			if (member.user && member.user.clerkId) {
+			if (member.user?.clerkId) {
 				// Don't notify the person who made the change
 				if (member.user.clerkId === actorClerkId) {
 					continue;
