@@ -208,7 +208,22 @@ export async function addMemberToTeamAction(data: {
 	permission?: "administrator" | "member" | "viewer";
 }): Promise<{ success: boolean; error?: string }> {
 	try {
-		await getAuthenticatedDbUser();
+		const dbUser = await getAuthenticatedDbUser();
+
+		// Check if the current user is an administrator of the team
+		const currentUserMember = await db.query.teamMembers.findFirst({
+			where: and(
+				eq(teamMembers.teamId, data.teamId),
+				eq(teamMembers.userId, dbUser.id),
+			),
+		});
+
+		if (currentUserMember?.permission !== "administrator") {
+			return {
+				success: false,
+				error: "Only team administrators can add new members.",
+			};
+		}
 
 		let targetUserId = data.userId;
 

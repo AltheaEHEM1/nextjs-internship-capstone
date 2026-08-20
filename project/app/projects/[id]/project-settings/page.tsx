@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getProjectSettingsAction } from "@/actions/project/Project";
 import { getUserTeamsAction } from "@/actions/team/Team";
 import ProjectSettingsForm from "./ProjectSettingsForm";
@@ -27,6 +28,11 @@ export default async function ProjectSettingsPage({
 	}
 
 	const { data } = result;
+
+	if (data.currentUserPermission !== "administrator") {
+		redirect(`/projects/${id}`);
+	}
+
 	const availableTeams =
 		teamsResult.success && teamsResult.data
 			? teamsResult.data.map((t) => ({ id: t.id, name: t.name }))

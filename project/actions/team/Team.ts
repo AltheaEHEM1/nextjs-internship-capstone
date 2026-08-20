@@ -6,9 +6,23 @@ import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
 import { teamMembers, teams, users } from "@/lib/db/schema";
 
-export async function getUserTeamsAction() {
+export async function getUserTeamsAction(
+	permissionFilter?: "administrator" | "member" | "viewer",
+) {
 	try {
 		const dbUser = await getAuthenticatedDbUser();
+
+		let conditions = and(
+			eq(teamMembers.userId, dbUser.id),
+			isNull(teams.deletedAt),
+		);
+
+		if (permissionFilter) {
+			conditions = and(
+				conditions,
+				eq(teamMembers.permission, permissionFilter),
+			);
+		}
 
 		const userTeams = await db
 			.select({
@@ -16,10 +30,11 @@ export async function getUserTeamsAction() {
 				name: teams.name,
 				icon: teams.icon,
 				coverUrl: teams.coverUrl,
+				permission: teamMembers.permission,
 			})
 			.from(teamMembers)
 			.innerJoin(teams, eq(teamMembers.teamId, teams.id))
-			.where(and(eq(teamMembers.userId, dbUser.id), isNull(teams.deletedAt)));
+			.where(conditions);
 
 		const teamsWithCount = await Promise.all(
 			userTeams.map(async (team) => {
@@ -44,7 +59,7 @@ export async function getUserTeamsAction() {
 
 export async function getTeamDetailAction(teamId: string) {
 	try {
-		await getAuthenticatedDbUser();
+		const dbUser = await getAuthenticatedDbUser();
 
 		const targetTeam = await db.query.teams.findFirst({
 			where: and(eq(teams.id, teamId), isNull(teams.deletedAt)),
@@ -60,14 +75,18 @@ export async function getTeamDetailAction(teamId: string) {
 				permission: teamMembers.permission,
 				name: users.name,
 				email: users.email,
+				avatar: users.avatar,
 			})
 			.from(teamMembers)
 			.innerJoin(users, eq(teamMembers.userId, users.id))
 			.where(eq(teamMembers.teamId, teamId));
 
+		const currentUserMember = members.find((m) => m.userId === dbUser.id);
+		const currentUserPermission = currentUserMember?.permission ?? "viewer";
+
 		return {
 			success: true,
-			data: { ...targetTeam, members },
+			data: { ...targetTeam, members, currentUserPermission },
 		};
 	} catch (err: unknown) {
 		console.error("getTeamDetailAction Error:", err);

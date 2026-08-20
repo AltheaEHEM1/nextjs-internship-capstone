@@ -21,6 +21,7 @@ export interface TeamItem {
 	icon?: string | null;
 	coverUrl?: string | null;
 	membersCount?: number;
+	permission?: string;
 }
 
 export interface TeamMemberInput {
@@ -30,6 +31,7 @@ export interface TeamMemberInput {
 }
 
 export interface TeamDetail extends TeamItem {
+	currentUserPermission?: "administrator" | "member" | "viewer";
 	members: Array<{
 		id: string;
 		userId: string;

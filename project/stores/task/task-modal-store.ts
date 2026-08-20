@@ -65,6 +65,7 @@ export interface TaskModalState {
 	comments: TaskComment[];
 	history: TaskActivity[];
 	newComment: string;
+	currentUserPermission: string;
 
 	// Actions
 	setMode: (m: "create" | "view") => void;
@@ -84,6 +85,7 @@ export interface TaskModalState {
 	setNewComment: (c: string) => void;
 	setComments: (c: TaskComment[]) => void;
 	setHistory: (h: TaskActivity[]) => void;
+	setCurrentUserPermission: (p: string) => void;
 
 	// Data fetching for view mode
 	fetchComments: (taskId: string) => Promise<void>;
@@ -124,6 +126,7 @@ export const useTaskModalStore = create<TaskModalState>()(
 		comments: [],
 		history: [],
 		newComment: "",
+		currentUserPermission: "viewer",
 
 		// setters
 		setMode: (m) => set({ mode: m }),
@@ -143,6 +146,7 @@ export const useTaskModalStore = create<TaskModalState>()(
 		setNewComment: (c) => set({ newComment: c }),
 		setComments: (c) => set({ comments: c }),
 		setHistory: (h) => set({ history: h }),
+		setCurrentUserPermission: (p) => set({ currentUserPermission: p }),
 
 		// fetching
 		fetchComments: async (taskId: string) => {
@@ -229,6 +233,7 @@ export const useTaskModalStore = create<TaskModalState>()(
 				comments: [],
 				history: [],
 				newComment: "",
+				currentUserPermission: "viewer",
 			}),
 	})),
 );

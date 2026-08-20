@@ -7,11 +7,12 @@ import {
 	Plus,
 	Trash2,
 } from "lucide-react";
-
+import { useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import BaseModal from "@/components/layout/BaseModal";
 import TaskModalLeft from "@/components/modals/task/TaskModalLeft";
 import TaskModalRight from "@/components/modals/task/TaskModalRight";
+import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import { useTaskModal } from "@/hooks/task/useTaskModal";
 import {
 	type TaskData,
@@ -26,6 +27,7 @@ interface TaskModalProps {
 	onOpenAddLabel?: () => void;
 	projectId?: string;
 	taskData?: TaskData;
+	currentUserPermission?: string;
 	onUpdateTask?: (updatedFields: Record<string, unknown>) => void;
 }
 
@@ -37,6 +39,7 @@ export default function TaskModal({
 	onOpenAddLabel,
 	projectId,
 	taskData,
+	currentUserPermission,
 	onUpdateTask,
 }: TaskModalProps) {
 	const {
@@ -65,6 +68,16 @@ export default function TaskModal({
 		taskData,
 		onUpdateTask,
 	});
+
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+	useEffect(() => {
+		if (currentUserPermission) {
+			useTaskModalStore
+				.getState()
+				.setCurrentUserPermission(currentUserPermission);
+		}
+	}, [currentUserPermission]);
 
 	const modalTitle =
 		mode === "create" ? (
@@ -112,15 +125,19 @@ export default function TaskModal({
 					</>
 				) : (
 					<div className="flex justify-between w-full">
-						<button
-							type="button"
-							onClick={handleDelete}
-							disabled={isSubmitting}
-							className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 transition-colors disabled:opacity-50"
-						>
-							<Trash2 size={16} />
-							Delete Task
-						</button>
+						<div>
+							{currentUserPermission === "administrator" && (
+								<button
+									type="button"
+									onClick={() => setShowDeleteConfirm(true)}
+									disabled={isSubmitting}
+									className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 transition-colors disabled:opacity-50"
+								>
+									<Trash2 size={16} />
+									Delete Task
+								</button>
+							)}
+						</div>
 						<button
 							type="button"
 							onClick={onClose}
@@ -258,6 +275,19 @@ export default function TaskModal({
 					)}
 				</div>
 			)}
+
+			<ConfirmDialog
+				opened={showDeleteConfirm}
+				onClose={() => setShowDeleteConfirm(false)}
+				onConfirm={async () => {
+					await handleDelete();
+					setShowDeleteConfirm(false);
+				}}
+				title="Delete Task"
+				description="Are you sure you want to delete this task? This action cannot be undone."
+				confirmLabel="Delete"
+				loading={isSubmitting}
+			/>
 		</BaseModal>
 	);
 }

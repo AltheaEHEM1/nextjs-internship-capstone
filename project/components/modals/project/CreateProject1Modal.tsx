@@ -58,7 +58,7 @@ export default function CreateProject1({
 		async function fetchTeams() {
 			if (opened) {
 				setIsLoadingTeams(true);
-				const result = await getUserTeamsAction();
+				const result = await getUserTeamsAction("administrator");
 				if (result.success && result.data) {
 					setTeamsList(result.data);
 				}

@@ -111,6 +111,36 @@ export function GlobalNotificationListener() {
 		);
 
 		channel.bind(
+			"project-added",
+			(data: { projectName: string; creatorName: string }) => {
+				const title = "Added to Project";
+				const description = `${data.creatorName} added your team to the project "${data.projectName}"`;
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
+				});
+			},
+		);
+
+		channel.bind(
+			"project-edited",
+			(data: { projectName: string; editorName: string }) => {
+				const title = "Project Edited";
+				const description = `${data.editorName} edited the project "${data.projectName}"`;
+
+				addNotification({ title, description });
+
+				toast({
+					title,
+					description,
+				});
+			},
+		);
+
+		channel.bind(
 			"team-member-added",
 			(data: { teamId: string; teamName?: string; targetName?: string }) => {
 				const title = "Team Member Added";

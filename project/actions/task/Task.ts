@@ -8,13 +8,35 @@ import {
 	comments,
 	labels,
 	projectStatuses,
+	projects,
 	taskHistory,
 	taskLabels,
 	tasks,
+	teamMembers,
 	users,
 } from "@/lib/db/schema";
 import { notifyProjectMembers } from "@/lib/notifications/notify-project";
 import { pusherServer } from "@/lib/pusher-server";
+
+async function checkUserProjectPermission(userId: string, projectId: string) {
+	const projectData = await db.query.projects.findFirst({
+		where: eq(projects.id, projectId),
+		with: {
+			team: {
+				with: {
+					members: {
+						where: eq(teamMembers.userId, userId),
+					},
+				},
+			},
+		},
+	});
+
+	if (!projectData) return "viewer";
+
+	if (projectData.ownerId === userId) return "administrator";
+	return projectData.team?.members?.[0]?.permission || "viewer";
+}
 
 export async function createTaskAction(data: {
 	title: string;
@@ -31,6 +53,14 @@ export async function createTaskAction(data: {
 
 		if (!data.title || !data.statusId || !data.projectId) {
 			return { success: false, error: "Missing required fields" };
+		}
+
+		const permission = await checkUserProjectPermission(
+			dbUser.id,
+			data.projectId,
+		);
+		if (permission !== "administrator") {
+			return { success: false, error: "Only administrators can create tasks." };
 		}
 
 		// Insert the task
@@ -138,6 +168,30 @@ export async function updateTaskAction(
 		const oldTask = await db.query.tasks.findFirst({
 			where: eq(tasks.id, id),
 		});
+		if (!oldTask) {
+			return { success: false, error: "Task not found" };
+		}
+
+		const permission = await checkUserProjectPermission(
+			dbUser.id,
+			data.projectId,
+		);
+
+		// If member, only allow statusId changes
+		const isOnlyStatusUpdate =
+			data.statusId !== undefined &&
+			data.title === undefined &&
+			data.description === undefined &&
+			data.assigneeId === undefined &&
+			data.priority === undefined &&
+			data.dueDate === undefined;
+
+		if (permission !== "administrator" && !isOnlyStatusUpdate) {
+			return {
+				success: false,
+				error: "Only administrators can edit task details.",
+			};
+		}
 
 		const updatedTask = await db
 			.update(tasks)
@@ -245,6 +299,11 @@ export async function deleteTaskAction(id: string, projectId: string) {
 
 		if (!id) {
 			return { success: false, error: "Missing task ID" };
+		}
+
+		const permission = await checkUserProjectPermission(dbUser.id, projectId);
+		if (permission !== "administrator") {
+			return { success: false, error: "Only administrators can delete tasks." };
 		}
 
 		const taskToDelete = await db.query.tasks.findFirst({

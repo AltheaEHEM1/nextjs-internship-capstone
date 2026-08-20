@@ -132,11 +132,6 @@ export function useTaskModal({
 		const { taskId } = useTaskModalStore.getState();
 		if (mode !== "view" || !projectId || !taskId) return;
 
-		const confirmed = window.confirm(
-			"Are you sure you want to delete this task? This action cannot be undone.",
-		);
-		if (!confirmed) return;
-
 		setIsSubmitting(true);
 		setError(null);
 

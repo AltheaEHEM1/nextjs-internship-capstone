@@ -1,6 +1,6 @@
 "use client";
 
-import { Filter, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { getProjectsAction } from "@/actions/project/Project";
@@ -45,9 +45,12 @@ export default function ProjectsPage() {
 			name: string;
 			description: string | null;
 			memberCount: number;
+			currentUserPermission?: string;
 		}[]
 	>([]);
 	const [isLoading, setIsLoading] = useState(true);
+
+	const [projectFilter, setProjectFilter] = useState<"all" | "owner">("all");
 
 	const fetchProjects = useCallback(async () => {
 		const result = await getProjectsAction();
@@ -76,6 +79,11 @@ export default function ProjectsPage() {
 		await fetchProjects();
 	};
 
+	const filteredProjects = projects.filter(
+		(p) =>
+			projectFilter === "all" || p.currentUserPermission === "administrator",
+	);
+
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -92,45 +100,46 @@ export default function ProjectsPage() {
 					Add Project
 				</button>
 
-				{/* Modal Step 1 */}
-				<CreateProject1
-					opened={modalStep === "step1"}
-					onClose={handleClose}
-					projectName={projectName}
-					setProjectName={setProjectName}
-					description={description}
-					setDescription={setDescription}
-					access={access}
-					setAccess={setAccess}
-					team={team}
-					setTeam={setTeam}
-					dueDate={dueDate}
-					setDueDate={setDueDate}
-					onNext={handleNext}
-				/>
+				{/* Modals Container */}
+				{modalStep !== "closed" && (
+					<>
+						<CreateProject1
+							opened={modalStep === "step1"}
+							onClose={handleClose}
+							projectName={projectName}
+							setProjectName={setProjectName}
+							description={description}
+							setDescription={setDescription}
+							access={access}
+							setAccess={setAccess}
+							team={team}
+							setTeam={setTeam}
+							dueDate={dueDate}
+							setDueDate={setDueDate}
+							onNext={handleNext}
+						/>
 
-				{/* Modal Step 2 */}
-				<CreateProject2
-					opened={modalStep === "step2"}
-					onClose={handleClose}
-					onBack={handleBack}
-					onCreate={onProjectCreated}
-				/>
+						<CreateProject2
+							opened={modalStep === "step2"}
+							onClose={handleClose}
+							onBack={handleBack}
+							onCreate={onProjectCreated}
+						/>
+					</>
+				)}
 			</div>
 
 			{/* Search and Filter Bar */}
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
 				{/* Filter Button */}
-				<button
-					type="button"
-					className="inline-flex items-center justify-center gap-2 rounded-xl border border-french_gray-300 bg-white px-4 py-2.5 text-sm font-medium text-outer_space-700 shadow-sm transition-all duration-200 hover:bg-platinum-50 hover:text-outer_space-900 focus:outline-none focus:ring-2 focus:ring-blue_munsell-500/20 active:scale-[0.98] dark:border-payne's_gray-700 dark:bg-outer_space-900 dark:text-platinum-100 dark:hover:bg-payne's_gray-800 dark:hover:text-white"
+				<select
+					value={projectFilter}
+					onChange={(e) => setProjectFilter(e.target.value as "all" | "owner")}
+					className="rounded-lg border border-french_gray-200 bg-white px-3 py-2 text-sm text-outer_space-800 focus:border-blue_munsell-400 focus:outline-none dark:border-paynes_gray-600 dark:bg-outer_space-500 dark:text-platinum-100"
 				>
-					<Filter
-						size={16}
-						className="text-payne's_gray-400 dark:text-french_gray-400"
-					/>
-					<span>Filter</span>
-				</button>
+					<option value="all">All Projects</option>
+					<option value="owner">Owner</option>
+				</select>
 			</div>
 
 			{/* Projects Grid Placeholder */}
@@ -138,15 +147,15 @@ export default function ProjectsPage() {
 				<div className="flex h-48 items-center justify-center text-sm text-gray-500">
 					Loading projects...
 				</div>
-			) : projects.length === 0 ? (
+			) : filteredProjects.length === 0 ? (
 				<div className="rounded-2xl border border-dashed border-gray-200 p-12 text-center dark:border-gray-800">
 					<p className="text-sm text-gray-500 dark:text-gray-400">
-						No projects found. Click "Add Project" to get started.
+						No projects found for the selected filter.
 					</p>
 				</div>
 			) : (
 				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-					{projects.map((project) => {
+					{filteredProjects.map((project) => {
 						const { progress } = getPlaceholderStats(
 							project.id?.charCodeAt(0) || 1,
 						);

@@ -10,7 +10,11 @@ import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
 interface BaseProjectProps {
 	children: ReactNode;
 	params: { id: string };
-	projectDetails?: { name?: string | null; views?: unknown } | null;
+	projectDetails?: {
+		name?: string | null;
+		views?: unknown;
+		currentUserPermission?: string;
+	} | null;
 }
 
 export default function BaseProject({
@@ -37,6 +41,7 @@ export default function BaseProject({
 						<ProjectHeader
 							title={projectDetails?.name || "Loading Project..."}
 							projectId={id}
+							currentUserPermission={projectDetails?.currentUserPermission}
 						/>
 					</div>
 					<ProjectNav

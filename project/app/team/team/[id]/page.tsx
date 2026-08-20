@@ -120,47 +120,51 @@ export default function SpecificTeam() {
 						</div>
 					</div>
 					<div className="flex items-center gap-2">
-						<button
-							type="button"
-							onClick={openAddMemberModal}
-							className="inline-flex items-center gap-1.5 rounded-xl bg-blue_munsell-500 px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue_munsell-600 transition-colors cursor-pointer"
-						>
-							<UserPlus size={15} />
-							Add Team Members
-						</button>
-						<div className="relative">
-							<button
-								type="button"
-								onClick={toggleMenu}
-								className="rounded-xl border border-french_gray-200 p-2 text-outer_space-500 hover:bg-platinum-100 dark:border-paynes_gray-600 dark:text-platinum-300 dark:hover:bg-outer_space-400 transition-colors cursor-pointer"
-							>
-								<MoreHorizontal size={18} />
-							</button>
-							{isMenuOpen && (
-								<div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1 z-10">
+						{teamDetail.currentUserPermission === "administrator" && (
+							<>
+								<button
+									type="button"
+									onClick={openAddMemberModal}
+									className="inline-flex items-center gap-1.5 rounded-xl bg-blue_munsell-500 px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue_munsell-600 transition-colors cursor-pointer"
+								>
+									<UserPlus size={15} />
+									Add Team Members
+								</button>
+								<div className="relative">
 									<button
 										type="button"
-										onClick={() =>
-											openEditTeamModal({
-												name: teamDetail.name,
-												icon: teamDetail.icon || "🚀",
-												coverUrl: teamDetail.coverUrl || "",
-											})
-										}
-										className="flex w-full items-center gap-2 px-4 py-2 text-xs text-outer_space-700 hover:bg-french_gray-50 dark:text-platinum-200 dark:hover:bg-outer_space-600 cursor-pointer"
+										onClick={toggleMenu}
+										className="rounded-xl border border-french_gray-200 p-2 text-outer_space-500 hover:bg-platinum-100 dark:border-paynes_gray-600 dark:text-platinum-300 dark:hover:bg-outer_space-400 transition-colors cursor-pointer"
 									>
-										Edit Team Details
+										<MoreHorizontal size={18} />
 									</button>
-									<button
-										type="button"
-										onClick={handleDeleteTeam}
-										className="flex w-full items-center gap-2 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
-									>
-										Delete Team
-									</button>
+									{isMenuOpen && (
+										<div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1 z-10">
+											<button
+												type="button"
+												onClick={() =>
+													openEditTeamModal({
+														name: teamDetail.name,
+														icon: teamDetail.icon || "🚀",
+														coverUrl: teamDetail.coverUrl || "",
+													})
+												}
+												className="flex w-full items-center gap-2 px-4 py-2 text-xs text-outer_space-700 hover:bg-french_gray-50 dark:text-platinum-200 dark:hover:bg-outer_space-600 cursor-pointer"
+											>
+												Edit Team Details
+											</button>
+											<button
+												type="button"
+												onClick={handleDeleteTeam}
+												className="flex w-full items-center gap-2 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+											>
+												Delete Team
+											</button>
+										</div>
+									)}
 								</div>
-							)}
-						</div>
+							</>
+						)}
 					</div>
 				</div>
 			</div>
@@ -189,33 +193,34 @@ export default function SpecificTeam() {
 								</div>
 							</div>
 							<div className="flex items-center gap-2">
-								{m.role !== "Owner" && (
-									<>
-										<button
-											type="button"
-											onClick={() =>
-												handleEditMemberClick(
-													m.userId,
-													m.name,
-													m.role || "Member",
-													m.permission || "member",
-												)
-											}
-											className="p-1.5 text-outer_space-400 hover:text-blue_munsell-500 hover:bg-blue_munsell-50 dark:hover:bg-outer_space-600 rounded-md transition-colors"
-											title="Edit Member Role"
-										>
-											<Pencil size={14} />
-										</button>
-										<button
-											type="button"
-											onClick={() => handleDeleteMember(m.userId, m.name)}
-											className="p-1.5 text-outer_space-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md transition-colors"
-											title="Remove Member"
-										>
-											<Trash2 size={14} />
-										</button>
-									</>
-								)}
+								{teamDetail.currentUserPermission === "administrator" &&
+									m.role !== "Owned" && (
+										<>
+											<button
+												type="button"
+												onClick={() =>
+													handleEditMemberClick(
+														m.userId,
+														m.name,
+														m.role || "Member",
+														m.permission || "member",
+													)
+												}
+												className="p-1.5 text-outer_space-400 hover:text-blue_munsell-500 hover:bg-blue_munsell-50 dark:hover:bg-outer_space-600 rounded-md transition-colors"
+												title="Edit Member Role"
+											>
+												<Pencil size={14} />
+											</button>
+											<button
+												type="button"
+												onClick={() => handleDeleteMember(m.userId, m.name)}
+												className="p-1.5 text-outer_space-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md transition-colors"
+												title="Remove Member"
+											>
+												<Trash2 size={14} />
+											</button>
+										</>
+									)}
 							</div>
 						</div>
 					))}

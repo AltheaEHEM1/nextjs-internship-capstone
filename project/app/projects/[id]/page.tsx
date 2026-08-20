@@ -33,6 +33,8 @@ export default function BoardPage({
 	const setTasks = useProjectBoardStore((state) => state.setTasks);
 
 	const [statusesMap, setStatusesMap] = useState<Record<string, string>>({});
+	const [currentUserPermission, setCurrentUserPermission] =
+		useState<string>("viewer");
 
 	const fetchProjectData = useCallback(() => {
 		getProjectDetailAction(id).then((res) => {
@@ -43,6 +45,7 @@ export default function BoardPage({
 					sMap[s.name] = s.id;
 				});
 				setStatusesMap(sMap);
+				setCurrentUserPermission(res.data.currentUserPermission || "viewer");
 
 				const allTasks = res.data.statuses.flatMap((s) =>
 					(s.tasks || []).map(
@@ -205,6 +208,7 @@ export default function BoardPage({
 					taskData={selectedTask}
 					onUpdateTask={(updates) => handleUpdateTask(updates, id as string)}
 					projectId={id as string}
+					currentUserPermission={currentUserPermission}
 				/>
 			)}
 		</div>

@@ -9,6 +9,7 @@ import {
 	priorityEnum,
 	projectStatuses,
 	projects,
+	teamMembers,
 } from "@/lib/db/schema";
 import { notifyProjectMembers } from "@/lib/notifications/notify-project";
 
@@ -160,6 +161,18 @@ export async function createProjectAction(data: {
 
 		await db.insert(labels).values(labelsToInsert);
 
+		if (newProject[0]) {
+			await notifyProjectMembers(
+				newProject[0].id,
+				"project-added",
+				{
+					projectName: data.name,
+					creatorName: dbUser.name || "Someone",
+				},
+				dbUser.clerkId,
+			);
+		}
+
 		revalidatePath("/projects");
 		return { success: true, data: newProject[0] };
 	} catch (err: unknown) {
@@ -173,7 +186,7 @@ export async function createProjectAction(data: {
 
 export async function getProjectsAction() {
 	try {
-		await getAuthenticatedDbUser();
+		const dbUser = await getAuthenticatedDbUser();
 
 		const allProjects = await db.query.projects.findMany({
 			where: isNull(projects.deletedAt),
@@ -185,8 +198,26 @@ export async function getProjectsAction() {
 			orderBy: (projects, { desc }) => [desc(projects.createdAt)],
 		});
 
-		const formattedProjects = allProjects.map((p) => {
+		const userProjects = allProjects.filter((p) => {
+			return (
+				p.ownerId === dbUser.id ||
+				p.team?.members?.some((m) => m.userId === dbUser.id)
+			);
+		});
+
+		const formattedProjects = userProjects.map((p) => {
 			const memberCount = p.team?.members?.length ?? 0;
+
+			let currentUserPermission = "viewer";
+			const isOwner = p.ownerId === dbUser.id;
+			if (isOwner) {
+				currentUserPermission = "administrator";
+			} else if (p.team?.members) {
+				const memberRec = p.team.members.find((m) => m.userId === dbUser.id);
+				if (memberRec) {
+					currentUserPermission = memberRec.permission;
+				}
+			}
 
 			return {
 				id: p.id,
@@ -197,6 +228,7 @@ export async function getProjectsAction() {
 				views: p.views,
 				teamName: p.team?.name || null,
 				memberCount,
+				currentUserPermission,
 			};
 		});
 
@@ -212,11 +244,18 @@ export async function getProjectsAction() {
 
 export async function getProjectDetailAction(id: string) {
 	try {
-		await getAuthenticatedDbUser();
+		const dbUser = await getAuthenticatedDbUser();
 
 		const projectDetails = await db.query.projects.findFirst({
 			where: and(eq(projects.id, id), isNull(projects.deletedAt)),
 			with: {
+				team: {
+					with: {
+						members: {
+							where: eq(teamMembers.userId, dbUser.id),
+						},
+					},
+				},
 				statuses: {
 					orderBy: (statuses, { asc }) => [asc(statuses.position)],
 					with: {
@@ -236,7 +275,19 @@ export async function getProjectDetailAction(id: string) {
 			return { success: false, error: "Project not found" };
 		}
 
-		return { success: true, data: projectDetails };
+		const isOwner = projectDetails.ownerId === dbUser.id;
+		let currentUserPermission = "viewer";
+
+		if (isOwner) {
+			currentUserPermission = "administrator";
+		} else if (projectDetails.team?.members?.length) {
+			currentUserPermission = projectDetails.team.members[0].permission;
+		}
+
+		return {
+			success: true,
+			data: { ...projectDetails, currentUserPermission },
+		};
 	} catch (err: unknown) {
 		console.error("getProjectDetailAction Error:", err);
 		return {
@@ -273,7 +324,7 @@ export async function checkProjectNameUniqueAction(name: string) {
 
 export async function getProjectSettingsAction(id: string) {
 	try {
-		await getAuthenticatedDbUser();
+		const dbUser = await getAuthenticatedDbUser();
 
 		// Fetch project with team (and team's members)
 		const projectData = await db.query.projects.findFirst({
@@ -309,8 +360,18 @@ export async function getProjectSettingsAction(id: string) {
 			access: "administrator" | "member" | "viewer";
 		}[] = [];
 
+		let currentUserPermission = "viewer";
+		const isOwner = projectData.ownerId === dbUser.id;
+
+		if (isOwner) {
+			currentUserPermission = "administrator";
+		}
+
 		if (projectData.team?.members) {
 			projectData.team.members.forEach((tm) => {
+				if (tm.userId === dbUser.id && !isOwner) {
+					currentUserPermission = tm.permission;
+				}
 				if (tm.user) {
 					members.push({
 						id: tm.id,
@@ -353,6 +414,7 @@ export async function getProjectSettingsAction(id: string) {
 				statuses,
 				labels: projectLabels,
 				priorities: priorityEnum.enumValues,
+				currentUserPermission,
 			},
 		};
 	} catch (err: unknown) {
@@ -382,7 +444,35 @@ export async function updateProjectSettingsAction(
 	},
 ) {
 	try {
-		await getAuthenticatedDbUser();
+		const dbUser = await getAuthenticatedDbUser();
+
+		const projectData = await db.query.projects.findFirst({
+			where: and(eq(projects.id, id), isNull(projects.deletedAt)),
+			with: {
+				team: {
+					with: {
+						members: {
+							where: eq(teamMembers.userId, dbUser.id),
+						},
+					},
+				},
+			},
+		});
+
+		if (!projectData) {
+			return { success: false, error: "Project not found" };
+		}
+
+		const isOwner = projectData.ownerId === dbUser.id;
+		const teamPermission = projectData.team?.members?.[0]?.permission;
+
+		if (!isOwner && teamPermission !== "administrator") {
+			return {
+				success: false,
+				error:
+					"Only project owners and team administrators can update settings.",
+			};
+		}
 
 		await db
 			.update(projects)
@@ -437,6 +527,16 @@ export async function updateProjectSettingsAction(
 				}
 			}
 		}
+
+		await notifyProjectMembers(
+			id,
+			"project-edited",
+			{
+				projectName: data.name,
+				editorName: dbUser.name || "Someone",
+			},
+			dbUser.clerkId,
+		);
 
 		revalidatePath("/projects");
 		revalidatePath(`/projects/${id}`);
@@ -497,7 +597,31 @@ export async function deleteProjectAction(id: string) {
 		// Get project details before deleting so we can use its name in the notification
 		const projectToDelete = await db.query.projects.findFirst({
 			where: eq(projects.id, id),
+			with: {
+				team: {
+					with: {
+						members: {
+							where: eq(teamMembers.userId, dbUser.id),
+						},
+					},
+				},
+			},
 		});
+
+		if (!projectToDelete) {
+			return { success: false, error: "Project not found" };
+		}
+
+		const isOwner = projectToDelete.ownerId === dbUser.id;
+		const teamPermission = projectToDelete.team?.members?.[0]?.permission;
+
+		if (!isOwner && teamPermission !== "administrator") {
+			return {
+				success: false,
+				error:
+					"Only project owners and team administrators can delete this project.",
+			};
+		}
 
 		await db
 			.update(projects)

@@ -37,6 +37,7 @@ export default function TaskModalRight({
 		setLabels,
 		reporter, // for display in view mode
 		handleFieldChange,
+		currentUserPermission,
 	} = useTaskModalStore();
 	const { user } = useUser();
 
@@ -111,7 +112,10 @@ export default function TaskModalRight({
 						handleChange("assigneeId", e.target.value, setAssignee)
 					}
 					className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
-					disabled={isLoading}
+					disabled={
+						isLoading ||
+						(currentUserPermission !== "administrator" && mode === "view")
+					}
 				>
 					<option value="">Select team member...</option>
 					{!isLoading &&
@@ -150,7 +154,10 @@ export default function TaskModalRight({
 							handleChange("priority", e.target.value, setPriority)
 						}
 						className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
-						disabled={isLoading}
+						disabled={
+							isLoading ||
+							(currentUserPermission !== "administrator" && mode === "view")
+						}
 					>
 						{isLoading ? (
 							<option value="">Loading priorities...</option>
@@ -188,6 +195,9 @@ export default function TaskModalRight({
 							}
 						}}
 						className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
+						disabled={
+							currentUserPermission !== "administrator" && mode === "view"
+						}
 					/>
 				</div>
 
@@ -207,6 +217,9 @@ export default function TaskModalRight({
 							handleChange("dueDate", e.target.value, setDueDate)
 						}
 						className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
+						disabled={
+							currentUserPermission !== "administrator" && mode === "view"
+						}
 					/>
 				</div>
 			</div>
@@ -237,7 +250,10 @@ export default function TaskModalRight({
 							value={labels}
 							onChange={(e) => handleChange("label", e.target.value, setLabels)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
-							disabled={isLoading}
+							disabled={
+								isLoading ||
+								(currentUserPermission !== "administrator" && mode === "view")
+							}
 						>
 							<option value="">Select label...</option>
 							{!isLoading &&
@@ -254,6 +270,9 @@ export default function TaskModalRight({
 							onChange={(e) => setLabels(e.target.value)}
 							onBlur={() => handleChange("label", labels, setLabels)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
+							disabled={
+								currentUserPermission !== "administrator" && mode === "view"
+							}
 						/>
 					)}
 				</div>
