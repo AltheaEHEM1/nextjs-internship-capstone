@@ -126,6 +126,7 @@ export function useTaskModal({
 		if (!opened) {
 			reset();
 		}
+		return () => reset();
 	}, [opened, reset]);
 
 	const handleDelete = async () => {

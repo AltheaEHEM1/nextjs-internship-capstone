@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
@@ -61,6 +61,19 @@ export async function createTaskAction(data: {
 		);
 		if (permission !== "administrator") {
 			return { success: false, error: "Only administrators can create tasks." };
+		}
+
+		// Check if task name already exists for this user
+		const existingTask = await db.query.tasks.findFirst({
+			where: and(
+				eq(tasks.title, data.title.trim()),
+				eq(tasks.reporterId, dbUser.id),
+				isNull(tasks.deletedAt),
+			),
+		});
+
+		if (existingTask) {
+			return { success: false, error: "A task with this name already exists." };
 		}
 
 		// Insert the task
@@ -155,6 +168,7 @@ export async function updateTaskAction(
 		assigneeId?: string;
 		priority?: "low" | "medium" | "high" | "urgent";
 		dueDate?: string;
+		label?: string; // name of the label
 		projectId: string; // Needed for pusher
 	},
 ) {
@@ -184,7 +198,8 @@ export async function updateTaskAction(
 			data.description === undefined &&
 			data.assigneeId === undefined &&
 			data.priority === undefined &&
-			data.dueDate === undefined;
+			data.dueDate === undefined &&
+			data.label === undefined;
 
 		if (permission !== "administrator" && !isOnlyStatusUpdate) {
 			return {
@@ -193,24 +208,50 @@ export async function updateTaskAction(
 			};
 		}
 
-		const updatedTask = await db
-			.update(tasks)
-			.set({
-				...(data.title !== undefined && { title: data.title }),
-				...(data.description !== undefined && {
-					description: data.description,
-				}),
-				...(data.statusId !== undefined && { statusId: data.statusId }),
-				...(data.assigneeId !== undefined && {
-					assigneeId: data.assigneeId === "" ? null : data.assigneeId,
-				}),
-				...(data.priority !== undefined && { priority: data.priority }),
-				...(data.dueDate !== undefined && {
-					dueDate: data.dueDate ? new Date(data.dueDate) : null,
-				}),
-			})
-			.where(eq(tasks.id, id))
-			.returning();
+		const updateData = {
+			...(data.title !== undefined && { title: data.title }),
+			...(data.description !== undefined && {
+				description: data.description,
+			}),
+			...(data.statusId !== undefined && { statusId: data.statusId }),
+			...(data.assigneeId !== undefined && {
+				assigneeId: data.assigneeId === "" ? null : data.assigneeId,
+			}),
+			...(data.priority !== undefined && { priority: data.priority }),
+			...(data.dueDate !== undefined && {
+				dueDate: data.dueDate ? new Date(data.dueDate) : null,
+			}),
+		};
+
+		if (Object.keys(updateData).length > 0) {
+			await db.update(tasks).set(updateData).where(eq(tasks.id, id));
+		}
+
+		// Handle label update
+		if (data.label !== undefined) {
+			// First, remove existing labels
+			await db.delete(taskLabels).where(eq(taskLabels.taskId, id));
+
+			if (data.label) {
+				const labelObj = await db.query.labels.findFirst({
+					where: and(
+						eq(labels.projectId, data.projectId),
+						eq(labels.name, data.label),
+					),
+				});
+				if (labelObj) {
+					await db.insert(taskLabels).values({
+						taskId: id,
+						labelId: labelObj.id,
+					});
+				}
+			}
+		}
+
+		// Re-fetch to return full object
+		const updatedTask = await db.query.tasks.findFirst({
+			where: eq(tasks.id, id),
+		});
 
 		if (data.title !== undefined) {
 			await db.insert(taskHistory).values({
@@ -283,7 +324,7 @@ export async function updateTaskAction(
 			);
 		}
 
-		return { success: true, data: updatedTask[0] };
+		return { success: true, data: updatedTask };
 	} catch (err: unknown) {
 		console.error("updateTaskAction Error:", err);
 		return {

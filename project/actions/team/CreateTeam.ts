@@ -1,6 +1,6 @@
 "use server";
 
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
 import { db } from "@/lib/db";
@@ -19,6 +19,28 @@ export async function createTeamWithMembersAction(data: {
 }) {
 	try {
 		const dbUser = await getAuthenticatedDbUser();
+
+		// Check if user already has a team with this name
+		const existingTeam = await db
+			.select()
+			.from(teams)
+			.innerJoin(teamMembers, eq(teams.id, teamMembers.teamId))
+			.where(
+				and(
+					eq(teams.name, data.name.trim()),
+					eq(teamMembers.userId, dbUser.id),
+					isNull(teams.deletedAt),
+				),
+			)
+			.limit(1);
+
+		if (existingTeam.length > 0) {
+			return {
+				success: false,
+				error: "You already have a team with this name.",
+			};
+		}
+
 		return await db.transaction(async (tx) => {
 			const [newTeam] = await tx
 				.insert(teams)

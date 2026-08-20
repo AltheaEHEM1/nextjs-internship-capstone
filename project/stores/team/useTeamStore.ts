@@ -223,13 +223,14 @@ export const useTeamStore = create<TeamState>((set, _get) => ({
 	setAddPeopleContact: (v) => set({ addPeopleContact: v }),
 	setAddPeopleNotes: (v) => set({ addPeopleNotes: v }),
 	openAddPeopleModal: () => set({ isAddPeopleOpen: true }),
-	closeAddPeopleModal: () => set({ isAddPeopleOpen: false }),
+	closeAddPeopleModal: () =>
+		set({ isAddPeopleOpen: false, addPeopleContact: "", addPeopleNotes: "" }),
 	setTeamName: (v) => set({ teamName: v }),
 	setTeamIcon: (v) => set({ teamIcon: v }),
 	setCoverUrl: (v) => set({ coverUrl: v }),
 	setTeamStep: (step) => set({ teamStep: step, isTeamModalOpen: step > 0 }),
 	openTeamModal: () => set({ isTeamModalOpen: true, teamStep: 1 }),
-	closeTeamModal: () => set({ isTeamModalOpen: false, teamStep: 0 }),
+	closeTeamModal: () => set({ ...formDefaults }),
 	resetTeamForm: () => set({ ...formDefaults }),
 
 	addMemberToList: (member) =>

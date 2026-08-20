@@ -65,7 +65,9 @@ export default function BoardPage({
 									"UN",
 								dueDate: t.dueDate ? new Date(t.dueDate).toISOString() : "",
 								workType: "Task",
-								label: "",
+								label:
+									(t as { taskLabels?: { label?: { name: string } }[] })
+										.taskLabels?.[0]?.label?.name || "",
 								startDate: t.createdAt
 									? new Date(t.createdAt).toISOString()
 									: "",

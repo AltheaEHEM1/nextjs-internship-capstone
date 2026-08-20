@@ -29,9 +29,13 @@ export async function createProjectAction(data: {
 	try {
 		const dbUser = await getAuthenticatedDbUser();
 
-		// Check if a project with the same name already exists
+		// Check if the current user already has a project with this name
 		const existingProject = await db.query.projects.findFirst({
-			where: eq(projects.name, data.name),
+			where: and(
+				eq(projects.name, data.name),
+				eq(projects.ownerId, dbUser.id),
+				isNull(projects.deletedAt),
+			),
 		});
 
 		if (existingProject) {
@@ -264,6 +268,11 @@ export async function getProjectDetailAction(id: string) {
 							with: {
 								reporter: true,
 								assignee: true,
+								taskLabels: {
+									with: {
+										label: true,
+									},
+								},
 							},
 						},
 					},
@@ -300,13 +309,17 @@ export async function getProjectDetailAction(id: string) {
 
 export async function checkProjectNameUniqueAction(name: string) {
 	try {
-		await getAuthenticatedDbUser();
+		const dbUser = await getAuthenticatedDbUser();
 		if (!name || name.trim() === "") {
 			return { success: true, isUnique: true };
 		}
 
 		const existingProject = await db.query.projects.findFirst({
-			where: and(eq(projects.name, name.trim()), isNull(projects.deletedAt)),
+			where: and(
+				eq(projects.name, name.trim()),
+				eq(projects.ownerId, dbUser.id),
+				isNull(projects.deletedAt),
+			),
 		});
 
 		return { success: true, isUnique: !existingProject };
