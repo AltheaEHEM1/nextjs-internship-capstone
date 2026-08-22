@@ -1,10 +1,10 @@
 "use client";
 
-import { UserButton } from "@clerk/nextjs";
+import { ClerkLoaded, ClerkLoading, UserButton } from "@clerk/nextjs";
 import { Menu, Moon, Search, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 // import { useState } from "react"; // removed, using Zustand store
-import { useCustomSidebarHeaderStore } from "../../stores/components/custom-sidebar-header-store";
+import { useCustomSidebarHeaderStore } from "../../stores/components/CustomSidebarHeaderStore";
 
 // removed top-level store hook
 
@@ -85,7 +85,12 @@ export default function SidebarHeader({
 					{theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
 				</button>
 
-				<UserButton />
+				<ClerkLoading>
+					<div className="h-7 w-7 rounded-full bg-slate-200 animate-pulse" />
+				</ClerkLoading>
+				<ClerkLoaded>
+					<UserButton />
+				</ClerkLoaded>
 			</div>
 		</header>
 	);

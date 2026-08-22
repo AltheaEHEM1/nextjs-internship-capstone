@@ -3,7 +3,7 @@
 import { Gantt } from "gantt-task-react";
 import { use, useCallback, useEffect } from "react";
 import { getProjectDetailAction } from "@/actions/project/Project";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/real-time-board/PusherClient";
 import "gantt-task-react/dist/index.css";
 import { useGanttChart } from "@/hooks/project/(tabs)/useGanttChart";
 

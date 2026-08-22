@@ -4,7 +4,7 @@ import type React from "react";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
-import { Toaster } from "@/components/toast/toaster";
+import { Toaster } from "@/components/toast/Toaster";
 
 //import { ThemeProvider } from "@/components/theme-provider";
 

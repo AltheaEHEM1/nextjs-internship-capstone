@@ -1,11 +1,20 @@
 "use client";
 
 import EmojiPicker, { Theme } from "emoji-picker-react";
-import { ImagePlus, UserPlus, X } from "lucide-react";
+import {
+	CheckCircle2,
+	ImagePlus,
+	Loader2,
+	UserPlus,
+	X,
+	XCircle,
+} from "lucide-react";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { checkTeamNameUniqueAction } from "@/actions/team/CreateTeam";
 import BaseModal from "@/components/layout/BaseModal";
-import { useTeamStore } from "@/stores/team/useTeamStore";
+import { createTeamSchema } from "@/lib/validation/Validations";
+import { useTeamStore } from "@/stores/team/TeamStore";
 
 export interface AddTeam1Props {
 	opened: boolean;
@@ -27,10 +36,59 @@ export default function AddTeamModal1({
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
+	const [isCheckingName, setIsCheckingName] = useState(false);
+	const [isNameUnique, setIsNameUnique] = useState<boolean | null>(null);
+
+	const [errors, setErrors] = useState<Record<string, string>>({});
+	const [touched, setTouched] = useState<Record<string, boolean>>({});
+	const [maxLengthError, setMaxLengthError] = useState("");
+
+	const handleBlur = (field: string) => {
+		setTouched((prev) => ({ ...prev, [field]: true }));
+	};
+
+	useEffect(() => {
+		const newErrors: Record<string, string> = {};
+		const nameRes = createTeamSchema.shape.name.safeParse(teamName.trim());
+		if (!nameRes.success) newErrors.teamName = nameRes.error.issues[0].message;
+		setErrors(newErrors);
+	}, [teamName]);
+
+	useEffect(() => {
+		const checkUnique = async () => {
+			if (!teamName.trim()) {
+				setIsNameUnique(null);
+				setIsCheckingName(false);
+				return;
+			}
+			setIsCheckingName(true);
+			try {
+				const result = await checkTeamNameUniqueAction(teamName);
+				if (result.success) {
+					setIsNameUnique(result.isUnique ?? false);
+				} else {
+					setIsNameUnique(null);
+				}
+			} catch (_error) {
+				setIsNameUnique(null);
+			} finally {
+				setIsCheckingName(false);
+			}
+		};
+
+		const timeoutId = setTimeout(checkUnique, 500);
+		return () => clearTimeout(timeoutId);
+	}, [teamName]);
+
 	if (!opened) return null;
 
 	const handleNextClick = () => {
-		if (!teamName.trim()) return;
+		if (
+			!teamName.trim() ||
+			isNameUnique === false ||
+			Object.keys(errors).some((key) => errors[key])
+		)
+			return;
 		onNext();
 	};
 
@@ -54,15 +112,65 @@ export default function AddTeamModal1({
 					>
 						Team Name <span className="text-red-500">*</span>
 					</label>
-					<input
-						id="teamName"
-						type="text"
-						value={teamName}
-						required
-						onChange={(e) => setTeamName(e.target.value)}
-						placeholder="e.g. Core Engineering"
-						className="mt-1 w-full rounded-xl border border-french_gray-200 p-2.5 text-sm dark:border-paynes_gray-600 dark:bg-outer_space-400 dark:text-platinum-100"
-					/>
+					<div className="relative mt-1">
+						<input
+							id="teamName"
+							type="text"
+							value={teamName}
+							required
+							onChange={(e) => {
+								let val = e.target.value.replace(/\s{2,}/g, " ");
+								if (val.length > 50) {
+									val = val.slice(0, 50);
+									setMaxLengthError("Team name is too long");
+								} else {
+									setMaxLengthError("");
+								}
+								setTeamName(val);
+								setTouched((prev) => ({ ...prev, teamName: true }));
+							}}
+							onBlur={() => handleBlur("teamName")}
+							placeholder="e.g. Core Engineering"
+							className={`w-full rounded-xl border p-2.5 text-sm dark:bg-outer_space-400 dark:text-platinum-100 pr-10 focus:outline-none focus:ring-1 ${
+								teamName.trim() !== ""
+									? isCheckingName
+										? "border-french_gray-200 focus:border-gray-400 focus:ring-gray-400 dark:border-paynes_gray-600"
+										: isNameUnique
+											? "border-[#1e9b65] focus:border-[#1e9b65] focus:ring-[#1e9b65]"
+											: "border-red-500 focus:border-red-500 focus:ring-red-500"
+									: touched.teamName && errors.teamName
+										? "border-red-500 focus:border-red-500 focus:ring-red-500"
+										: "border-french_gray-200 focus:border-[#1e9b65] focus:ring-[#1e9b65] dark:border-paynes_gray-600"
+							}`}
+						/>
+						<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+							{isCheckingName && (
+								<Loader2 size={16} className="animate-spin text-gray-400" />
+							)}
+							{!isCheckingName &&
+								teamName.trim() !== "" &&
+								isNameUnique === true && (
+									<CheckCircle2 size={16} className="text-[#1e9b65]" />
+								)}
+							{!isCheckingName &&
+								teamName.trim() !== "" &&
+								isNameUnique === false && (
+									<XCircle size={16} className="text-red-500" />
+								)}
+						</div>
+					</div>
+					{!isCheckingName &&
+						isNameUnique === false &&
+						teamName.trim() !== "" && (
+							<p className="mt-1 text-xs text-red-500 font-medium">
+								You already have a team with this name.
+							</p>
+						)}
+					{touched.teamName && (errors.teamName || maxLengthError) && (
+						<p className="mt-1 text-xs text-red-500 font-medium">
+							{errors.teamName || maxLengthError}
+						</p>
+					)}
 				</div>
 				<div>
 					<label
@@ -159,7 +267,11 @@ export default function AddTeamModal1({
 					<button
 						type="button"
 						onClick={handleNextClick}
-						disabled={!teamName.trim()}
+						disabled={
+							!teamName.trim() ||
+							isNameUnique === false ||
+							Object.keys(errors).some((key) => errors[key])
+						}
 						className="rounded-xl bg-blue_munsell-500 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue_munsell-600 disabled:opacity-50"
 					>
 						Next

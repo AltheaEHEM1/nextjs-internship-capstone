@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/toast/use-toast";
 import {
 	type InvitationData,
 	useInvitationStore,
-} from "@/stores/invitation/useInvitationStore";
+} from "@/stores/invitation/InvitationStore";
 
 export function useInvitation(token: string) {
 	const router = useRouter();
@@ -90,7 +90,11 @@ export function useInvitation(token: string) {
 							: "You have declined the team invitation.",
 					variant: action === "accept" ? "success" : "destructive",
 				});
-				router.push("/team");
+				if (action === "accept") {
+					router.push("/team");
+				} else {
+					router.push("/");
+				}
 			} else if (res.requiresAuth) {
 				toast({
 					title: "Sign in required",

@@ -24,7 +24,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 export function useProjects() {
   const queryClient = useQueryClient()
-  
+
   const {
     data: projects,
     isLoading,
@@ -33,14 +33,14 @@ export function useProjects() {
     queryKey: ['projects'],
     queryFn: () => queries.projects.getAll()
   })
-  
+
   const createProject = useMutation({
     mutationFn: queries.projects.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
     }
   })
-  
+
   return {
     projects,
     isLoading,
@@ -56,16 +56,16 @@ Dependencies to install:
 */
 
 // Placeholder to prevent import errors
-export function useProjects() {
-	console.log("TODO: Implement useProjects hook");
-	return {
-		projects: [],
-		isLoading: false,
-		error: null,
-		createProject: (data: Record<string, unknown>) =>
-			console.log("TODO: Create project", data),
-		updateProject: (id: string, data: Record<string, unknown>) =>
-			console.log(`TODO: Update project ${id}`, data),
-		deleteProject: (id: string) => console.log(`TODO: Delete project ${id}`),
-	};
-}
+// export function useProjects() {
+// 	console.log("TODO: Implement useProjects hook");
+// 	return {
+// 		projects: [],
+// 		isLoading: false,
+// 		error: null,
+// 		createProject: (data: Record<string, unknown>) =>
+// 			console.log("TODO: Create project", data),
+// 		updateProject: (id: string, data: Record<string, unknown>) =>
+// 			console.log(`TODO: Update project ${id}`, data),
+// 		deleteProject: (id: string) => console.log(`TODO: Delete project ${id}`),
+// 	};
+// }

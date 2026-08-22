@@ -22,7 +22,7 @@ Features:
 Example structure:
 export function useTasks(projectId: string) {
   const queryClient = useQueryClient()
-  
+
   const {
     data: tasks,
     isLoading,
@@ -32,7 +32,7 @@ export function useTasks(projectId: string) {
     queryFn: () => queries.tasks.getByProject(projectId),
     enabled: !!projectId
   })
-  
+
   const createTask = useMutation({
     mutationFn: queries.tasks.create,
     onMutate: async (newTask) => {
@@ -50,7 +50,7 @@ export function useTasks(projectId: string) {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] })
     }
   })
-  
+
   return {
     tasks,
     isLoading,
@@ -62,20 +62,20 @@ export function useTasks(projectId: string) {
 */
 
 // Placeholder to prevent import errors
-export function useTasks(projectId: string) {
-	console.log(`TODO: Implement useTasks hook for project ${projectId}`);
-	return {
-		tasks: [],
-		isLoading: false,
-		error: null,
-		createTask: (data: Record<string, unknown>) =>
-			console.log("TODO: Create task", data),
-		updateTask: (id: string, data: Record<string, unknown>) =>
-			console.log(`TODO: Update task ${id}`, data),
-		deleteTask: (id: string) => console.log(`TODO: Delete task ${id}`),
-		moveTask: (taskId: string, newListId: string, position: number) =>
-			console.log(
-				`TODO: Move task ${taskId} to list ${newListId} at position ${position}`,
-			),
-	};
-}
+// export function useTasks(projectId: string) {
+// 	console.log(`TODO: Implement useTasks hook for project ${projectId}`);
+// 	return {
+// 		tasks: [],
+// 		isLoading: false,
+// 		error: null,
+// 		createTask: (data: Record<string, unknown>) =>
+// 			console.log("TODO: Create task", data),
+// 		updateTask: (id: string, data: Record<string, unknown>) =>
+// 			console.log(`TODO: Update task ${id}`, data),
+// 		deleteTask: (id: string) => console.log(`TODO: Delete task ${id}`),
+// 		moveTask: (taskId: string, newListId: string, position: number) =>
+// 			console.log(
+// 				`TODO: Move task ${taskId} to list ${newListId} at position ${position}`,
+// 			),
+// 	};
+// }

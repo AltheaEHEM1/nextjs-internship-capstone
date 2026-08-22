@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { projects } from "@/lib/db/schema";
-import { pusherServer } from "@/lib/pusher-server";
+import { db } from "@/lib/db/index";
+import { projects } from "@/lib/db/schema/index";
+import { pusherServer } from "@/lib/real-time-board/PusherServer";
 
 /**
  * Triggers a Pusher event to all team members of a project.

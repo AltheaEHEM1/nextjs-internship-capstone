@@ -10,7 +10,7 @@ import AddTeamModal1 from "@/components/modals/team/AddTeamModal1";
 import AddTeamModal2 from "@/components/modals/team/AddTeamModal2";
 import { PageHeader } from "@/components/page-header/PageHeader";
 import { useTeamManagement } from "@/hooks/team/useTeamManagement";
-import type { PersonItem, TeamItem } from "@/stores/team/useTeamStore";
+import type { PersonItem, TeamItem } from "@/stores/team/TeamStore";
 
 export function TeamPageContent({
 	initialTab,

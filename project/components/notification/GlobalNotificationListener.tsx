@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 import { useNotification } from "@/hooks/notification/useNotification";
 import { useToast } from "@/hooks/toast/use-toast";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/real-time-board/PusherClient";
 
 export function GlobalNotificationListener() {
 	const { user } = useUser();

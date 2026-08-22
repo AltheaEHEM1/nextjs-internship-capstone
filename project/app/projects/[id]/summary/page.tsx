@@ -19,7 +19,7 @@ import {
 	useSummary,
 	type WorkTypeItem,
 } from "@/hooks/project/(tabs)/useSummary";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/real-time-board/PusherClient";
 
 export default function Summary({
 	params,

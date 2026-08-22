@@ -30,6 +30,7 @@ export function EditTeamModal({
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [maxLengthError, setMaxLengthError] = useState("");
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleSubmit = async () => {
@@ -75,10 +76,24 @@ export function EditTeamModal({
 								id="teamName"
 								type="text"
 								value={name}
-								onChange={(e) => setName(e.target.value)}
+								onChange={(e) => {
+									let val = e.target.value.replace(/\s{2,}/g, " ");
+									if (val.length > 50) {
+										val = val.slice(0, 50);
+										setMaxLengthError("Team name is too long");
+									} else {
+										setMaxLengthError("");
+									}
+									setName(val);
+								}}
 								placeholder="e.g. Design Team"
-								className="w-full rounded-xl border border-french_gray-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-blue_munsell-500 focus:ring-4 focus:ring-blue_munsell-500/10 dark:border-paynes_gray-600 dark:bg-outer_space-500 dark:text-white"
+								className={`w-full rounded-xl border bg-white px-4 py-2.5 text-sm outline-none transition-all dark:bg-outer_space-500 dark:text-white ${maxLengthError ? "border-red-500 focus:ring-4 focus:ring-red-500/10" : "border-french_gray-200 focus:border-blue_munsell-500 focus:ring-4 focus:ring-blue_munsell-500/10 dark:border-paynes_gray-600"}`}
 							/>
+							{maxLengthError && (
+								<p className="mt-1 text-xs text-red-500 font-medium">
+									{maxLengthError}
+								</p>
+							)}
 						</div>
 
 						<div className="space-y-2 relative">

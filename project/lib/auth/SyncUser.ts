@@ -1,7 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { db } from "@/lib/db/index";
+import { users } from "@/lib/db/schema/index";
 
 export async function syncUser() {
 	const clerkUser = await currentUser();

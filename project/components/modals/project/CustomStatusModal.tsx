@@ -26,7 +26,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BaseModal from "@/components/layout/BaseModal";
 import { useSortableItem } from "@/hooks/components/useSortableItem";
-import { useCustomStatusStore } from "../../../stores/custom-status-store";
+import { useCustomStatusStore } from "../../../stores/project/CustomStatusStore";
 
 type StatusCategory = "notStarted" | "active" | "done" | "closed";
 

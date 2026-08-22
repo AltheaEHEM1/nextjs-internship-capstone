@@ -17,7 +17,7 @@ import type { Task } from "@/components/board/TaskCard";
 import { TaskCardDisplay } from "@/components/board/TaskCard";
 import TaskModal from "@/components/modals/task/TaskModal";
 import { useProjectBoard } from "@/hooks/project/(tabs)/useProjectBoard";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/real-time-board/PusherClient";
 import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
 
 export default function BoardPage({
@@ -116,7 +116,7 @@ export default function BoardPage({
 		onDragOver,
 		onDragEnd,
 		closeViewTask,
-	} = useProjectBoard();
+	} = useProjectBoard(currentUserPermission);
 
 	const handleDragEnd = (event: DragEndEvent) => {
 		onDragEnd(event);

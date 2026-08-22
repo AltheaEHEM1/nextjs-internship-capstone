@@ -13,10 +13,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/alert/Alert";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import { usePersonManagement } from "@/hooks/team/useTeamManagement";
-import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
+import { useBreadcrumbStore } from "@/stores/components/BreadCrumbStore";
 
 export default function PersonDetailPage({
 	params,

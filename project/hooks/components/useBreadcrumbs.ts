@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
-import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
+import { useBreadcrumbStore } from "@/stores/components/BreadCrumbStore";
 
 export interface Breadcrumb {
 	href: string;

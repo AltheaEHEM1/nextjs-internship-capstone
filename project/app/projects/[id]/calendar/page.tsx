@@ -3,7 +3,7 @@
 import { use, useCallback, useEffect } from "react";
 import { Calendar as BigCalendar } from "react-big-calendar";
 import { getProjectDetailAction } from "@/actions/project/Project";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/real-time-board/PusherClient";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { calendarLocalizer } from "@/hooks/project/(tabs)/useCalendar";
 import { useCalendarStore } from "@/stores/project/(tabs)/CalendarStore";

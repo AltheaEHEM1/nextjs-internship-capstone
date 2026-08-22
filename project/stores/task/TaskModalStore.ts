@@ -60,6 +60,11 @@ export interface TaskModalState {
 	labels: string; // Also used for "label"
 	reporter: string;
 
+	// Validation
+	isCheckingName: boolean;
+	isNameUnique: boolean | null;
+	errors: Record<string, string>;
+
 	// View Mode Specific
 	activeTab: "comments" | "history";
 	comments: TaskComment[];
@@ -80,6 +85,9 @@ export interface TaskModalState {
 	setStartDate: (v: string) => void;
 	setLabels: (v: string) => void;
 	setReporter: (v: string) => void;
+
+	setIsCheckingName: (v: boolean) => void;
+	setIsNameUnique: (v: boolean | null) => void;
 
 	setActiveTab: (tab: "comments" | "history") => void;
 	setNewComment: (c: string) => void;
@@ -122,6 +130,10 @@ export const useTaskModalStore = create<TaskModalState>()(
 		labels: "",
 		reporter: "",
 
+		isCheckingName: false,
+		isNameUnique: null,
+		errors: {},
+
 		activeTab: "comments",
 		comments: [],
 		history: [],
@@ -141,6 +153,9 @@ export const useTaskModalStore = create<TaskModalState>()(
 		setStartDate: (v) => set({ startDate: v }),
 		setLabels: (v) => set({ labels: v }),
 		setReporter: (v) => set({ reporter: v }),
+
+		setIsCheckingName: (v) => set({ isCheckingName: v }),
+		setIsNameUnique: (v) => set({ isNameUnique: v }),
 
 		setActiveTab: (tab) => set({ activeTab: tab }),
 		setNewComment: (c) => set({ newComment: c }),
@@ -201,6 +216,9 @@ export const useTaskModalStore = create<TaskModalState>()(
 				workType: (taskData.workType as WorkType) || "Task",
 				onUpdateTask,
 
+				isCheckingName: false,
+				isNameUnique: null,
+
 				// Reset tabs
 				activeTab: "comments",
 				newComment: "",
@@ -229,6 +247,9 @@ export const useTaskModalStore = create<TaskModalState>()(
 				startDate: "",
 				labels: "",
 				reporter: "",
+				isCheckingName: false,
+				isNameUnique: null,
+				errors: {},
 				activeTab: "comments",
 				comments: [],
 				history: [],

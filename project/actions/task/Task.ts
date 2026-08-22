@@ -2,8 +2,8 @@
 
 import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
-import { db } from "@/lib/db";
+import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
+import { db } from "@/lib/db/index";
 import {
 	comments,
 	labels,
@@ -14,9 +14,10 @@ import {
 	tasks,
 	teamMembers,
 	users,
-} from "@/lib/db/schema";
-import { notifyProjectMembers } from "@/lib/notifications/notify-project";
-import { pusherServer } from "@/lib/pusher-server";
+} from "@/lib/db/schema/index";
+import { notifyProjectMembers } from "@/lib/notifications/NotifyProject";
+import { pusherServer } from "@/lib/real-time-board/PusherServer";
+import { commentSchema, taskSchema } from "@/lib/validation/Validations";
 
 async function checkUserProjectPermission(userId: string, projectId: string) {
 	const projectData = await db.query.projects.findFirst({
@@ -38,6 +39,23 @@ async function checkUserProjectPermission(userId: string, projectId: string) {
 	return projectData.team?.members?.[0]?.permission || "viewer";
 }
 
+export async function checkTaskTitleUniqueAction(title: string) {
+	try {
+		const dbUser = await getAuthenticatedDbUser();
+		const existingTask = await db.query.tasks.findFirst({
+			where: and(
+				eq(tasks.title, title.trim()),
+				eq(tasks.reporterId, dbUser.id),
+				isNull(tasks.deletedAt),
+			),
+		});
+		return { success: true, isUnique: !existingTask };
+	} catch (err: unknown) {
+		console.error("checkTaskTitleUniqueAction Error:", err);
+		return { success: false, error: "Failed to check task title" };
+	}
+}
+
 export async function createTaskAction(data: {
 	title: string;
 	description?: string;
@@ -49,11 +67,15 @@ export async function createTaskAction(data: {
 	labelName?: string;
 }) {
 	try {
-		const dbUser = await getAuthenticatedDbUser();
-
-		if (!data.title || !data.statusId || !data.projectId) {
-			return { success: false, error: "Missing required fields" };
+		const validationResult = taskSchema.safeParse(data);
+		if (!validationResult.success) {
+			return {
+				success: false,
+				error: validationResult.error.issues[0]?.message || "Invalid task data",
+			};
 		}
+
+		const dbUser = await getAuthenticatedDbUser();
 
 		const permission = await checkUserProjectPermission(
 			dbUser.id,
@@ -173,6 +195,16 @@ export async function updateTaskAction(
 	},
 ) {
 	try {
+		const validationResult = taskSchema.partial().safeParse(data);
+		if (!validationResult.success) {
+			return {
+				success: false,
+				error:
+					validationResult.error.issues[0]?.message ||
+					"Invalid task update data",
+			};
+		}
+
 		const dbUser = await getAuthenticatedDbUser();
 
 		if (!id) {
@@ -472,11 +504,16 @@ export async function createTaskCommentAction(
 	projectId: string,
 ) {
 	try {
-		const dbUser = await getAuthenticatedDbUser();
-
-		if (!taskId || !content) {
-			return { success: false, error: "Missing required fields" };
+		const validationResult = commentSchema.safeParse({ text: content, taskId });
+		if (!validationResult.success) {
+			return {
+				success: false,
+				error:
+					validationResult.error.issues[0]?.message || "Invalid comment data",
+			};
 		}
+
+		const dbUser = await getAuthenticatedDbUser();
 
 		const newComment = await db
 			.insert(comments)

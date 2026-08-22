@@ -9,6 +9,7 @@ import {
 	X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { AddLabelModal } from "@/components/modals/project-settings/AddLabelModal";
 import { AddStatusModal } from "@/components/modals/project-settings/AddStatusModal";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
@@ -117,6 +118,9 @@ export default function ProjectSettingsForm({
 		setIsDeleteAlertOpen,
 	} = useProjectSettings();
 	const router = useRouter();
+	const [maxLengthErrors, setMaxLengthErrors] = useState<
+		Record<string, string>
+	>({});
 
 	const { handleSaveDone, handleSaveAll, handleDeleteConfirm } =
 		useProjectSettingsFormActions(projectId, onSave, onDelete);
@@ -195,9 +199,26 @@ export default function ProjectSettingsForm({
 									type="text"
 									required
 									value={tempTitle}
-									onChange={(e) => setTempTitle(e.target.value)}
-									className="w-full rounded-xl border border-french_gray-300 dark:border-payne's_gray-600 bg-white dark:bg-outer_space-800 px-4 py-3 text-sm text-outer_space-900 dark:text-platinum-100 focus:outline-none focus:ring-2 focus:ring-blue_munsell-500/50 shadow-2xs"
+									onChange={(e) => {
+										let val = e.target.value.replace(/\s{2,}/g, " ");
+										if (val.length > 50) {
+											val = val.slice(0, 50);
+											setMaxLengthErrors((prev) => ({
+												...prev,
+												title: "Project name is too long",
+											}));
+										} else {
+											setMaxLengthErrors((prev) => ({ ...prev, title: "" }));
+										}
+										setTempTitle(val);
+									}}
+									className={`w-full rounded-xl border px-4 py-3 text-sm text-outer_space-900 dark:text-platinum-100 focus:outline-none focus:ring-2 shadow-2xs bg-white dark:bg-outer_space-800 ${maxLengthErrors.title ? "border-red-500 focus:ring-red-500" : "border-french_gray-300 dark:border-payne's_gray-600 focus:ring-blue_munsell-500/50"}`}
 								/>
+								{maxLengthErrors.title && (
+									<p className="mt-1 text-xs text-red-500 font-medium">
+										{maxLengthErrors.title}
+									</p>
+								)}
 							</div>
 							{/* Description */}
 							<div>
@@ -210,10 +231,30 @@ export default function ProjectSettingsForm({
 								<textarea
 									id="project-description"
 									value={tempDescription}
-									onChange={(e) => setTempDescription(e.target.value)}
+									onChange={(e) => {
+										let val = e.target.value.replace(/\s{2,}/g, " ");
+										if (val.length > 500) {
+											val = val.slice(0, 500);
+											setMaxLengthErrors((prev) => ({
+												...prev,
+												description: "Description is too long",
+											}));
+										} else {
+											setMaxLengthErrors((prev) => ({
+												...prev,
+												description: "",
+											}));
+										}
+										setTempDescription(val);
+									}}
 									rows={3}
-									className="w-full rounded-xl border border-french_gray-300 dark:border-payne's_gray-600 bg-white dark:bg-outer_space-800 px-4 py-3 text-sm text-outer_space-900 dark:text-platinum-100 focus:outline-none focus:ring-2 focus:ring-blue_munsell-500/50 resize-none shadow-2xs"
+									className={`w-full rounded-xl border px-4 py-3 text-sm text-outer_space-900 dark:text-platinum-100 focus:outline-none focus:ring-2 resize-none shadow-2xs bg-white dark:bg-outer_space-800 ${maxLengthErrors.description ? "border-red-500 focus:ring-red-500" : "border-french_gray-300 dark:border-payne's_gray-600 focus:ring-blue_munsell-500/50"}`}
 								/>
+								{maxLengthErrors.description && (
+									<p className="mt-1 text-xs text-red-500 font-medium">
+										{maxLengthErrors.description}
+									</p>
+								)}
 							</div>
 						</div>
 					) : (

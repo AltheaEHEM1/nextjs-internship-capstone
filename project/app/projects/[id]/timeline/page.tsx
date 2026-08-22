@@ -2,7 +2,7 @@
 
 import { use, useCallback } from "react";
 import { getProjectDetailAction } from "@/actions/project/Project";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/real-time-board/PusherClient";
 import { useTimelineStore } from "@/stores/project/(tabs)/TimelineStore";
 
 import "vis-timeline/styles/vis-timeline-graph2d.min.css";

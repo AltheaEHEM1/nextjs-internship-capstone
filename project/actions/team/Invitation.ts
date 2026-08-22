@@ -9,8 +9,9 @@ import type { Transporter } from "nodemailer";
 import nodemailer from "nodemailer";
 import React from "react";
 import { InviteEmail } from "@/components/emails/InviteEmail";
-import { db } from "@/lib/db";
-import { invitations } from "@/lib/db/schema";
+import { db } from "@/lib/db/index";
+import { invitations } from "@/lib/db/schema/index";
+import { invitationSchema } from "@/lib/validation/Validations";
 
 let transporter: Transporter;
 try {
@@ -33,20 +34,23 @@ try {
 	);
 }
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const _EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
+import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
 
 export async function sendUserInvitationAction(email: string, notes?: string) {
 	try {
-		const normalizedEmail = email.trim().toLowerCase();
-
-		if (!EMAIL_REGEX.test(normalizedEmail)) {
+		const validationResult = invitationSchema.safeParse({ email, notes });
+		if (!validationResult.success) {
 			return {
 				success: false,
-				error: `"${email}" is not a valid email address.`,
+				error:
+					validationResult.error.issues[0]?.message ||
+					"Invalid invitation data",
 			};
 		}
+
+		const normalizedEmail = email.trim().toLowerCase();
 
 		if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
 			return {

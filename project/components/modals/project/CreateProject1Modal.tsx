@@ -10,9 +10,10 @@ import {
 import { useEffect, useState } from "react";
 import { checkProjectNameUniqueAction } from "@/actions/project/Project";
 import { getUserTeamsAction } from "@/actions/team/Team";
-import { Alert, AlertDescription } from "@/components/alert/alert";
+import { Alert, AlertDescription } from "@/components/alert/Alert";
 import BaseModal from "@/components/layout/BaseModal";
 import { useMinDate } from "@/hooks/project/useMinDate";
+import { projectSchema } from "@/lib/validation/Validations";
 
 export type AccessRole = "administrator" | "member" | "viewer";
 
@@ -53,6 +54,32 @@ export default function CreateProject1({
 	const [isNameUnique, setIsNameUnique] = useState<boolean | null>(null);
 
 	const [isLoadingTeams, setIsLoadingTeams] = useState(true);
+
+	const [errors, setErrors] = useState<Record<string, string>>({});
+	const [touched, setTouched] = useState<Record<string, boolean>>({});
+	const [maxLengthErrors, setMaxLengthErrors] = useState<
+		Record<string, string>
+	>({});
+
+	const handleBlur = (field: string) => {
+		setTouched((prev) => ({ ...prev, [field]: true }));
+	};
+
+	useEffect(() => {
+		const newErrors: Record<string, string> = {};
+
+		const nameRes = projectSchema.shape.name.safeParse(projectName.trim());
+		if (!nameRes.success)
+			newErrors.projectName = nameRes.error.issues[0].message;
+
+		const descRes = projectSchema.shape.description.safeParse(
+			description.trim(),
+		);
+		if (!descRes.success)
+			newErrors.description = descRes.error.issues[0].message;
+
+		setErrors(newErrors);
+	}, [projectName, description]);
 
 	useEffect(() => {
 		async function fetchTeams() {
@@ -119,7 +146,8 @@ export default function CreateProject1({
 							!team ||
 							!dueDate ||
 							isNameUnique === false ||
-							isCheckingName
+							isCheckingName ||
+							Object.keys(errors).some((key) => errors[key])
 						}
 						className="rounded-lg bg-[#1e9b65] px-4 py-2 text-sm font-medium text-white shadow hover:opacity-90 disabled:opacity-50 transition"
 					>
@@ -150,7 +178,21 @@ export default function CreateProject1({
 							type="text"
 							id="projectName"
 							value={projectName}
-							onChange={(e) => setProjectName(e.target.value)}
+							onChange={(e) => {
+								let val = e.target.value.replace(/\s{2,}/g, " ");
+								if (val.length > 50) {
+									val = val.slice(0, 50);
+									setMaxLengthErrors((prev) => ({
+										...prev,
+										projectName: "Project name is too long",
+									}));
+								} else {
+									setMaxLengthErrors((prev) => ({ ...prev, projectName: "" }));
+								}
+								setProjectName(val);
+								setTouched((prev) => ({ ...prev, projectName: true }));
+							}}
+							onBlur={() => handleBlur("projectName")}
 							placeholder="e.g. Q3 Marketing Campaign"
 							className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 dark:bg-gray-700 dark:text-white pr-10 ${
 								projectName.trim() !== ""
@@ -159,7 +201,9 @@ export default function CreateProject1({
 										: isNameUnique
 											? "border-[#1e9b65] focus:border-[#1e9b65] focus:ring-[#1e9b65]"
 											: "border-red-500 focus:border-red-500 focus:ring-red-500"
-									: "border-gray-300 focus:border-[#1e9b65] focus:ring-[#1e9b65] dark:border-gray-600"
+									: touched.projectName && errors.projectName
+										? "border-red-500 focus:border-red-500 focus:ring-red-500"
+										: "border-gray-300 focus:border-[#1e9b65] focus:ring-[#1e9b65] dark:border-gray-600"
 							}`}
 						/>
 						<div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -185,6 +229,12 @@ export default function CreateProject1({
 								This project name is already taken.
 							</p>
 						)}
+					{touched.projectName &&
+						(errors.projectName || maxLengthErrors.projectName) && (
+							<p className="mt-1 text-xs text-red-500 font-medium">
+								{errors.projectName || maxLengthErrors.projectName}
+							</p>
+						)}
 				</div>
 
 				{/* Description */}
@@ -199,11 +249,35 @@ export default function CreateProject1({
 					<textarea
 						id="description"
 						value={description}
-						onChange={(e) => setDescription(e.target.value)}
+						onChange={(e) => {
+							let val = e.target.value.replace(/\s{2,}/g, " ");
+							if (val.length > 500) {
+								val = val.slice(0, 500);
+								setMaxLengthErrors((prev) => ({
+									...prev,
+									description: "Description is too long",
+								}));
+							} else {
+								setMaxLengthErrors((prev) => ({ ...prev, description: "" }));
+							}
+							setDescription(val);
+							setTouched((prev) => ({ ...prev, description: true }));
+						}}
+						onBlur={() => handleBlur("description")}
 						placeholder="Briefly describe what this project is about..."
 						rows={3}
-						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1e9b65] focus:outline-none focus:ring-1 focus:ring-[#1e9b65] dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+						className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 dark:bg-gray-700 dark:text-white ${
+							touched.description && errors.description
+								? "border-red-500 focus:border-red-500 focus:ring-red-500"
+								: "border-gray-300 focus:border-[#1e9b65] focus:ring-[#1e9b65] dark:border-gray-600"
+						}`}
 					/>
+					{touched.description &&
+						(errors.description || maxLengthErrors.description) && (
+							<p className="mt-1 text-xs text-red-500 font-medium">
+								{errors.description || maxLengthErrors.description}
+							</p>
+						)}
 				</div>
 
 				{/* Team Field */}

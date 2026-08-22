@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { invitations } from "@/lib/db/schema";
+import { db } from "@/lib/db/index";
+import { invitations } from "@/lib/db/schema/index";
 
 export async function getInvitationByToken(token: string) {
 	const invitation = await db.query.invitations.findFirst({

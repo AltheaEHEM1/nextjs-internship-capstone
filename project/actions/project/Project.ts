@@ -2,16 +2,20 @@
 
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
-import { db } from "@/lib/db";
+import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
+import { db } from "@/lib/db/index";
 import {
 	labels,
 	priorityEnum,
 	projectStatuses,
 	projects,
 	teamMembers,
-} from "@/lib/db/schema";
-import { notifyProjectMembers } from "@/lib/notifications/notify-project";
+} from "@/lib/db/schema/index";
+import { notifyProjectMembers } from "@/lib/notifications/NotifyProject";
+import {
+	projectSchema,
+	projectSettingsSchema,
+} from "@/lib/validation/Validations";
 
 export async function createProjectAction(data: {
 	name: string;
@@ -27,6 +31,15 @@ export async function createProjectAction(data: {
 	};
 }) {
 	try {
+		const validationResult = projectSchema.safeParse(data);
+		if (!validationResult.success) {
+			return {
+				success: false,
+				error:
+					validationResult.error.issues[0]?.message || "Invalid project data",
+			};
+		}
+
 		const dbUser = await getAuthenticatedDbUser();
 
 		// Check if the current user already has a project with this name
@@ -457,6 +470,16 @@ export async function updateProjectSettingsAction(
 	},
 ) {
 	try {
+		const validationResult = projectSettingsSchema.safeParse(data);
+		if (!validationResult.success) {
+			return {
+				success: false,
+				error:
+					validationResult.error.issues[0]?.message ||
+					"Invalid project settings data",
+			};
+		}
+
 		const dbUser = await getAuthenticatedDbUser();
 
 		const projectData = await db.query.projects.findFirst({

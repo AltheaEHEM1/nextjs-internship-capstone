@@ -2,9 +2,9 @@
 
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
-import { db } from "@/lib/db";
-import { teamMembers, teams, users } from "@/lib/db/schema";
+import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
+import { db } from "@/lib/db/index";
+import { teamMembers, teams, users } from "@/lib/db/schema/index";
 
 export async function getUserTeamsAction(
 	permissionFilter?: "administrator" | "member" | "viewer",

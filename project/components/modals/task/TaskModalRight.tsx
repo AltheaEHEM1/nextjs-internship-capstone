@@ -1,7 +1,7 @@
 import { useUser } from "@clerk/nextjs";
 import { Flag, Tag } from "lucide-react";
 import Image from "next/image";
-import { useTaskModalStore } from "@/stores/task/task-modal-store";
+import { useTaskModalStore } from "@/stores/task/TaskModalStore";
 
 interface TaskModalRightProps {
 	projectData: {
@@ -267,7 +267,9 @@ export default function TaskModalRight({
 						<input
 							type="text"
 							value={labels}
-							onChange={(e) => setLabels(e.target.value)}
+							onChange={(e) =>
+								setLabels(e.target.value.replace(/\s{2,}/g, " "))
+							}
 							onBlur={() => handleChange("label", labels, setLabels)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
 							disabled={

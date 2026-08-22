@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { createProjectAction } from "@/actions/project/Project";
 import type { AccessRole } from "@/components/modals/project/CreateProject1Modal";
 import { useToast } from "@/hooks/toast/use-toast";
-import { useProjectStore } from "@/stores/project/project-store";
+import { useProjectStore } from "@/stores/project/ProjectStore";
 
 /**
  * Custom hook that wraps the project Zustand store,

@@ -7,7 +7,7 @@ import {
 	getAcceptedInvitesAction,
 } from "@/actions/team/TeamMember";
 import { useToast } from "@/hooks/toast/use-toast";
-import { useTeamStore } from "@/stores/team/useTeamStore";
+import { useTeamStore } from "@/stores/team/TeamStore";
 
 interface AddTeamMemberModalProps {
 	teamId?: string;

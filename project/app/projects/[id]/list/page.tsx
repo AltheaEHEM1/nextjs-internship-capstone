@@ -12,7 +12,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { use, useCallback, useEffect, useMemo } from "react";
 import { getProjectDetailAction } from "@/actions/project/Project";
 import { type Task, useList } from "@/hooks/project/(tabs)/useList";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/real-time-board/PusherClient";
 
 const STATUS_COLORS: Record<Task["status"], string> = {
 	Todo: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",

@@ -16,7 +16,7 @@ import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore"
 //Custom hook that encapsulates all Kanban board logic:
 //drag-and-drop handling, task selection, and modal state.
 
-export function useProjectBoard() {
+export function useProjectBoard(currentUserPermission: string = "viewer") {
 	const { toast } = useToast();
 	const kanbanColumns = useProjectBoardStore((state) => state.kanbanColumns);
 	const setKanbanColumns = useProjectBoardStore(
@@ -40,13 +40,17 @@ export function useProjectBoard() {
 	);
 
 	// Require a minimum drag distance to avoid accidental drags on click
+	// For viewers, set an impossibly high distance so dragging is practically disabled
 	const pointerSensorOptions = useMemo(
 		() => ({
-			activationConstraint: { distance: 10 },
+			activationConstraint: {
+				distance: currentUserPermission === "viewer" ? 99999 : 10,
+			},
 		}),
-		[],
+		[currentUserPermission],
 	);
-	const sensors = useSensors(useSensor(PointerSensor, pointerSensorOptions));
+	const pointerSensor = useSensor(PointerSensor, pointerSensorOptions);
+	const sensors = useSensors(pointerSensor);
 
 	const onDragStart = useCallback(
 		(event: DragStartEvent) => {

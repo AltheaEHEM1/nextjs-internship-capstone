@@ -2,16 +2,17 @@
 
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { getAuthenticatedDbUser } from "@/lib/auth/get-user";
-import { db } from "@/lib/db";
+import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
+import { db } from "@/lib/db/index";
 import {
 	invitations,
 	projects,
 	teamMembers,
 	teams,
 	users,
-} from "@/lib/db/schema";
-import { notifyTeamMembers, notifyUser } from "@/lib/notifications/notify-team";
+} from "@/lib/db/schema/index";
+import { notifyTeamMembers, notifyUser } from "@/lib/notifications/NotifyTeam";
+import { teamMemberSchema } from "@/lib/validation/Validations";
 import { sendUserInvitationAction } from "./Invitation";
 
 export async function getAcceptedInvitesAction() {
@@ -208,6 +209,16 @@ export async function addMemberToTeamAction(data: {
 	permission?: "administrator" | "member" | "viewer";
 }): Promise<{ success: boolean; error?: string }> {
 	try {
+		const validationResult = teamMemberSchema.safeParse(data);
+		if (!validationResult.success) {
+			return {
+				success: false,
+				error:
+					validationResult.error.issues[0]?.message ||
+					"Invalid team member data",
+			};
+		}
+
 		const dbUser = await getAuthenticatedDbUser();
 
 		// Check if the current user is an administrator of the team
@@ -327,6 +338,16 @@ export async function updateTeamMemberAction(data: {
 	permission?: "administrator" | "member" | "viewer";
 }): Promise<{ success: boolean; error?: string }> {
 	try {
+		const validationResult = teamMemberSchema.safeParse(data);
+		if (!validationResult.success) {
+			return {
+				success: false,
+				error:
+					validationResult.error.issues[0]?.message ||
+					"Invalid update team member data",
+			};
+		}
+
 		const dbUser = await getAuthenticatedDbUser();
 
 		// Check if the current user is an administrator of the team

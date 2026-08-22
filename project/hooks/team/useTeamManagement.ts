@@ -15,8 +15,8 @@ import {
 	updateTeamMemberAction,
 } from "@/actions/team/TeamMember";
 import { useToast } from "@/hooks/toast/use-toast";
-import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
-import { type TeamItem, useTeamStore } from "@/stores/team/useTeamStore";
+import { useBreadcrumbStore } from "@/stores/components/BreadCrumbStore";
+import { type TeamItem, useTeamStore } from "@/stores/team/TeamStore";
 
 export function useTeamManagement(initialTab?: "people" | "teams") {
 	const store = useTeamStore();

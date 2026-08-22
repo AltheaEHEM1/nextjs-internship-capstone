@@ -8,15 +8,16 @@ import {
 	Trash2,
 	UserPlus,
 } from "lucide-react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/alert/Alert";
 import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import EditRoleModal from "@/components/modals/team/EditRoleModal";
 import { EditTeamModal } from "@/components/modals/team/EditTeamModal";
 import { useTeamDetailManagement } from "@/hooks/team/useTeamManagement";
-import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
+import { useBreadcrumbStore } from "@/stores/components/BreadCrumbStore";
 
 export default function SpecificTeam() {
 	const params = useParams();
@@ -107,8 +108,18 @@ export default function SpecificTeam() {
 				/>
 				<div className="px-6 pb-6 pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
 					<div className="flex items-center gap-4 -mt-12 sm:-mt-14">
-						<div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white dark:bg-outer_space-400 text-4xl shadow-md border-4 border-white dark:border-outer_space-500">
-							{teamDetail.icon}
+						<div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white dark:bg-outer_space-400 text-4xl shadow-md border-4 border-white dark:border-outer_space-500 overflow-hidden">
+							{teamDetail.icon?.startsWith("http") ||
+							teamDetail.icon?.startsWith("/") ||
+							teamDetail.icon?.startsWith("data:") ? (
+								<Image
+									src={teamDetail.icon}
+									alt={teamDetail.name}
+									className="h-full w-full object-cover"
+								/>
+							) : (
+								teamDetail.icon
+							)}
 						</div>
 						<div className="pt-2 sm:pt-4">
 							<h2 className="text-xl font-bold text-outer_space-800 dark:text-platinum-100">
@@ -180,15 +191,28 @@ export default function SpecificTeam() {
 							className="py-3 flex items-center justify-between first:pt-0 last:pb-0"
 						>
 							<div className="flex items-center gap-3">
-								<div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue_munsell-500 font-semibold text-white text-xs">
-									{m.avatar}
+								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue_munsell-500 font-semibold text-white text-xs overflow-hidden">
+									{m.avatar?.startsWith("http") ||
+									m.avatar?.startsWith("/") ||
+									m.avatar?.startsWith("data:") ? (
+										<Image
+											src={m.avatar}
+											alt={m.name}
+											className="h-full w-full object-cover"
+										/>
+									) : (m.avatar?.length ?? 0) > 5 ? (
+										m.name.charAt(0).toUpperCase()
+									) : (
+										m.avatar || m.name.charAt(0).toUpperCase()
+									)}
 								</div>
 								<div>
 									<h4 className="font-semibold text-outer_space-800 dark:text-platinum-100 text-xs">
 										{m.name}
 									</h4>
 									<p className="text-[11px] text-outer_space-400 dark:text-platinum-400">
-										{m.role}
+										{m.role} <span className="mx-1">•</span>{" "}
+										<span className="capitalize">{m.permission}</span>
 									</p>
 								</div>
 							</div>

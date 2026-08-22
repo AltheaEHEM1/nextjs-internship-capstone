@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
-import { syncUser } from "@/lib/auth/sync-user";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { syncUser } from "@/lib/auth/SyncUser";
+import { db } from "@/lib/db/index";
+import { users } from "@/lib/db/schema/index";
 
 export async function getAuthenticatedDbUser() {
 	const { userId } = await auth();

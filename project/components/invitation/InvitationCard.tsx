@@ -14,7 +14,7 @@ import Image from "next/image";
 import type {
 	ActionLoading,
 	InvitationData,
-} from "@/stores/invitation/useInvitationStore";
+} from "@/stores/invitation/InvitationStore";
 
 interface InvitationCardProps {
 	invitation: InvitationData;

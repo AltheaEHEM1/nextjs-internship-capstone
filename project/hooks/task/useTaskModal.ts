@@ -2,10 +2,7 @@ import { useEffect, useState } from "react";
 import { getProjectSettingsAction } from "@/actions/project/Project";
 import { createTaskAction, deleteTaskAction } from "@/actions/task/Task";
 import { useToast } from "@/hooks/toast/use-toast";
-import {
-	type TaskData,
-	useTaskModalStore,
-} from "@/stores/task/task-modal-store";
+import { type TaskData, useTaskModalStore } from "@/stores/task/TaskModalStore";
 
 export function useTaskModal({
 	mode,
