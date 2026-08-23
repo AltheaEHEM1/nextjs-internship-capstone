@@ -20,6 +20,7 @@ export const projectSchema = z.object({
 			"Whiteboard",
 			"Gantt Chart",
 			"Timeline",
+			"Burndown Chart",
 		]),
 	statuses: z
 		.object({

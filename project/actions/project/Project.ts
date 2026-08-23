@@ -4,18 +4,9 @@ import { and, eq, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
 import { db } from "@/lib/db/index";
-import {
-	labels,
-	priorityEnum,
-	projectStatuses,
-	projects,
-	teamMembers,
-} from "@/lib/db/schema/index";
+import { labels, priorityEnum, projectStatuses, projects, teamMembers, } from "@/lib/db/schema/index";
 import { notifyProjectMembers } from "@/lib/notifications/NotifyProject";
-import {
-	projectSchema,
-	projectSettingsSchema,
-} from "@/lib/validation/Validations";
+import { projectSchema, projectSettingsSchema, } from "@/lib/validation/Validations";
 
 export async function createProjectAction(data: {
 	name: string;
@@ -74,6 +65,7 @@ export async function createProjectAction(data: {
 					"Whiteboard",
 					"Gantt Chart",
 					"Timeline",
+					"Burndown Chart",
 				],
 			})
 			.returning();

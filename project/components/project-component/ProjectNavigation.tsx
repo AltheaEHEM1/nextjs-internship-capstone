@@ -33,6 +33,7 @@ export default function ProjectNavigation({
 		{ label: "Whiteboard", icon: FileText, slug: "whiteboard" },
 		{ label: "Gantt Chart", icon: GanttChart, slug: "gantt-chart" },
 		{ label: "Timeline", icon: Clock, slug: "timeline" },
+		{ label: "Burndown Chart", icon: Clock, slug: "burndown-chart" },
 	];
 
 	const navItems = projectViews

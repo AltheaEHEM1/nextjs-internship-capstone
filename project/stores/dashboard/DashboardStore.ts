@@ -1,12 +1,4 @@
-import {
-	BarChart3,
-	CheckSquare,
-	Clock,
-	type LucideIcon,
-	TrendingUp,
-	Users,
-	Zap,
-} from "lucide-react";
+import { BarChart3, type LucideIcon, Users } from "lucide-react";
 import { create } from "zustand";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -72,9 +64,7 @@ const INITIAL_IMPLEMENTATION_TASKS: string[] = [
 
 const INITIAL_STATS: Stat[] = [
 	{ name: "Total Projects", value: "12", change: "+2", icon: BarChart3 },
-	{ name: "Active Tasks", value: "48", change: "+5", icon: CheckSquare },
-	{ name: "Team Members", value: "8", change: "+1", icon: Users },
-	{ name: "Completed Today", value: "6", change: "+3", icon: Zap },
+	{ name: "Team", value: "8", change: "+1", icon: Users },
 ];
 
 const INITIAL_RECENT_PROJECTS: RecentProject[] = [
@@ -100,7 +90,6 @@ const INITIAL_RECENT_PROJECTS: RecentProject[] = [
 
 const INITIAL_QUICK_ACTIONS: QuickAction[] = [
 	{ label: "New Project", variant: "primary" },
-	{ label: "Create Task", variant: "secondary" },
 	{ label: "Invite Member", variant: "secondary" },
 ];
 
@@ -112,44 +101,6 @@ const INITIAL_UPCOMING_DEADLINES: UpcomingDeadline[] = [
 	},
 	{ title: "Q3 Performance Review", type: "Team Event", date: "Aug 15" },
 	{ title: "API v2 Launch", type: "Deployment", date: "Aug 20" },
-];
-
-const INITIAL_ANALYTICS_TASKS: string[] = [
-	"Task 5.1: Implement project velocity tracking",
-	"Task 5.2: Add team productivity metrics",
-	"Task 5.3: Build burndown chart with Recharts",
-	"Task 5.4: Create exportable reports",
-];
-
-const INITIAL_ANALYTICS_METRICS: AnalyticsMetric[] = [
-	{
-		title: "Task Completion Rate",
-		value: "87%",
-		unit: "This month",
-		color: "blue",
-		icon: CheckSquare,
-	},
-	{
-		title: "Avg. Task Duration",
-		value: "2.4h",
-		unit: "Per task",
-		color: "green",
-		icon: Clock,
-	},
-	{
-		title: "Team Velocity",
-		value: "34",
-		unit: "Points / sprint",
-		color: "purple",
-		icon: TrendingUp,
-	},
-	{
-		title: "Active Members",
-		value: "8",
-		unit: "Contributors",
-		color: "orange",
-		icon: Users,
-	},
 ];
 
 // ─── Store Implementation ──────────────────────────────────────────────────────

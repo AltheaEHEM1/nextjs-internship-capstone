@@ -21,6 +21,7 @@ const AVAILABLE_VIEWS = [
 	"Whiteboard",
 	"Gantt chart",
 	"Timeline",
+	"Burndown Chart",
 ];
 
 const DEFAULT_STATUSES: StatusGroup = {

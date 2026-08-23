@@ -34,6 +34,7 @@ export const projects = pgTable(
 				"Whiteboard",
 				"Gantt Chart",
 				"Timeline",
+				"Burndown Chart",
 			])
 			.notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
