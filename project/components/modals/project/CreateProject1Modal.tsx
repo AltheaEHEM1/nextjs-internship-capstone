@@ -8,8 +8,6 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { checkProjectNameUniqueAction } from "@/actions/project/Project";
-import { getUserTeamsAction } from "@/actions/team/Team";
 import { Alert, AlertDescription } from "@/components/alert/Alert";
 import BaseModal from "@/components/layout/BaseModal";
 import { useMinDate } from "@/hooks/project/useMinDate";
@@ -85,7 +83,10 @@ export default function CreateProject1({
 		async function fetchTeams() {
 			if (opened) {
 				setIsLoadingTeams(true);
-				const result = await getUserTeamsAction("administrator");
+				const res = await fetch(
+					"/api/team/user-teams?permission=administrator",
+				);
+				const result = await res.json();
 				if (result.success && result.data) {
 					setTeamsList(result.data);
 				}
@@ -106,7 +107,10 @@ export default function CreateProject1({
 		setIsNameUnique(null);
 
 		const timeoutId = setTimeout(async () => {
-			const res = await checkProjectNameUniqueAction(projectName);
+			const req = await fetch(
+				`/api/project/check-name?name=${encodeURIComponent(projectName)}`,
+			);
+			const res = await req.json();
 			setIsCheckingName(false);
 			if (res.success) {
 				setIsNameUnique(res.isUnique as boolean);

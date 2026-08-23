@@ -24,13 +24,13 @@ export interface TeamItem {
 	permission?: string;
 }
 
-export interface TeamMemberInput {
+interface TeamMemberInput {
 	userId: string;
 	role: string;
 	permission: "administrator" | "member" | "viewer";
 }
 
-export interface TeamDetail extends TeamItem {
+interface TeamDetail extends TeamItem {
 	currentUserPermission?: "administrator" | "member" | "viewer";
 	members: Array<{
 		id: string;
@@ -43,7 +43,7 @@ export interface TeamDetail extends TeamItem {
 	}>;
 }
 
-export interface PersonDetail {
+interface PersonDetail {
 	id: string;
 	name: string;
 	email: string;

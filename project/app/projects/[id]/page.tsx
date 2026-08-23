@@ -7,11 +7,7 @@ import {
 } from "@dnd-kit/sortable";
 import { use, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-	getProjectDetailAction,
-	reorderStatusesAction,
-} from "@/actions/project/Project";
-import { reorderTasksAction } from "@/actions/task/Task";
+
 import { ColumnContainer } from "@/components/board/ColumnContainer";
 import type { Task } from "@/components/board/TaskCard";
 import { TaskCardDisplay } from "@/components/board/TaskCard";
@@ -37,50 +33,70 @@ export default function BoardPage({
 		useState<string>("viewer");
 
 	const fetchProjectData = useCallback(() => {
-		getProjectDetailAction(id).then((res) => {
-			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
-				setKanbanColumns(res.data.statuses.map((s) => s.name));
-				const sMap: Record<string, string> = {};
-				res.data.statuses.forEach((s) => {
-					sMap[s.name] = s.id;
-				});
-				setStatusesMap(sMap);
-				setCurrentUserPermission(res.data.currentUserPermission || "viewer");
+		fetch(`/api/project/${id}`)
+			.then((r) => r.json())
+			.then((res) => {
+				if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+					setKanbanColumns(
+						res.data.statuses.map((s: { name: string }) => s.name),
+					);
+					const sMap: Record<string, string> = {};
+					res.data.statuses.forEach((s: { id: string; name: string }) => {
+						sMap[s.name] = s.id;
+					});
+					setStatusesMap(sMap);
+					setCurrentUserPermission(res.data.currentUserPermission || "viewer");
 
-				const allTasks = res.data.statuses.flatMap((s) =>
-					(s.tasks || []).map(
-						(t) =>
-							({
-								id: t.id,
-								title: t.title || "Untitled Task",
-								description: t.description || "",
-								status: s.name,
-								statusId: s.id,
-								priority: (t.priority === "urgent"
-									? "high"
-									: t.priority || "low") as "low" | "medium" | "high",
-								assignee: t.assigneeId || "",
-								assigneeName:
-									(t as { assignee?: { name?: string } }).assignee?.name ||
-									"UN",
-								dueDate: t.dueDate ? new Date(t.dueDate).toISOString() : "",
-								workType: "Task",
-								label:
-									(t as { taskLabels?: { label?: { name: string } }[] })
-										.taskLabels?.[0]?.label?.name || "",
-								startDate: t.createdAt
-									? new Date(t.createdAt).toISOString()
-									: "",
-								reporter:
-									(t as { reporter?: { name?: string } }).reporter?.name ||
-									"System",
-							}) as Task,
-					),
-				);
+					const allTasks = res.data.statuses.flatMap(
+						(s: {
+							id: string;
+							name: string;
+							tasks?: {
+								id: string;
+								title?: string;
+								description?: string;
+								priority?: string;
+								assigneeId?: string;
+								assignee?: { name?: string };
+								dueDate?: string | null;
+								taskLabels?: { label?: { name: string } }[];
+								createdAt: string;
+								reporter?: { name?: string };
+							}[];
+						}) =>
+							(s.tasks || []).map(
+								(t) =>
+									({
+										id: t.id,
+										title: t.title || "Untitled Task",
+										description: t.description || "",
+										status: s.name,
+										statusId: s.id,
+										priority: (t.priority === "urgent"
+											? "high"
+											: t.priority || "low") as "low" | "medium" | "high",
+										assignee: t.assigneeId || "",
+										assigneeName:
+											(t as { assignee?: { name?: string } }).assignee?.name ||
+											"UN",
+										dueDate: t.dueDate ? new Date(t.dueDate).toISOString() : "",
+										workType: "Task",
+										label:
+											(t as { taskLabels?: { label?: { name: string } }[] })
+												.taskLabels?.[0]?.label?.name || "",
+										startDate: t.createdAt
+											? new Date(t.createdAt).toISOString()
+											: "",
+										reporter:
+											(t as { reporter?: { name?: string } }).reporter?.name ||
+											"System",
+									}) as Task,
+							),
+					);
 
-				setTasks(allTasks);
-			}
-		});
+					setTasks(allTasks);
+				}
+			});
 	}, [id, setKanbanColumns, setTasks]);
 
 	useEffect(() => {
@@ -136,7 +152,11 @@ export default function BoardPage({
 				.filter((t) => t.statusId);
 
 			if (taskPayload.length > 0) {
-				reorderTasksAction(taskPayload, id);
+				fetch("/api/task/reorder", {
+					method: "PATCH",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ tasks: taskPayload, projectId: id }),
+				});
 			}
 
 			// Handle column/status reordering
@@ -149,7 +169,11 @@ export default function BoardPage({
 				.filter((c) => c.id);
 
 			if (columnPayload.length > 0) {
-				reorderStatusesAction(columnPayload, id);
+				fetch(`/api/project/${id}/statuses/reorder`, {
+					method: "PATCH",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ statuses: columnPayload }),
+				});
 			}
 		}, 0);
 	};

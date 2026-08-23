@@ -8,7 +8,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useCallback, useMemo } from "react";
-import { updateTaskAction } from "@/actions/task/Task";
+
 import type { Task } from "@/components/board/TaskCard";
 import { useToast } from "@/hooks/toast/use-toast";
 import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
@@ -89,8 +89,9 @@ export function useProjectBoard(currentUserPermission: string = "viewer") {
 
 			// Dropping a task over another task
 			if (isOverTask) {
+				const currentTasks = useProjectBoardStore.getState().tasks;
 				setTasks(
-					tasks.map((t) => {
+					currentTasks.map((t) => {
 						if (t.id === activeId) {
 							return {
 								...t,
@@ -105,8 +106,9 @@ export function useProjectBoard(currentUserPermission: string = "viewer") {
 
 			// Dropping a task over a column
 			if (isOverColumn) {
+				const currentTasks = useProjectBoardStore.getState().tasks;
 				setTasks(
-					tasks.map((t) => {
+					currentTasks.map((t) => {
 						if (t.id === activeId) {
 							return { ...t, status: overId as string };
 						}
@@ -115,7 +117,7 @@ export function useProjectBoard(currentUserPermission: string = "viewer") {
 				);
 			}
 		},
-		[tasks, setTasks],
+		[setTasks],
 	);
 
 	const onDragEnd = useCallback(
@@ -133,33 +135,30 @@ export function useProjectBoard(currentUserPermission: string = "viewer") {
 			const activeData = active.data.current;
 			const overData = over.data.current;
 
+			const currentState = useProjectBoardStore.getState();
+			const currentTasks = currentState.tasks;
+			const currentColumns = currentState.kanbanColumns;
+
 			// Reorder columns
 			if (activeData?.type === "Column" && overData?.type === "Column") {
-				const activeIndex = kanbanColumns.indexOf(activeId as string);
-				const overIndex = kanbanColumns.indexOf(overId as string);
+				const activeIndex = currentColumns.indexOf(activeId as string);
+				const overIndex = currentColumns.indexOf(overId as string);
 				if (activeIndex !== -1 && overIndex !== -1) {
-					setKanbanColumns(arrayMove(kanbanColumns, activeIndex, overIndex));
+					setKanbanColumns(arrayMove(currentColumns, activeIndex, overIndex));
 				}
 				return;
 			}
 
 			// Reorder tasks within the same column
 			if (activeData?.type === "Task" && overData?.type === "Task") {
-				const activeIndex = tasks.findIndex((t) => t.id === activeId);
-				const overIndex = tasks.findIndex((t) => t.id === overId);
+				const activeIndex = currentTasks.findIndex((t) => t.id === activeId);
+				const overIndex = currentTasks.findIndex((t) => t.id === overId);
 				if (activeIndex !== -1 && overIndex !== -1) {
-					setTasks(arrayMove(tasks, activeIndex, overIndex));
+					setTasks(arrayMove(currentTasks, activeIndex, overIndex));
 				}
 			}
 		},
-		[
-			tasks,
-			setTasks,
-			kanbanColumns,
-			setKanbanColumns,
-			setActiveColumn,
-			setActiveTask,
-		],
+		[setTasks, setKanbanColumns, setActiveColumn, setActiveTask],
 	);
 
 	const handleOpenTask = useCallback(
@@ -185,10 +184,15 @@ export function useProjectBoard(currentUserPermission: string = "viewer") {
 			// Server update
 			if (projectId) {
 				try {
-					const res = await updateTaskAction(selectedTask.id, {
-						...updatedFields,
-						projectId,
+					const req = await fetch(`/api/task/${selectedTask.id}`, {
+						method: "PATCH",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							...updatedFields,
+							projectId,
+						}),
 					});
+					const res = await req.json();
 					if (res.success) {
 						toast({
 							title: "Saved",

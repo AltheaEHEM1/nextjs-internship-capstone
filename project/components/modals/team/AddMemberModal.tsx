@@ -2,7 +2,6 @@
 
 import { UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { sendUserInvitationAction } from "@/actions/team/Invitation";
 import BaseModal from "@/components/layout/BaseModal";
 import { useToast } from "@/hooks/toast/use-toast";
 import { invitationSchema } from "@/lib/validation/Validations";
@@ -85,9 +84,14 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 		try {
 			// Pass both email and the optional notes string to the action
 			const results = await Promise.all(
-				emails.map((email: string) =>
-					sendUserInvitationAction(email, notes.trim() || undefined),
-				),
+				emails.map(async (email: string) => {
+					const req = await fetch("/api/invitation/send", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ email, notes: notes.trim() || undefined }),
+					});
+					return await req.json();
+				}),
 			);
 
 			const failed = results.filter((r) => !r.success);

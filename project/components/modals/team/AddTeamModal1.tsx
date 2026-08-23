@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { checkTeamNameUniqueAction } from "@/actions/team/CreateTeam";
 import BaseModal from "@/components/layout/BaseModal";
 import { createTeamSchema } from "@/lib/validation/Validations";
 import { useTeamStore } from "@/stores/team/TeamStore";
@@ -63,7 +62,10 @@ export default function AddTeamModal1({
 			}
 			setIsCheckingName(true);
 			try {
-				const result = await checkTeamNameUniqueAction(teamName);
+				const req = await fetch(
+					`/api/team/check-name?name=${encodeURIComponent(teamName)}`,
+				);
+				const result = await req.json();
 				if (result.success) {
 					setIsNameUnique(result.isUnique ?? false);
 				} else {

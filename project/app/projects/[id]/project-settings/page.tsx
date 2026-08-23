@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { getProjectSettingsAction } from "@/actions/project/Project";
-import { getUserTeamsAction } from "@/actions/team/Team";
+import { getProjectSettingsQuery } from "@/lib/queries/project";
+import { getUserTeamsQuery } from "@/lib/queries/team";
 import ProjectSettingsForm from "./ProjectSettingsForm";
 
 interface ProjectSettingsPageProps {
@@ -12,8 +12,8 @@ export default async function ProjectSettingsPage({
 }: ProjectSettingsPageProps) {
 	const { id } = await params;
 	const [result, teamsResult] = await Promise.all([
-		getProjectSettingsAction(id),
-		getUserTeamsAction(),
+		getProjectSettingsQuery(id),
+		getUserTeamsQuery(),
 	]);
 
 	// If fetch failed, render the form with empty/fallback data

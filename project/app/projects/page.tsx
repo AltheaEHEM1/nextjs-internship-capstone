@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { getProjectsAction } from "@/actions/project/Project";
+
 import CreateProject1 from "@/components/modals/project/CreateProject1Modal";
 import CreateProject2 from "@/components/modals/project/CreateProject2Modal";
 import { PageHeader } from "@/components/page-header/PageHeader";
@@ -53,7 +53,8 @@ export default function ProjectsPage() {
 	const [projectFilter, setProjectFilter] = useState<"all" | "owner">("all");
 
 	const fetchProjects = useCallback(async () => {
-		const result = await getProjectsAction();
+		const req = await fetch("/api/project");
+		const result = await req.json();
 		if (result.success && result.data) {
 			setProjects(result.data);
 		}

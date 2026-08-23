@@ -13,7 +13,7 @@ export type SettingKey =
 	| "emailDigest"
 	| "browserPush";
 
-export interface NotificationToggle {
+interface NotificationToggle {
 	key: SettingKey;
 	title: string;
 	description: string;

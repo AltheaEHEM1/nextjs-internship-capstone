@@ -2,11 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-	deleteProjectAction,
-	updateProjectSettingsAction,
-} from "@/actions/project/Project";
-import { getTeamDetailAction } from "@/actions/team/Team";
+
 import { useToast } from "@/hooks/toast/use-toast";
 import type {
 	AccessRole,
@@ -39,11 +35,16 @@ export function useProjectSettingsFormActions(
 	const router = useRouter();
 
 	const handleSaveDone = async () => {
-		const result = await updateProjectSettingsAction(projectId, {
-			name: store.tempTitle,
-			description: store.tempDescription,
-			teamId: store.teamId,
+		const req = await fetch(`/api/project/${projectId}/settings`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				name: store.tempTitle,
+				description: store.tempDescription,
+				teamId: store.teamId,
+			}),
 		});
+		const result = await req.json();
 
 		if (result.success) {
 			toast({
@@ -72,12 +73,17 @@ export function useProjectSettingsFormActions(
 			store.handleSaveGeneral();
 		}
 
-		const result = await updateProjectSettingsAction(projectId, {
-			name: finalTitle,
-			description: finalDescription,
-			teamId: store.teamId,
-			statuses: store.statuses,
+		const req = await fetch(`/api/project/${projectId}/settings`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				name: finalTitle,
+				description: finalDescription,
+				teamId: store.teamId,
+				statuses: store.statuses,
+			}),
 		});
+		const result = await req.json();
 
 		if (result.success) {
 			toast({
@@ -104,7 +110,8 @@ export function useProjectSettingsFormActions(
 	};
 
 	const handleDeleteConfirm = async () => {
-		const result = await deleteProjectAction(projectId);
+		const req = await fetch(`/api/project/${projectId}`, { method: "DELETE" });
+		const result = await req.json();
 		if (result.success) {
 			toast({
 				title: "Project deleted",
@@ -150,7 +157,8 @@ export function useMemberRoleState() {
 			setTeamId(newTeamId);
 			setTeam(selected.name);
 
-			const res = await getTeamDetailAction(newTeamId);
+			const req = await fetch(`/api/team/${newTeamId}`);
+			const res = await req.json();
 			if (res.success && res.data?.members) {
 				const newMembers: TeamMember[] = res.data.members.map(
 					(m: {

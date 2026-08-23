@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { use, useCallback, useEffect, useMemo } from "react";
-import { getProjectDetailAction } from "@/actions/project/Project";
+
 import { type Task, useList } from "@/hooks/project/(tabs)/useList";
 import { pusherClient } from "@/lib/real-time-board/PusherClient";
 
@@ -106,34 +106,48 @@ export default function List({ params }: { params: Promise<{ id: string }> }) {
 	const { table, setTasks } = useList(columns);
 
 	const fetchProjectData = useCallback(() => {
-		getProjectDetailAction(id).then((res) => {
-			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
-				const allTasks = res.data.statuses.flatMap((s) =>
-					(s.tasks || []).map(
-						(t) =>
-							({
-								id: t.id,
-								title: t.title || "Untitled Task",
-								status: s.name as Task["status"],
-								priority: (t.priority === "urgent"
-									? "High"
-									: t.priority
-										? t.priority.charAt(0).toUpperCase() + t.priority.slice(1)
-										: "Low") as Task["priority"],
-								assignee:
-									(t as { assignee?: { name?: string } }).assignee?.name ||
-									"Unassigned",
-								dueDate: t.dueDate
-									? new Date(t.dueDate).toLocaleDateString()
-									: "",
-								estimate: t.size ? String(t.size) : "",
-							}) as Task,
-					),
-				);
+		fetch(`/api/project/${id}`)
+			.then((r) => r.json())
+			.then((res) => {
+				if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+					const allTasks = res.data.statuses.flatMap(
+						(s: {
+							name: string;
+							tasks?: {
+								id: string;
+								title?: string;
+								priority?: string;
+								assignee?: { name?: string };
+								dueDate?: string | null;
+								size?: number;
+							}[];
+						}) =>
+							(s.tasks || []).map(
+								(t) =>
+									({
+										id: t.id,
+										title: t.title || "Untitled Task",
+										status: s.name as Task["status"],
+										priority: (t.priority === "urgent"
+											? "High"
+											: t.priority
+												? t.priority.charAt(0).toUpperCase() +
+													t.priority.slice(1)
+												: "Low") as Task["priority"],
+										assignee:
+											(t as { assignee?: { name?: string } }).assignee?.name ||
+											"Unassigned",
+										dueDate: t.dueDate
+											? new Date(t.dueDate).toLocaleDateString()
+											: "",
+										estimate: t.size ? String(t.size) : "",
+									}) as Task,
+							),
+					);
 
-				setTasks(allTasks);
-			}
-		});
+					setTasks(allTasks);
+				}
+			});
 	}, [id, setTasks]);
 
 	useEffect(() => {

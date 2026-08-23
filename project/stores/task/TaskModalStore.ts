@@ -3,10 +3,10 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-export type WorkType = "Epic" | "Story" | "Bug" | "Task" | "Request";
-export type Status = string;
+type WorkType = "Epic" | "Story" | "Bug" | "Task" | "Request";
+type Status = string;
 
-export type TaskComment = {
+type TaskComment = {
 	id?: string;
 	content: string;
 	createdAt?: string | Date;
@@ -15,7 +15,7 @@ export type TaskComment = {
 	} | null;
 };
 
-export type TaskActivity = {
+type TaskActivity = {
 	id?: string;
 	action: string;
 	createdAt?: string | Date;
@@ -165,15 +165,15 @@ export const useTaskModalStore = create<TaskModalState>()(
 
 		// fetching
 		fetchComments: async (taskId: string) => {
-			const { getTaskCommentsAction } = await import("@/actions/task/Task");
-			const res = await getTaskCommentsAction(taskId);
+			const req = await fetch(`/api/task/${taskId}/comments`);
+			const res = await req.json();
 			if (res.success && res.data) {
 				set({ comments: res.data });
 			}
 		},
 		fetchHistory: async (taskId: string) => {
-			const { getTaskHistoryAction } = await import("@/actions/task/Task");
-			const res = await getTaskHistoryAction(taskId);
+			const req = await fetch(`/api/task/${taskId}/history`);
+			const res = await req.json();
 			if (res.success && res.data) {
 				set({ history: res.data });
 			}
@@ -182,8 +182,12 @@ export const useTaskModalStore = create<TaskModalState>()(
 			const { newComment, comments, setComments, setNewComment } = get();
 			if (!newComment.trim() || !taskId) return;
 
-			const { createTaskCommentAction } = await import("@/actions/task/Task");
-			const res = await createTaskCommentAction(taskId, newComment, projectId);
+			const req = await fetch(`/api/task/${taskId}/comments`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ content: newComment, projectId }),
+			});
+			const res = await req.json();
 
 			if (res.success && res.data) {
 				setComments([...comments, { ...res.data, author: { name: "You" } }]);

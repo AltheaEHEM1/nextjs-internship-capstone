@@ -2,7 +2,7 @@
 
 import { use, useCallback, useEffect } from "react";
 import { Calendar as BigCalendar } from "react-big-calendar";
-import { getProjectDetailAction } from "@/actions/project/Project";
+
 import { pusherClient } from "@/lib/real-time-board/PusherClient";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { calendarLocalizer } from "@/hooks/project/(tabs)/useCalendar";
@@ -18,28 +18,38 @@ export default function Calendar({
 	const setEvents = useCalendarStore((state) => state.setEvents);
 
 	const fetchProjectData = useCallback(() => {
-		getProjectDetailAction(id).then((res) => {
-			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
-				const allEvents = res.data.statuses.flatMap((s) =>
-					(s.tasks || [])
-						.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
-						.map((t) => {
-							const start = t.createdAt
-								? new Date(t.createdAt)
-								: new Date(t.dueDate || "");
-							const end = t.dueDate ? new Date(t.dueDate) : start;
-							return {
-								id: t.id,
-								title: t.title || "Untitled Task",
-								start,
-								end,
-							};
-						}),
-				);
+		fetch(`/api/project/${id}`)
+			.then((r) => r.json())
+			.then((res) => {
+				if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+					const allEvents = res.data.statuses.flatMap(
+						(s: {
+							tasks?: {
+								id: string;
+								title?: string;
+								dueDate?: string | null;
+								createdAt: string;
+							}[];
+						}) =>
+							(s.tasks || [])
+								.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
+								.map((t) => {
+									const start = t.createdAt
+										? new Date(t.createdAt)
+										: new Date(t.dueDate || "");
+									const end = t.dueDate ? new Date(t.dueDate) : start;
+									return {
+										id: t.id,
+										title: t.title || "Untitled Task",
+										start,
+										end,
+									};
+								}),
+					);
 
-				setEvents(allEvents);
-			}
-		});
+					setEvents(allEvents);
+				}
+			});
 	}, [id, setEvents]);
 
 	useEffect(() => {

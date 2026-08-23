@@ -43,7 +43,7 @@ function SortableStatusItem({
 	item,
 	onRemove,
 }: SortableStatusItemProps) {
-	const id = `${category}:${index}:${item}`;
+	const id = `${category}:${item}`;
 	const { setNodeRef, attributes, listeners, isDragging, style } =
 		useSortableItem({
 			id,
@@ -121,9 +121,8 @@ function StatusItemDisplay({
 function parseItemId(id: string | number) {
 	const parts = String(id).split(":");
 	const category = parts[0] as StatusCategory;
-	const fromIndex = Number(parts[1]);
-	const item = parts.slice(2).join(":");
-	return { category, fromIndex, item };
+	const item = parts.slice(1).join(":");
+	return { category, item };
 }
 
 interface CustomStatusProps {
@@ -219,13 +218,16 @@ export default function CustomStatus({
 
 			if (activeParsed.category !== overParsed.category) return;
 
-			handleReorder(
-				activeParsed.category,
-				activeParsed.fromIndex,
-				overParsed.fromIndex,
-			);
+			const category = activeParsed.category;
+			const currentItems = status[category];
+			const fromIndex = currentItems.indexOf(activeParsed.item);
+			const toIndex = currentItems.indexOf(overParsed.item);
+
+			if (fromIndex !== -1 && toIndex !== -1) {
+				handleReorder(category, fromIndex, toIndex);
+			}
 		},
-		[handleReorder],
+		[handleReorder, status],
 	);
 
 	return (
@@ -264,9 +266,7 @@ export default function CustomStatus({
 				>
 					{categories.map(({ key, label }) => {
 						const items = status[key];
-						const itemIds = items.map(
-							(item, index) => `${key}:${index}:${item}`,
-						);
+						const itemIds = items.map((item) => `${key}:${item}`);
 						return (
 							<div key={key} className="space-y-2">
 								<div className="flex items-center justify-between">

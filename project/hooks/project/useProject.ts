@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { createProjectAction } from "@/actions/project/Project";
+
 import type { AccessRole } from "@/components/modals/project/CreateProject1Modal";
 import { useToast } from "@/hooks/toast/use-toast";
 import { useProjectStore } from "@/stores/project/ProjectStore";
@@ -57,14 +57,19 @@ export function useProject() {
 				closed?: string[];
 			};
 		}) => {
-			const result = await createProjectAction({
-				name: form.projectName,
-				description: form.description,
-				teamId: form.team,
-				dueDate: form.dueDate,
-				views: workflowData.views,
-				statuses: workflowData.statuses,
+			const req = await fetch("/api/project/create", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					name: form.projectName,
+					description: form.description,
+					teamId: form.team,
+					dueDate: form.dueDate,
+					views: workflowData.views,
+					statuses: workflowData.statuses,
+				}),
 			});
+			const result = await req.json();
 
 			if (!result.success) {
 				toast({

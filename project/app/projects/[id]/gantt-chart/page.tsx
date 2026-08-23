@@ -2,7 +2,7 @@
 
 import { Gantt } from "gantt-task-react";
 import { use, useCallback, useEffect } from "react";
-import { getProjectDetailAction } from "@/actions/project/Project";
+
 import { pusherClient } from "@/lib/real-time-board/PusherClient";
 import "gantt-task-react/dist/index.css";
 import { useGanttChart } from "@/hooks/project/(tabs)/useGanttChart";
@@ -26,36 +26,51 @@ export default function GanttChart({
 	} = useGanttChart();
 
 	const fetchProjectData = useCallback(() => {
-		getProjectDetailAction(id).then((res) => {
-			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
-				const allTasks = res.data.statuses.flatMap((s) =>
-					(s.tasks || [])
-						.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
-						.map((t) => {
-							const start = t.createdAt
-								? new Date(t.createdAt)
-								: new Date(t.dueDate || "");
-							const end = t.dueDate ? new Date(t.dueDate) : start;
-							return {
-								id: t.id,
-								name: t.title || "Untitled Task",
-								type: "task",
-								start,
-								end,
-								progress:
-									s.name === "Done" ? 100 : s.name === "In Progress" ? 50 : 0,
-								isDisabled: false,
-								styles: {
-									progressColor: "#0ea5e9",
-									progressSelectedColor: "#0284c7",
-								},
-							} as unknown as import("gantt-task-react").Task;
-						}),
-				);
+		fetch(`/api/project/${id}`)
+			.then((r) => r.json())
+			.then((res) => {
+				if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+					const allTasks = res.data.statuses.flatMap(
+						(s: {
+							name: string;
+							tasks?: {
+								id: string;
+								title?: string;
+								dueDate?: string | null;
+								createdAt: string;
+							}[];
+						}) =>
+							(s.tasks || [])
+								.filter((t) => t.dueDate || t.createdAt) // Ensure there's a date
+								.map((t) => {
+									const start = t.createdAt
+										? new Date(t.createdAt)
+										: new Date(t.dueDate || "");
+									const end = t.dueDate ? new Date(t.dueDate) : start;
+									return {
+										id: t.id,
+										name: t.title || "Untitled Task",
+										type: "task",
+										start,
+										end,
+										progress:
+											s.name === "Done"
+												? 100
+												: s.name === "In Progress"
+													? 50
+													: 0,
+										isDisabled: false,
+										styles: {
+											progressColor: "#0ea5e9",
+											progressSelectedColor: "#0284c7",
+										},
+									} as unknown as import("gantt-task-react").Task;
+								}),
+					);
 
-				setTasks(allTasks.length > 0 ? allTasks : []);
-			}
-		});
+					setTasks(allTasks.length > 0 ? allTasks : []);
+				}
+			});
 	}, [id, setTasks]);
 
 	useEffect(() => {

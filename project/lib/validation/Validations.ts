@@ -32,7 +32,7 @@ export const projectSchema = z.object({
 		.optional(),
 });
 
-export const labelSchema = z.object({
+const labelSchema = z.object({
 	name: z
 		.string()
 		.min(1, "Label name is required")
@@ -83,20 +83,6 @@ export const taskSchema = z.object({
 	statusId: z.string().min(1, "Status ID is required"),
 });
 
-export const userSchema = z.object({
-	name: z.string().min(1, "Name is required").max(100, "Name is too long"),
-	email: z.string().email("Invalid email address"),
-	bio: z.string().max(500, "Bio is too long").optional(),
-});
-
-export const listSchema = z.object({
-	name: z
-		.string()
-		.min(1, "List name is required")
-		.max(100, "List name is too long"),
-	projectId: z.string().min(1, "Project ID is required"),
-});
-
 export const commentSchema = z.object({
 	text: z
 		.string()
@@ -113,14 +99,6 @@ export const invitationSchema = z.object({
 			message: "Note cannot contain 2 consecutive white spaces.",
 		})
 		.optional(),
-});
-
-export const teamSchema = z.object({
-	name: z
-		.string()
-		.min(1, "Team name is required")
-		.max(50, "Team name is too long"),
-	icon: z.string().optional(),
 });
 
 export const createTeamSchema = z.object({

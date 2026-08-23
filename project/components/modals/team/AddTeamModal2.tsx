@@ -2,7 +2,6 @@
 
 import { FolderPlus, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getAcceptedInvitesAction } from "@/actions/team/TeamMember";
 import BaseModal from "@/components/layout/BaseModal";
 import { roleEnum } from "@/lib/db/schema/Enums";
 import { useTeamStore } from "@/stores/team/TeamStore";
@@ -42,7 +41,8 @@ export default function AddTeamModal2({
 
 	useEffect(() => {
 		if (opened) {
-			getAcceptedInvitesAction()
+			fetch("/api/team/members/accepted-invites")
+				.then((r) => r.json())
 				.then((res: Record<string, unknown> | unknown[]) => {
 					// Handles both raw array returns or standard { success, data } server action wrappers
 					if (Array.isArray(res)) {

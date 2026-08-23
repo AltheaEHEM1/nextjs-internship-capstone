@@ -2,7 +2,7 @@ import { ViewMode } from "gantt-task-react";
 import { useMemo } from "react";
 import { useGanttStore } from "@/stores/project/(tabs)/GanttStore";
 
-export interface GanttViewModeOption {
+interface GanttViewModeOption {
 	mode: ViewMode;
 	label: string;
 }

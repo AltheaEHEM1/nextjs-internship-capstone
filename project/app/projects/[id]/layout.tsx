@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { getProjectDetailAction } from "@/actions/project/Project";
 import BaseProject from "@/components/layout/BaseProject";
+import { getProjectDetailQuery } from "@/lib/queries/project";
 
 interface ProjectLayoutProps {
 	children: ReactNode;
@@ -12,7 +12,7 @@ export default async function ProjectLayout({
 	params,
 }: ProjectLayoutProps) {
 	const resolvedParams = await params;
-	const projectRes = await getProjectDetailAction(resolvedParams.id);
+	const projectRes = await getProjectDetailQuery(resolvedParams.id);
 	const projectDetails = projectRes.success ? projectRes.data : undefined;
 
 	return (

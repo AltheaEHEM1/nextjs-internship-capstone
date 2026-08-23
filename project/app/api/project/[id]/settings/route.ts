@@ -1,0 +1,172 @@
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
+import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
+import { db } from "@/lib/db/index";
+import { projectStatuses, projects, teamMembers } from "@/lib/db/schema/index";
+import { notifyProjectMembers } from "@/lib/notifications/NotifyProject";
+import { projectSettingsSchema } from "@/lib/validation/Validations";
+import type { UpdateProjectSettingsRequest } from "@/types/api/project";
+
+// PATCH /api/project/[id]/settings
+export async function PATCH(
+	req: Request,
+	{ params }: { params: Promise<{ id: string }> },
+) {
+	try {
+		const { id } = await params;
+		const data: UpdateProjectSettingsRequest = await req.json();
+
+		const validationResult = projectSettingsSchema.safeParse(data);
+		if (!validationResult.success) {
+			return NextResponse.json(
+				{
+					success: false,
+					error:
+						validationResult.error.issues[0]?.message ||
+						"Invalid project settings data",
+				},
+				{ status: 400 },
+			);
+		}
+
+		const dbUser = await getAuthenticatedDbUser();
+
+		const projectData = await db.query.projects.findFirst({
+			where: and(eq(projects.id, id), isNull(projects.deletedAt)),
+			with: {
+				team: {
+					with: {
+						members: {
+							where: eq(teamMembers.userId, dbUser.id),
+						},
+					},
+				},
+			},
+		});
+
+		if (!projectData) {
+			return NextResponse.json(
+				{ success: false, error: "Project not found" },
+				{ status: 404 },
+			);
+		}
+
+		const isOwner = projectData.ownerId === dbUser.id;
+		const teamPermission = projectData.team?.members?.[0]?.permission;
+
+		if (!isOwner && teamPermission !== "administrator") {
+			return NextResponse.json(
+				{
+					success: false,
+					error:
+						"Only project owners and team administrators can update settings.",
+				},
+				{ status: 403 },
+			);
+		}
+
+		await db
+			.update(projects)
+			.set({
+				name: data.name,
+				description: data.description,
+				teamId: data.teamId,
+			})
+			.where(and(eq(projects.id, id), isNull(projects.deletedAt)));
+
+		// Sync statuses
+		if (data.statuses) {
+			const existingStatuses = await db.query.projectStatuses.findMany({
+				where: eq(projectStatuses.projectId, id),
+			});
+			const existingIds = new Set(existingStatuses.map((s) => s.id));
+			const incomingIds = new Set(
+				data.statuses.map((s) => s.id).filter(Boolean),
+			);
+
+			const toDelete = [...existingIds].filter((eid) => !incomingIds.has(eid));
+			if (toDelete.length > 0) {
+				await db
+					.delete(projectStatuses)
+					.where(inArray(projectStatuses.id, toDelete));
+			}
+
+			for (let i = 0; i < data.statuses.length; i++) {
+				const s = data.statuses[i];
+				if (s.id && existingIds.has(s.id)) {
+					await db
+						.update(projectStatuses)
+						.set({
+							name: s.name,
+							description: s.description,
+							color: s.color,
+							position: i,
+						})
+						.where(eq(projectStatuses.id, s.id));
+				} else {
+					await db.insert(projectStatuses).values({
+						projectId: id,
+						name: s.name,
+						description: s.description,
+						color: s.color,
+						position: i,
+					});
+				}
+			}
+		}
+
+		await notifyProjectMembers(
+			id,
+			"project-edited",
+			{
+				projectName: data.name,
+				editorName: dbUser.name || "Someone",
+			},
+			dbUser.clerkId,
+		);
+
+		revalidatePath("/projects");
+		revalidatePath(`/projects/${id}`);
+		revalidatePath(`/projects/${id}/project-settings`);
+
+		return NextResponse.json({ success: true });
+	} catch (err: unknown) {
+		console.error("PATCH /api/project/[id]/settings Error:", err);
+		return NextResponse.json(
+			{
+				success: false,
+				error:
+					err instanceof Error
+						? err.message
+						: "Failed to update project settings.",
+			},
+			{ status: 500 },
+		);
+	}
+}
+
+// GET /api/project/[id]/settings
+export async function GET(
+	_req: Request,
+	{ params }: { params: Promise<{ id: string }> },
+) {
+	try {
+		const { id } = await params;
+		const { getProjectSettingsQuery } = await import("@/lib/queries/project");
+		const result = await getProjectSettingsQuery(id);
+		return NextResponse.json(result);
+	} catch (err: unknown) {
+		console.error("GET /api/project/[id]/settings Error:", err);
+		return NextResponse.json(
+			{
+				success: false,
+				error:
+					err instanceof Error
+						? err.message
+						: "Failed to fetch project settings.",
+			},
+			{ status: 500 },
+		);
+	}
+}

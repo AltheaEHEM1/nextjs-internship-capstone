@@ -1,13 +1,13 @@
 import { create } from "zustand";
 
-export interface InvitationInviter {
+interface InvitationInviter {
 	id?: string;
 	name?: string | null;
 	email?: string;
 	avatar?: string | null;
 }
 
-export interface InvitationTeam {
+interface InvitationTeam {
 	id?: string;
 	name?: string;
 	icon?: string | null;

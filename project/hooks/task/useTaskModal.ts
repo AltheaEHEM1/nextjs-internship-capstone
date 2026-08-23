@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProjectSettingsAction } from "@/actions/project/Project";
-import { createTaskAction, deleteTaskAction } from "@/actions/task/Task";
+
 import { useToast } from "@/hooks/toast/use-toast";
 import { type TaskData, useTaskModalStore } from "@/stores/task/TaskModalStore";
 
@@ -59,15 +58,21 @@ export function useTaskModal({
 	useEffect(() => {
 		if (opened && projectId) {
 			setIsLoading(true);
-			getProjectSettingsAction(projectId).then((result) => {
-				if (result.success && result.data) {
-					setProjectData(result.data);
-					if (result.data.statuses.length > 0 && !status && mode === "create") {
-						setStatus(result.data.statuses[0].id);
+			fetch(`/api/project/${projectId}/settings`)
+				.then((r) => r.json())
+				.then((result) => {
+					if (result.success && result.data) {
+						setProjectData(result.data);
+						if (
+							result.data.statuses.length > 0 &&
+							!status &&
+							mode === "create"
+						) {
+							setStatus(result.data.statuses[0].id);
+						}
 					}
-				}
-				setIsLoading(false);
-			});
+					setIsLoading(false);
+				});
 		}
 	}, [opened, projectId, setStatus, status, mode]);
 
@@ -79,16 +84,21 @@ export function useTaskModal({
 		setError(null);
 
 		try {
-			const result = await createTaskAction({
-				title: taskName,
-				description,
-				statusId: status,
-				assigneeId: assignee || undefined,
-				priority: priority as "low" | "medium" | "high" | "urgent",
-				dueDate: dueDate || undefined,
-				projectId: projectId,
-				labelName: labels || undefined,
+			const req = await fetch("/api/task/create", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					title: taskName,
+					description,
+					statusId: status,
+					assigneeId: assignee || undefined,
+					priority: priority as "low" | "medium" | "high" | "urgent",
+					dueDate: dueDate || undefined,
+					projectId: projectId,
+					labelName: labels || undefined,
+				}),
 			});
+			const result = await req.json();
 
 			if (result.success) {
 				toast({
@@ -134,7 +144,12 @@ export function useTaskModal({
 		setError(null);
 
 		try {
-			const result = await deleteTaskAction(taskId, projectId);
+			const req = await fetch(`/api/task/${taskId}`, {
+				method: "DELETE",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ projectId }),
+			});
+			const result = await req.json();
 			if (result.success) {
 				toast({
 					title: "Task deleted",

@@ -1,11 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getTeamDetailAction } from "@/actions/team/Team";
-import {
-	addMemberToTeamAction,
-	getAcceptedInvitesAction,
-} from "@/actions/team/TeamMember";
 import { useToast } from "@/hooks/toast/use-toast";
 import { useTeamStore } from "@/stores/team/TeamStore";
 
@@ -46,7 +41,8 @@ export function AddTeamMemberModal({
 				setPeople(storePeople);
 			}
 
-			getAcceptedInvitesAction()
+			fetch("/api/team/members/accepted-invites")
+				.then((res) => res.json())
 				.then((res: Record<string, unknown> | unknown[]) => {
 					if (
 						res &&
@@ -68,20 +64,36 @@ export function AddTeamMemberModal({
 			if (teamId) {
 				if (teamDetail && teamDetail.id === teamId && teamDetail.members) {
 					setExistingEmails(
-						new Set(teamDetail.members.map((m) => m.email.toLowerCase())),
+						new Set(
+							teamDetail.members.map((m: { email: string }) =>
+								m.email.toLowerCase(),
+							),
+						),
 					);
-					setExistingUserIds(new Set(teamDetail.members.map((m) => m.userId)));
+					setExistingUserIds(
+						new Set(
+							teamDetail.members.map((m: { userId: string }) => m.userId),
+						),
+					);
 				} else {
-					getTeamDetailAction(teamId).then((res) => {
-						if (res.success && res.data?.members) {
-							setExistingEmails(
-								new Set(res.data.members.map((m) => m.email.toLowerCase())),
-							);
-							setExistingUserIds(
-								new Set(res.data.members.map((m) => m.userId)),
-							);
-						}
-					});
+					fetch(`/api/team/${teamId}`)
+						.then((r) => r.json())
+						.then((res) => {
+							if (res.success && res.data?.members) {
+								setExistingEmails(
+									new Set(
+										res.data.members.map((m: { email: string }) =>
+											m.email.toLowerCase(),
+										),
+									),
+								);
+								setExistingUserIds(
+									new Set(
+										res.data.members.map((m: { userId: string }) => m.userId),
+									),
+								);
+							}
+						});
 				}
 			}
 		}
@@ -121,13 +133,17 @@ export function AddTeamMemberModal({
 		setLoading(true);
 		try {
 			if (teamId) {
-				const res = await addMemberToTeamAction({
-					teamId,
-					userId: selectedPerson?.id,
-					email,
-					role,
-					permission,
+				const req = await fetch(`/api/team/${teamId}/members`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						userId: selectedPerson?.id,
+						email,
+						role,
+						permission,
+					}),
 				});
+				const res = await req.json();
 
 				if (!res.success) {
 					toast({
@@ -145,7 +161,8 @@ export function AddTeamMemberModal({
 				});
 
 				// Refresh team detail in store
-				const refreshed = await getTeamDetailAction(teamId);
+				const reqRefreshed = await fetch(`/api/team/${teamId}`);
+				const refreshed = await reqRefreshed.json();
 				if (refreshed.success && refreshed.data) {
 					setTeamDetail(refreshed.data as Parameters<typeof setTeamDetail>[0]);
 				}

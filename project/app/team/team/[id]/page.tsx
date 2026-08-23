@@ -115,6 +115,8 @@ export default function SpecificTeam() {
 								<Image
 									src={teamDetail.icon}
 									alt={teamDetail.name}
+									width={80}
+									height={80}
 									className="h-full w-full object-cover"
 								/>
 							) : (
@@ -198,6 +200,8 @@ export default function SpecificTeam() {
 										<Image
 											src={m.avatar}
 											alt={m.name}
+											width={36}
+											height={36}
 											className="h-full w-full object-cover"
 										/>
 									) : (m.avatar?.length ?? 0) > 5 ? (

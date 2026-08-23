@@ -69,10 +69,10 @@ export default function TaskModalLeft() {
 		setIsNameUnique(null);
 
 		const timeoutId = setTimeout(async () => {
-			const { checkTaskTitleUniqueAction } = await import(
-				"@/actions/task/Task"
+			const req = await fetch(
+				`/api/task/check-name?name=${encodeURIComponent(taskName)}`,
 			);
-			const res = await checkTaskTitleUniqueAction(taskName);
+			const res = await req.json();
 			setIsCheckingName(false);
 			if (res.success) {
 				setIsNameUnique(res.isUnique as boolean);

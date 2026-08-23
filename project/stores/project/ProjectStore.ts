@@ -3,9 +3,9 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { AccessRole } from "@/components/modals/project/CreateProject1Modal";
 
-export type ModalStep = "closed" | "step1" | "step2";
+type ModalStep = "closed" | "step1" | "step2";
 
-export interface ProjectForm {
+interface ProjectForm {
 	projectName: string;
 	description: string;
 	access: AccessRole;
