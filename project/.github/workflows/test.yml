@@ -1,0 +1,66 @@
+name: Comprehensive Testing Suite
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v3
+      with:
+        version: 9
+        
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'pnpm'
+        
+    - name: Install dependencies
+      run: pnpm install
+      
+    # 1. Run Linting & Type Checking
+    - name: Run Type Check
+      run: pnpm exec tsc --noEmit
+      
+    - name: Run Biome Check
+      run: pnpm run check
+
+    # 2. Run Unit & Integration Tests (Jest)
+    - name: Run Jest Tests with Coverage
+      run: pnpm exec jest --coverage
+      env:
+        CI: true
+
+    - name: Upload Jest Coverage Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: jest-coverage-report
+        path: coverage/
+        retention-days: 14
+
+    # 3. Run End-to-End Tests (Playwright)
+    - name: Install Playwright Browsers
+      run: pnpm exec playwright install --with-deps
+      
+    - name: Run Playwright Tests
+      run: pnpm exec playwright test
+      env:
+        CI: true
+        
+    - name: Upload Playwright Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
