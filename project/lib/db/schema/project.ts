@@ -9,7 +9,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { priorityEnum, sizeEnum } from "./Enums";
+import { priorityEnum, sizeEnum } from "./enums";
 import { teams, users } from "./index";
 
 export const projects = pgTable(

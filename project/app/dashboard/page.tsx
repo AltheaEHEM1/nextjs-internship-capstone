@@ -159,19 +159,6 @@ export default function DashboardPage() {
 				</div>
 			</div>
 
-			{/* Implementation Tasks Banner */}
-			<div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
-				<h3 className="mb-2 text-sm font-medium text-yellow-800 dark:text-yellow-200">
-					📊 Analytics Implementation Tasks
-				</h3>
-				<ul className="space-y-1 text-sm text-yellow-700 dark:text-yellow-300">
-					<li>• Task 5.1: Implement project velocity tracking</li>
-					<li>• Task 5.2: Add team productivity metrics</li>
-					<li>• Task 5.3: Build burndown chart with Recharts</li>
-					<li>• Task 5.4: Create exportable reports</li>
-				</ul>
-			</div>
-
 			{/* Charts Placeholder */}
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 				<div className="rounded-lg border border-french_gray-300 bg-white p-6 dark:border-payne's_gray-400 dark:bg-outer_space-500">

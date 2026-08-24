@@ -7,7 +7,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { roleEnum } from "./Enums";
+import { roleEnum } from "./enums";
 import { projects, users } from "./index";
 
 export const teams = pgTable("teams", {

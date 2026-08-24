@@ -8,7 +8,7 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/alert/Alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import BaseModal from "@/components/layout/BaseModal";
 import TaskModalLeft from "@/components/modals/task/TaskModalLeft";
 import TaskModalRight from "@/components/modals/task/TaskModalRight";

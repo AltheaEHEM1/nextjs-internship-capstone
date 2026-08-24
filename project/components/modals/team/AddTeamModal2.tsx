@@ -3,7 +3,7 @@
 import { FolderPlus, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import BaseModal from "@/components/layout/BaseModal";
-import { roleEnum } from "@/lib/db/schema/Enums";
+import { roleEnum } from "@/lib/db/schema/enums";
 import { useTeamStore } from "@/stores/team/TeamStore";
 
 interface AcceptedUser {

@@ -11,7 +11,7 @@ import {
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/alert/Alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import EditRoleModal from "@/components/modals/team/EditRoleModal";

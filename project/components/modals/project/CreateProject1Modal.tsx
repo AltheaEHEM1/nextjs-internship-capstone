@@ -8,7 +8,7 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Alert, AlertDescription } from "@/components/alert/Alert";
+import { Alert, AlertDescription } from "@/components/alert/alert";
 import BaseModal from "@/components/layout/BaseModal";
 import { useMinDate } from "@/hooks/project/useMinDate";
 import { projectSchema } from "@/lib/validation/Validations";
