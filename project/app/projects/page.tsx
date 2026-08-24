@@ -158,8 +158,8 @@ export default function ProjectsPage() {
 			</div>
 
 			{/* Filters Section */}
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<div className="flex flex-wrap items-center gap-3">
+			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
+				<div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
 					<Select
 						value={statusFilter}
 						onValueChange={(val) =>
@@ -195,7 +195,7 @@ export default function ProjectsPage() {
 					</Select>
 				</div>
 
-				<div className="ml-auto">
+				<div className="ml-auto w-full sm:w-auto mt-2 sm:mt-0">
 					<SearchBar
 						value={searchQuery}
 						onChange={setSearchQuery}

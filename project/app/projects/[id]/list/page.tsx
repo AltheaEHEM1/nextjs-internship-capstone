@@ -182,7 +182,7 @@ export default function List({ params }: { params: Promise<{ id: string }> }) {
 				</div>
 			</div>
 
-			<div className="overflow-x-auto rounded-xl border border-french_gray-200 bg-white shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
+			<div className="overflow-x-auto w-full rounded-xl border border-french_gray-200 bg-white shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
 				<table className="w-full text-left text-sm whitespace-nowrap">
 					<thead className="border-b border-french_gray-200 bg-platinum-100/60 dark:border-payne's_gray-600 dark:bg-outer_space-400/50">
 						{table.getHeaderGroups().map((headerGroup: HeaderGroup<Task>) => (

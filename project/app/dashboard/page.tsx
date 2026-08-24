@@ -185,7 +185,7 @@ export default function DashboardPage() {
 					description="Real-time workspace overview, team performance, and project metrics"
 				/>
 				{/* Top metrics skeleton */}
-				<div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+				<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 					{[1, 2, 3].map((i) => (
 						<div
 							key={i}
@@ -194,7 +194,7 @@ export default function DashboardPage() {
 					))}
 				</div>
 				{/* Leaderboards skeleton (2 columns) */}
-				<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
 					{[1, 2].map((i) => (
 						<div
 							key={i}
@@ -205,7 +205,7 @@ export default function DashboardPage() {
 				{/* Recent Projects skeleton (full-width row) */}
 				<div className="h-64 animate-pulse rounded-2xl border border-french_gray-200 bg-white/70 p-6 dark:border-payne's_gray-500/30 dark:bg-outer_space-500/50" />
 				{/* Graphs skeleton */}
-				<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
 					{[1, 2].map((i) => (
 						<div
 							key={i}
@@ -262,7 +262,7 @@ export default function DashboardPage() {
 			)}
 
 			{/* ─── 1. TOP SUMMARY METRIC CARDS ───────────────────────────────────── */}
-			<div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+			<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{/* Total Projects Card */}
 				<div className="group relative overflow-hidden rounded-2xl border border-french_gray-300/70 bg-gradient-to-br from-white via-white to-blue_munsell-50/30 p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-payne's_gray-400/50 dark:bg-gradient-to-br dark:from-outer_space-500 dark:via-outer_space-500 dark:to-blue_munsell-950/20">
 					<div className="flex items-center justify-between">
@@ -357,10 +357,10 @@ export default function DashboardPage() {
 			</div>
 
 			{/* ─── 2. LEADERBOARDS (TOP TEAMS & MEMBERS) ────────────────────────── */}
-			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
 				{/* Top Teams by Project Count */}
 				<div className="flex flex-col rounded-2xl border border-french_gray-300/70 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-payne's_gray-400/50 dark:bg-outer_space-500">
-					<div className="mb-5 flex items-center justify-between gap-3">
+					<div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
 						<div className="flex items-center gap-2.5 min-w-0">
 							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
 								<Trophy size={18} />
@@ -442,7 +442,7 @@ export default function DashboardPage() {
 
 				{/* Top 5 Users / Members by Project Count */}
 				<div className="flex flex-col rounded-2xl border border-french_gray-300/70 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-payne's_gray-400/50 dark:bg-outer_space-500">
-					<div className="mb-5 flex items-center justify-between gap-3">
+					<div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
 						<div className="flex items-center gap-2.5 min-w-0">
 							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue_munsell-100 text-blue_munsell-500 dark:bg-blue_munsell-900/30 dark:text-blue_munsell-400">
 								<Medal size={18} />
@@ -560,7 +560,7 @@ export default function DashboardPage() {
 						</button>
 					</div>
 				) : (
-					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 						{recentProjects.map((p) => {
 							const isFinished = p.status === "finished";
 							return (

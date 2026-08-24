@@ -97,8 +97,8 @@ export function TeamPageContent({
 			{activeTab === "people" && (
 				<div className="space-y-6">
 					{/* Filters Section */}
-					<div className="flex flex-wrap items-center justify-between gap-3">
-						<div className="flex flex-wrap items-center gap-3">
+					<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
+						<div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
 							<Select value={roleFilter} onValueChange={setRoleFilter}>
 								<SelectTrigger className="w-[180px]">
 									<SelectValue />
@@ -112,7 +112,7 @@ export function TeamPageContent({
 							</Select>
 						</div>
 
-						<div className="ml-auto">
+						<div className="ml-auto w-full sm:w-auto mt-2 sm:mt-0">
 							<SearchBar
 								value={peopleSearchQuery}
 								onChange={setPeopleSearchQuery}
@@ -178,8 +178,8 @@ export function TeamPageContent({
 			{activeTab === "teams" && (
 				<div className="space-y-6">
 					{/* Filters Section */}
-					<div className="flex flex-wrap items-center justify-between gap-3">
-						<div className="flex flex-wrap items-center gap-3">
+					<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
+						<div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
 							<Select
 								value={teamFilter}
 								onValueChange={(val) => setTeamFilter(val as "all" | "owner")}
@@ -194,7 +194,7 @@ export function TeamPageContent({
 							</Select>
 						</div>
 
-						<div className="ml-auto">
+						<div className="ml-auto w-full sm:w-auto mt-2 sm:mt-0">
 							<SearchBar
 								value={teamSearchQuery}
 								onChange={setTeamSearchQuery}

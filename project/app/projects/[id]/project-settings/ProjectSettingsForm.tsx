@@ -366,8 +366,8 @@ export default function ProjectSettingsForm({
 					variant="default"
 				/>
 
-				<div className="flex items-center justify-between pt-4 border-t border-french_gray-200/60 dark:border-payne's_gray-800">
-					<div className="flex items-center gap-2">
+				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-french_gray-200/60 dark:border-payne's_gray-800">
+					<div className="flex flex-wrap items-center gap-2">
 						<button
 							type="button"
 							onClick={() => setIsDeleteAlertOpen(true)}
