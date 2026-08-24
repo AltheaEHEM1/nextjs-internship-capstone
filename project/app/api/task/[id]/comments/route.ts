@@ -8,7 +8,6 @@ import { notifyProjectMembers } from "@/lib/notifications/NotifyProject";
 import { getTaskCommentsQuery } from "@/lib/queries/task";
 import { pusherServer } from "@/lib/real-time-board/PusherServer";
 import { commentSchema } from "@/lib/validation/Validations";
-import type { CreateCommentRequest } from "@/types/api/task";
 
 // GET /api/task/[id]/comments
 export async function GET(
@@ -38,7 +37,7 @@ export async function POST(
 ) {
 	try {
 		const { id: taskId } = await params;
-		const { content, projectId }: CreateCommentRequest = await req.json();
+		const { content, projectId } = await req.json();
 
 		const validationResult = commentSchema.safeParse({ text: content, taskId });
 		if (!validationResult.success) {

@@ -32,7 +32,9 @@ export function GlobalNotificationListener() {
 			}) => {
 				const title = "New Task Assigned";
 				const description = `${data.assignerName} assigned you to "${data.taskTitle}"`;
-				const href = data.projectId ? `/projects/${data.projectId}` : "/projects";
+				const href = data.projectId
+					? `/projects/${data.projectId}`
+					: "/projects";
 
 				addNotification({ title, description, type: "task", href });
 				toast({ title, description });
@@ -49,7 +51,9 @@ export function GlobalNotificationListener() {
 			}) => {
 				const title = "New Task Created";
 				const description = `${data.creatorName} added a new task "${data.taskTitle}"`;
-				const href = data.projectId ? `/projects/${data.projectId}` : "/projects";
+				const href = data.projectId
+					? `/projects/${data.projectId}`
+					: "/projects";
 
 				addNotification({ title, description, type: "task", href });
 				toast({ title, description });
@@ -66,7 +70,9 @@ export function GlobalNotificationListener() {
 			}) => {
 				const title = "New Comment on Task";
 				const description = `${data.commenterName} commented on "${data.taskTitle}"`;
-				const href = data.projectId ? `/projects/${data.projectId}` : "/projects";
+				const href = data.projectId
+					? `/projects/${data.projectId}`
+					: "/projects";
 
 				addNotification({ title, description, type: "comment", href });
 				toast({ title, description });
@@ -83,7 +89,9 @@ export function GlobalNotificationListener() {
 			}) => {
 				const title = "Task Edited";
 				const description = `${data.editorName} edited "${data.taskTitle}"`;
-				const href = data.projectId ? `/projects/${data.projectId}` : "/projects";
+				const href = data.projectId
+					? `/projects/${data.projectId}`
+					: "/projects";
 
 				addNotification({ title, description, type: "task", href });
 				toast({ title, description });
@@ -99,7 +107,9 @@ export function GlobalNotificationListener() {
 			}) => {
 				const title = "Task Deleted";
 				const description = `${data.deleterName} deleted the task "${data.taskTitle}"`;
-				const href = data.projectId ? `/projects/${data.projectId}` : "/projects";
+				const href = data.projectId
+					? `/projects/${data.projectId}`
+					: "/projects";
 
 				addNotification({ title, description, type: "task", href });
 				toast({ title, description });
@@ -114,14 +124,23 @@ export function GlobalNotificationListener() {
 				const title = "Project Deleted";
 				const description = `${data.deleterName} deleted the project "${data.projectName}"`;
 
-				addNotification({ title, description, type: "project", href: "/projects" });
+				addNotification({
+					title,
+					description,
+					type: "project",
+					href: "/projects",
+				});
 				toast({ title, description });
 			},
 		);
 
 		channel.bind(
 			"project-added",
-			(data: { projectName: string; creatorName: string; projectId?: string }) => {
+			(data: {
+				projectName: string;
+				creatorName: string;
+				projectId?: string;
+			}) => {
 				const title = "Added to Project";
 				const description = `${data.creatorName} added your team to the project "${data.projectName}"`;
 				const href = data.projectId
@@ -135,7 +154,11 @@ export function GlobalNotificationListener() {
 
 		channel.bind(
 			"project-edited",
-			(data: { projectName: string; editorName: string; projectId?: string }) => {
+			(data: {
+				projectName: string;
+				editorName: string;
+				projectId?: string;
+			}) => {
 				const title = "Project Updated";
 				const description = `${data.editorName} updated the project "${data.projectName}"`;
 				const href = data.projectId
@@ -149,7 +172,11 @@ export function GlobalNotificationListener() {
 
 		channel.bind(
 			"project-archived",
-			(data: { projectName: string; editorName: string; projectId?: string }) => {
+			(data: {
+				projectName: string;
+				editorName: string;
+				projectId?: string;
+			}) => {
 				const title = "Project Archived";
 				const description = `${data.editorName} archived the project "${data.projectName}"`;
 				const href = data.projectId
@@ -163,7 +190,11 @@ export function GlobalNotificationListener() {
 
 		channel.bind(
 			"project-restored",
-			(data: { projectName: string; editorName: string; projectId?: string }) => {
+			(data: {
+				projectName: string;
+				editorName: string;
+				projectId?: string;
+			}) => {
 				const title = "Project Restored";
 				const description = `${data.editorName} restored the project "${data.projectName}"`;
 				const href = data.projectId
@@ -175,27 +206,31 @@ export function GlobalNotificationListener() {
 			},
 		);
 
-		channel.bind(
-			"project-finished",
-			(data: { projectName: string }) => {
-				const title = "Project Finished";
-				const description = `The project "${data.projectName}" has reached its due date and is now marked as finished.`;
+		channel.bind("project-finished", (data: { projectName: string }) => {
+			const title = "Project Finished";
+			const description = `The project "${data.projectName}" has reached its due date and is now marked as finished.`;
 
-				addNotification({ title, description, type: "system", href: "/projects" });
-				toast({ title, description });
-			},
-		);
+			addNotification({
+				title,
+				description,
+				type: "system",
+				href: "/projects",
+			});
+			toast({ title, description });
+		});
 
-		channel.bind(
-			"project-ending-soon",
-			(data: { projectName: string }) => {
-				const title = "Project Due Soon";
-				const description = `The project "${data.projectName}" is due in 3 days or less!`;
+		channel.bind("project-ending-soon", (data: { projectName: string }) => {
+			const title = "Project Due Soon";
+			const description = `The project "${data.projectName}" is due in 3 days or less!`;
 
-				addNotification({ title, description, type: "system", href: "/projects" });
-				toast({ title, description });
-			},
-		);
+			addNotification({
+				title,
+				description,
+				type: "system",
+				href: "/projects",
+			});
+			toast({ title, description });
+		});
 
 		// ─── Team Events ──────────────────────────────────────────────────────────
 

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+	AlertCircle,
 	BarChart3,
 	CalendarClock,
 	CheckCircle2,
@@ -8,10 +9,8 @@ import {
 	PieChart as PieChartIcon,
 	PlusCircle,
 	Users,
-	AlertCircle,
 } from "lucide-react";
 import { use, useCallback, useEffect, useState } from "react";
-import { DetailSettingsSkeleton } from "@/components/skeletons/DetailSettingsSkeleton";
 import {
 	Area,
 	AreaChart,
@@ -25,13 +24,13 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { DetailSettingsSkeleton } from "@/components/skeletons/DetailSettingsSkeleton";
 
 import {
 	type RecentActivity,
 	type StatusOverviewItem,
 	type TeamWorkloadMember,
 	useSummary,
-	type WorkTypeItem,
 } from "@/hooks/project/(tabs)/useSummary";
 import { pusherClient } from "@/lib/real-time-board/PusherClient";
 
@@ -118,13 +117,8 @@ export default function Summary({
 }) {
 	const { id } = use(params);
 	const [isLoading, setIsLoading] = useState(true);
-	const {
-		recentActivities,
-		statusOverview,
-		workTypes,
-		teamWorkload,
-		setSummaryData,
-	} = useSummary();
+	const { recentActivities, statusOverview, teamWorkload, setSummaryData } =
+		useSummary();
 
 	const [projectInfo, setProjectInfo] = useState({
 		name: "Loading...",
@@ -170,7 +164,9 @@ export default function Summary({
 					);
 
 					const now = new Date();
-					const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+					const sevenDaysAgo = new Date(
+						now.getTime() - 7 * 24 * 60 * 60 * 1000,
+					);
 					const sevenDaysFromNow = new Date(
 						now.getTime() + 7 * 24 * 60 * 60 * 1000,
 					);
@@ -182,8 +178,10 @@ export default function Summary({
 					let pendingCount = 0;
 
 					// ── Build 7-day trend buckets ────────────────────────────────
-					const trendMap: Record<string, { completed: number; pending: number }> =
-						{};
+					const trendMap: Record<
+						string,
+						{ completed: number; pending: number }
+					> = {};
 					for (let i = 6; i >= 0; i--) {
 						const d = new Date(now);
 						d.setDate(d.getDate() - i);
@@ -351,7 +349,8 @@ export default function Summary({
 						id: idx + 1,
 						time: new Date(t.updatedAt).toLocaleDateString(),
 						author:
-							(t as { assignee?: { name?: string } }).assignee?.name || "System",
+							(t as { assignee?: { name?: string } }).assignee?.name ||
+							"System",
 						title: `Updated task: ${t.title}`,
 					}));
 

@@ -7,8 +7,6 @@ import { usePublicStore } from "@/stores/public/PublicStore";
 export function Pricing() {
 	const isYearly = usePublicStore((state) => state.isYearly);
 	const setIsYearly = usePublicStore((state) => state.setIsYearly);
-	const _openFaq = usePublicStore((state) => state.openFaq);
-	const _setOpenFaq = usePublicStore((state) => state.setOpenFaq);
 
 	const { mousePosition, containerRef, handleMouseMove } =
 		usePricingSpotlight();
@@ -80,24 +78,6 @@ export function Pricing() {
 			ctaText: "Contact Sales",
 			ctaHref: "#",
 			highlighted: false,
-		},
-	];
-
-	const _faqs = [
-		{
-			question: "Can I change my plan later?",
-			answer:
-				"Yes, you can upgrade, downgrade, or cancel your subscription at any time directly from your account settings page.",
-		},
-		{
-			question: "Is there a free trial available?",
-			answer:
-				"All paid plans come with a 14-day free trial. No credit card required to get started.",
-		},
-		{
-			question: "How does annual billing work?",
-			answer:
-				"When you choose yearly billing, you are billed upfront for 12 months at a 20% discount compared to monthly billing.",
 		},
 	];
 

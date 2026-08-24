@@ -6,7 +6,6 @@ import { db } from "@/lib/db/index";
 import { teamMembers, teams, users } from "@/lib/db/schema/index";
 import { notifyTeamMembers, notifyUser } from "@/lib/notifications/NotifyTeam";
 import { teamMemberSchema } from "@/lib/validation/Validations";
-import type { AddTeamMemberRequest } from "@/types/api/team";
 
 // POST /api/team/[teamId]/members — add a member
 export async function POST(
@@ -15,7 +14,7 @@ export async function POST(
 ) {
 	try {
 		const { teamId } = await params;
-		const data: AddTeamMemberRequest = await req.json();
+		const data = await req.json();
 
 		const validationResult = teamMemberSchema.safeParse({ teamId, ...data });
 		if (!validationResult.success) {

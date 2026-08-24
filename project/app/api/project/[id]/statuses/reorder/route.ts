@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
 import { db } from "@/lib/db/index";
 import { projectStatuses } from "@/lib/db/schema/index";
-import type { ReorderStatusesRequest } from "@/types/api/project";
 
 // PATCH /api/project/[id]/statuses/reorder
 export async function PATCH(
@@ -13,7 +12,7 @@ export async function PATCH(
 ) {
 	try {
 		const { id } = await params;
-		const { statuses }: ReorderStatusesRequest = await req.json();
+		const { statuses } = await req.json();
 		await getAuthenticatedDbUser();
 
 		for (const s of statuses) {

@@ -149,7 +149,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
 
 export const useNotificationStore = create<NotificationState>()(
 	persist(
-		(set, get) => ({
+		(set, _get) => ({
 			settings: DEFAULT_SETTINGS,
 			sections: DEFAULT_SECTIONS,
 			inbox: [],
@@ -181,8 +181,6 @@ export const useNotificationStore = create<NotificationState>()(
 			saveSettings: async () => {
 				set({ isLoading: true, error: null });
 				try {
-					const { settings } = get();
-					console.log("Saving notification settings:", settings);
 					set({ isLoading: false });
 				} catch (err) {
 					set({

@@ -5,7 +5,6 @@ import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
 import { db } from "@/lib/db/index";
 import { projectStatuses, taskHistory, tasks } from "@/lib/db/schema/index";
 import { pusherServer } from "@/lib/real-time-board/PusherServer";
-import type { ReorderTasksRequest } from "@/types/api/task";
 
 // PATCH /api/task/reorder
 export async function PATCH(req: Request) {

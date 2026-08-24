@@ -6,7 +6,6 @@ import { db } from "@/lib/db/index";
 import { teamMembers, teams } from "@/lib/db/schema/index";
 import { notifyTeamMembers } from "@/lib/notifications/NotifyTeam";
 import { getTeamDetailQuery } from "@/lib/queries/team";
-import type { UpdateTeamRequest } from "@/types/api/team";
 
 export async function GET(
 	_req: Request,
@@ -81,7 +80,7 @@ export async function PATCH(
 ) {
 	try {
 		const { teamId } = await params;
-		const data: UpdateTeamRequest = await req.json();
+		const data = await req.json();
 		const dbUser = await getAuthenticatedDbUser();
 
 		const memberRecord = await db.query.teamMembers.findFirst({

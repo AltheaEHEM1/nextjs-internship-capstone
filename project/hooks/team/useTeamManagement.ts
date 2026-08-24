@@ -7,6 +7,7 @@ import { type TeamItem, useTeamStore } from "@/stores/team/TeamStore";
 export function useTeamManagement(initialTab?: "people" | "teams") {
 	const store = useTeamStore();
 	const setActiveTab = useTeamStore((s) => s.setActiveTab);
+	const [isLoading, setIsLoading] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [loadError, setLoadError] = useState<string | null>(null);
 	const { toast } = useToast();
@@ -22,28 +23,43 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 	useEffect(() => {
 		let cancelled = false;
 
-		async function loadTeams() {
-			const req = await fetch("/api/team/user-teams");
-			const res = await req.json();
-			if (!cancelled && res.success) {
-				useTeamStore.setState({ teams: res.data as TeamItem[] });
-			} else if (!cancelled && !res.success) {
-				setLoadError(res.error ?? "Failed to load teams.");
+		async function loadData() {
+			setIsLoading(true);
+			try {
+				const [teamsReq, peopleReq] = await Promise.all([
+					fetch("/api/team/user-teams"),
+					fetch("/api/team/members/accepted-invites"),
+				]);
+				const [teamsRes, peopleRes] = await Promise.all([
+					teamsReq.json(),
+					peopleReq.json(),
+				]);
+
+				if (!cancelled) {
+					if (teamsRes.success) {
+						useTeamStore.setState({ teams: teamsRes.data as TeamItem[] });
+					} else {
+						setLoadError(teamsRes.error ?? "Failed to load teams.");
+					}
+
+					if (peopleRes.success) {
+						useTeamStore.setState({ people: peopleRes.data as never });
+					} else {
+						setLoadError(peopleRes.error ?? "Failed to load people.");
+					}
+				}
+			} catch {
+				if (!cancelled) {
+					setLoadError("Failed to load team data.");
+				}
+			} finally {
+				if (!cancelled) {
+					setIsLoading(false);
+				}
 			}
 		}
 
-		async function loadPeople() {
-			const req = await fetch("/api/team/members/accepted-invites");
-			const res = await req.json();
-			if (!cancelled && res.success) {
-				useTeamStore.setState({ people: res.data as never });
-			} else if (!cancelled && !res.success) {
-				setLoadError(res.error ?? "Failed to load people.");
-			}
-		}
-
-		loadTeams();
-		loadPeople();
+		loadData();
 
 		return () => {
 			cancelled = true;
@@ -127,6 +143,7 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 
 	return {
 		...store,
+		isLoading,
 		isSubmitting,
 		loadError,
 		handleMainAction,

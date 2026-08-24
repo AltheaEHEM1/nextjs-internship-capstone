@@ -15,7 +15,6 @@ import {
 import { notifyProjectMembers } from "@/lib/notifications/NotifyProject";
 import { pusherServer } from "@/lib/real-time-board/PusherServer";
 import { taskSchema } from "@/lib/validation/Validations";
-import type { DeleteTaskRequest, UpdateTaskRequest } from "@/types/api/task";
 
 async function checkUserProjectPermission(userId: string, projectId: string) {
 	const projectData = await db.query.projects.findFirst({
@@ -43,7 +42,7 @@ export async function PATCH(
 ) {
 	try {
 		const { id } = await params;
-		const data: UpdateTaskRequest = await req.json();
+		const data = await req.json();
 
 		const validationResult = taskSchema.partial().safeParse(data);
 		if (!validationResult.success) {
@@ -299,7 +298,7 @@ export async function DELETE(
 ) {
 	try {
 		const { id } = await params;
-		const { projectId }: DeleteTaskRequest = await req.json();
+		const { projectId } = await req.json();
 		const dbUser = await getAuthenticatedDbUser();
 
 		if (!id) {

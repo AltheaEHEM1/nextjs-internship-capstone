@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-export interface TimelineItem {
+interface TimelineItem {
 	id: number | string;
 	content: string;
 	start: string | Date;

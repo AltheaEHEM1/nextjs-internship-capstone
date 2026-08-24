@@ -2,30 +2,16 @@
 
 import { ClerkLoaded, ClerkLoading, UserButton } from "@clerk/nextjs";
 import { Menu, Moon, Sun } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/bread-crumbs/BreadCrumbs";
 import { useTheme } from "@/components/theme-color/ThemeProvider";
 
 interface SidebarHeaderProps {
 	onMenuClick: () => void;
-	onLogout?: () => void;
 }
 
-export default function SidebarHeader({
-	onMenuClick,
-	onLogout,
-}: SidebarHeaderProps) {
+export default function SidebarHeader({ onMenuClick }: SidebarHeaderProps) {
 	const { theme, setTheme } = useTheme();
-	const _router = useRouter();
-
-	const _handleLogout = () => {
-		if (onLogout) {
-			onLogout();
-		} else {
-			console.log("Logging out...");
-		}
-	};
 
 	return (
 		<header className="shadow-xs sticky top-0 z-30 flex flex-shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-3 border-b border-slate-200 bg-white px-4 py-2 text-slate-700 transition-colors duration-200 sm:gap-x-6 sm:px-6 lg:px-8">

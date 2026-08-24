@@ -10,7 +10,6 @@ import { InviteEmail } from "@/components/emails/InviteEmail";
 import { db } from "@/lib/db/index";
 import { invitations } from "@/lib/db/schema/index";
 import { invitationSchema } from "@/lib/validation/Validations";
-import type { SendInvitationRequest } from "@/types/api/invitation";
 
 let transporter: Transporter;
 try {
@@ -138,7 +137,7 @@ export async function sendUserInvitationHandler(
 
 export async function POST(req: Request) {
 	try {
-		const data: SendInvitationRequest = await req.json();
+		const data = await req.json();
 		const result = await sendUserInvitationHandler(data.email, data.notes);
 		if (!result.success) {
 			return NextResponse.json(result, { status: 400 });

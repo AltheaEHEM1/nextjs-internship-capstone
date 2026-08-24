@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
 import { db } from "@/lib/db/index";
 import { invitations } from "@/lib/db/schema/index";
-import type { RespondToInvitationRequest } from "@/types/api/invitation";
 
 export async function POST(
 	req: Request,
@@ -13,7 +12,7 @@ export async function POST(
 ) {
 	try {
 		const { token } = await params;
-		const { action }: RespondToInvitationRequest = await req.json();
+		const { action } = await req.json();
 
 		const invite = await db.query.invitations.findFirst({
 			where: and(

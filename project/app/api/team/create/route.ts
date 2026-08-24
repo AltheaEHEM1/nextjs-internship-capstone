@@ -6,11 +6,10 @@ import { db } from "@/lib/db/index";
 import { teamMembers, teams, users } from "@/lib/db/schema/index";
 import { notifyUser } from "@/lib/notifications/NotifyTeam";
 import { createTeamSchema } from "@/lib/validation/Validations";
-import type { CreateTeamRequest } from "@/types/api/team";
 
 export async function POST(req: Request) {
 	try {
-		const data: CreateTeamRequest = await req.json();
+		const data = await req.json();
 
 		const validationResult = createTeamSchema.safeParse(data);
 		if (!validationResult.success) {

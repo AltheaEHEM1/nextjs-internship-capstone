@@ -14,7 +14,10 @@ import {
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/page-header/PageHeader";
 import { useNotification } from "@/hooks/notification/useNotification";
-import type { NotificationType } from "@/stores/notification/NotificationStore";
+import type {
+	AppNotification,
+	NotificationType,
+} from "@/stores/notification/NotificationStore";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -68,7 +71,6 @@ function getIconConfig(type: NotificationType): IconConfig {
 				bg: "bg-amber-100 dark:bg-amber-900/30",
 				icon: "text-amber-600 dark:text-amber-400",
 			};
-		case "system":
 		default:
 			return {
 				Icon: Bell,
@@ -85,6 +87,94 @@ function isToday(dateStr: string): boolean {
 		d.getFullYear() === now.getFullYear() &&
 		d.getMonth() === now.getMonth() &&
 		d.getDate() === now.getDate()
+	);
+}
+
+function NotificationItemCard({
+	notification,
+	onClick,
+	onMarkAsRead,
+}: {
+	notification: AppNotification;
+	onClick: (id: string, href?: string) => void;
+	onMarkAsRead: (id: string) => void;
+}) {
+	const { Icon, bg, icon } = getIconConfig(notification.type ?? "system");
+	const isClickable = !!notification.href;
+
+	return (
+		<div
+			className={[
+				"relative group flex items-start gap-4 p-4 rounded-xl border transition-all duration-200",
+				notification.read
+					? "bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 opacity-70"
+					: "bg-cyan-50/60 border-cyan-100 dark:bg-cyan-950/20 dark:border-cyan-900/40 shadow-sm",
+				isClickable
+					? "hover:shadow-md hover:-translate-y-px hover:border-cyan-200 dark:hover:border-cyan-800"
+					: "",
+			]
+				.filter(Boolean)
+				.join(" ")}
+		>
+			{isClickable && (
+				<button
+					type="button"
+					aria-label={`View ${notification.title}`}
+					className="absolute inset-0 z-0 h-full w-full rounded-xl cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+					onClick={() => onClick(notification.id, notification.href)}
+				/>
+			)}
+
+			{/* Icon */}
+			<div
+				className={`relative z-10 flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full pointer-events-none ${bg}`}
+			>
+				<Icon size={18} className={icon} />
+			</div>
+
+			{/* Content */}
+			<div className="relative z-10 flex-1 min-w-0 pointer-events-none">
+				<div className="flex items-start justify-between gap-2">
+					<p
+						className={`text-sm font-semibold leading-snug ${
+							notification.read
+								? "text-slate-600 dark:text-slate-400"
+								: "text-slate-900 dark:text-slate-100"
+						}`}
+					>
+						{notification.title}
+					</p>
+					<div className="flex items-center gap-2 flex-shrink-0">
+						<time className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">
+							{getRelativeTime(notification.date)}
+						</time>
+						{!notification.read && (
+							<span className="w-2 h-2 rounded-full bg-cyan-500 flex-shrink-0" />
+						)}
+					</div>
+				</div>
+				<p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
+					{notification.description}
+				</p>
+				{isClickable && !notification.read && (
+					<p className="mt-1.5 text-xs font-medium text-cyan-600 dark:text-cyan-400 group-hover:underline">
+						Click to view →
+					</p>
+				)}
+			</div>
+
+			{/* Mark-as-read button */}
+			{!notification.read && (
+				<button
+					type="button"
+					onClick={() => onMarkAsRead(notification.id)}
+					className="relative z-10 flex-shrink-0 p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-100 rounded-lg transition-colors dark:hover:text-cyan-400 dark:hover:bg-cyan-900/30 cursor-pointer"
+					title="Mark as read"
+				>
+					<Check className="w-3.5 h-3.5" />
+				</button>
+			)}
+		</div>
 	);
 }
 
@@ -167,98 +257,14 @@ export default function NotificationsPage() {
 									Today
 								</h2>
 								<div className="space-y-2">
-									{todayItems.map((notification) => {
-										const { Icon, bg, icon } = getIconConfig(
-											notification.type ?? "system",
-										);
-										const isClickable = !!notification.href;
-
-										return (
-											<div
-												key={notification.id}
-												role={isClickable ? "button" : undefined}
-												tabIndex={isClickable ? 0 : undefined}
-												onClick={
-													isClickable
-														? () => handleClick(notification.id, notification.href)
-														: undefined
-												}
-												onKeyDown={
-													isClickable
-														? (e) => {
-																if (e.key === "Enter" || e.key === " ") {
-																	handleClick(notification.id, notification.href);
-																}
-														  }
-														: undefined
-												}
-												className={[
-													"group flex items-start gap-4 p-4 rounded-xl border transition-all duration-200",
-													notification.read
-														? "bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 opacity-70"
-														: "bg-cyan-50/60 border-cyan-100 dark:bg-cyan-950/20 dark:border-cyan-900/40 shadow-sm",
-													isClickable
-														? "cursor-pointer hover:shadow-md hover:-translate-y-px hover:border-cyan-200 dark:hover:border-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
-														: "",
-												]
-													.filter(Boolean)
-													.join(" ")}
-											>
-												{/* Icon */}
-												<div
-													className={`flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full ${bg}`}
-												>
-													<Icon size={18} className={icon} />
-												</div>
-
-												{/* Content */}
-												<div className="flex-1 min-w-0">
-													<div className="flex items-start justify-between gap-2">
-														<p
-															className={`text-sm font-semibold leading-snug ${
-																notification.read
-																	? "text-slate-600 dark:text-slate-400"
-																	: "text-slate-900 dark:text-slate-100"
-															}`}
-														>
-															{notification.title}
-														</p>
-														<div className="flex items-center gap-2 flex-shrink-0">
-															<time className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">
-																{getRelativeTime(notification.date)}
-															</time>
-															{!notification.read && (
-																<span className="w-2 h-2 rounded-full bg-cyan-500 flex-shrink-0" />
-															)}
-														</div>
-													</div>
-													<p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
-														{notification.description}
-													</p>
-													{isClickable && !notification.read && (
-														<p className="mt-1.5 text-xs font-medium text-cyan-600 dark:text-cyan-400 group-hover:underline">
-															Click to view →
-														</p>
-													)}
-												</div>
-
-												{/* Mark-as-read button */}
-												{!notification.read && (
-													<button
-														type="button"
-														onClick={(e) => {
-															e.stopPropagation();
-															markAsRead(notification.id);
-														}}
-														className="flex-shrink-0 p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-100 rounded-lg transition-colors dark:hover:text-cyan-400 dark:hover:bg-cyan-900/30"
-														title="Mark as read"
-													>
-														<Check className="w-3.5 h-3.5" />
-													</button>
-												)}
-											</div>
-										);
-									})}
+									{todayItems.map((notification) => (
+										<NotificationItemCard
+											key={notification.id}
+											notification={notification}
+											onClick={handleClick}
+											onMarkAsRead={markAsRead}
+										/>
+									))}
 								</div>
 							</section>
 						)}
@@ -270,98 +276,14 @@ export default function NotificationsPage() {
 									Earlier
 								</h2>
 								<div className="space-y-2">
-									{earlierItems.map((notification) => {
-										const { Icon, bg, icon } = getIconConfig(
-											notification.type ?? "system",
-										);
-										const isClickable = !!notification.href;
-
-										return (
-											<div
-												key={notification.id}
-												role={isClickable ? "button" : undefined}
-												tabIndex={isClickable ? 0 : undefined}
-												onClick={
-													isClickable
-														? () => handleClick(notification.id, notification.href)
-														: undefined
-												}
-												onKeyDown={
-													isClickable
-														? (e) => {
-																if (e.key === "Enter" || e.key === " ") {
-																	handleClick(notification.id, notification.href);
-																}
-														  }
-														: undefined
-												}
-												className={[
-													"group flex items-start gap-4 p-4 rounded-xl border transition-all duration-200",
-													notification.read
-														? "bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 opacity-70"
-														: "bg-cyan-50/60 border-cyan-100 dark:bg-cyan-950/20 dark:border-cyan-900/40 shadow-sm",
-													isClickable
-														? "cursor-pointer hover:shadow-md hover:-translate-y-px hover:border-cyan-200 dark:hover:border-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
-														: "",
-												]
-													.filter(Boolean)
-													.join(" ")}
-											>
-												{/* Icon */}
-												<div
-													className={`flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full ${bg}`}
-												>
-													<Icon size={18} className={icon} />
-												</div>
-
-												{/* Content */}
-												<div className="flex-1 min-w-0">
-													<div className="flex items-start justify-between gap-2">
-														<p
-															className={`text-sm font-semibold leading-snug ${
-																notification.read
-																	? "text-slate-600 dark:text-slate-400"
-																	: "text-slate-900 dark:text-slate-100"
-															}`}
-														>
-															{notification.title}
-														</p>
-														<div className="flex items-center gap-2 flex-shrink-0">
-															<time className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">
-																{getRelativeTime(notification.date)}
-															</time>
-															{!notification.read && (
-																<span className="w-2 h-2 rounded-full bg-cyan-500 flex-shrink-0" />
-															)}
-														</div>
-													</div>
-													<p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
-														{notification.description}
-													</p>
-													{isClickable && !notification.read && (
-														<p className="mt-1.5 text-xs font-medium text-cyan-600 dark:text-cyan-400 group-hover:underline">
-															Click to view →
-														</p>
-													)}
-												</div>
-
-												{/* Mark-as-read button */}
-												{!notification.read && (
-													<button
-														type="button"
-														onClick={(e) => {
-															e.stopPropagation();
-															markAsRead(notification.id);
-														}}
-														className="flex-shrink-0 p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-100 rounded-lg transition-colors dark:hover:text-cyan-400 dark:hover:bg-cyan-900/30"
-														title="Mark as read"
-													>
-														<Check className="w-3.5 h-3.5" />
-													</button>
-												)}
-											</div>
-										);
-									})}
+									{earlierItems.map((notification) => (
+										<NotificationItemCard
+											key={notification.id}
+											notification={notification}
+											onClick={handleClick}
+											onMarkAsRead={markAsRead}
+										/>
+									))}
 								</div>
 							</section>
 						)}

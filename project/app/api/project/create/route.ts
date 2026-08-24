@@ -6,11 +6,10 @@ import { db } from "@/lib/db/index";
 import { labels, projectStatuses, projects } from "@/lib/db/schema/index";
 import { notifyProjectMembers } from "@/lib/notifications/NotifyProject";
 import { projectSchema } from "@/lib/validation/Validations";
-import type { CreateProjectRequest } from "@/types/api/project";
 
 export async function POST(req: Request) {
 	try {
-		const data: CreateProjectRequest = await req.json();
+		const data = await req.json();
 
 		const validationResult = projectSchema.safeParse(data);
 		if (!validationResult.success) {

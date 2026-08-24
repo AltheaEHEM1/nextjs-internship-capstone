@@ -14,7 +14,7 @@ export async function notifyTeamMembers(
 	teamId: string,
 	eventName: string,
 	payload: unknown,
-	actorClerkId?: string,
+	_actorClerkId?: string,
 ) {
 	try {
 		if (!pusherServer) return;

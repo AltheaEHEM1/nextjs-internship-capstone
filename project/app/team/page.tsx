@@ -17,7 +17,11 @@ import AddTeamModal1 from "@/components/modals/team/AddTeamModal1";
 import AddTeamModal2 from "@/components/modals/team/AddTeamModal2";
 import { PageHeader } from "@/components/page-header/PageHeader";
 import { SearchBar } from "@/components/search/SearchBar";
-import { CardGridSkeleton } from "@/components/skeletons/CardGridSkeleton";
+import {
+	TeamCardSkeleton,
+	TeamMemberSkeleton,
+	TeamPageSkeleton,
+} from "@/components/skeletons/TeamSkeleton";
 import { useTeamManagement } from "@/hooks/team/useTeamManagement";
 import type { PersonItem, TeamItem } from "@/stores/team/TeamStore";
 
@@ -28,6 +32,7 @@ export function TeamPageContent({
 }) {
 	const {
 		activeTab,
+		isLoading,
 		people = [],
 		teams = [],
 		isAddPeopleOpen,
@@ -116,7 +121,9 @@ export function TeamPageContent({
 						</div>
 					</div>
 
-					{filteredPeople.length === 0 ? (
+					{isLoading ? (
+						<TeamMemberSkeleton count={6} />
+					) : filteredPeople.length === 0 ? (
 						<div className="rounded-2xl border border-dashed border-french_gray-200 p-12 text-center dark:border-paynes_gray-600">
 							<p className="text-sm text-outer_space-500 dark:text-platinum-400">
 								No members found for the selected filter.
@@ -196,7 +203,9 @@ export function TeamPageContent({
 						</div>
 					</div>
 
-					{filteredTeams.length === 0 ? (
+					{isLoading ? (
+						<TeamCardSkeleton count={6} />
+					) : filteredTeams.length === 0 ? (
 						<div className="rounded-2xl border border-dashed border-french_gray-200 p-12 text-center dark:border-paynes_gray-600">
 							<p className="text-sm text-outer_space-500 dark:text-platinum-400">
 								No teams found for the selected filter.
@@ -261,17 +270,7 @@ function TeamPageWithParams() {
 
 export default function TeamPage() {
 	return (
-		<Suspense
-			fallback={
-				<div className="p-6 md:p-10 space-y-6">
-					<div className="space-y-2 mb-8">
-						<div className="h-8 w-48 bg-muted animate-pulse rounded-md" />
-						<div className="h-4 w-96 bg-muted animate-pulse rounded-md" />
-					</div>
-					<CardGridSkeleton count={6} />
-				</div>
-			}
-		>
+		<Suspense fallback={<TeamPageSkeleton />}>
 			<TeamPageWithParams />
 		</Suspense>
 	);

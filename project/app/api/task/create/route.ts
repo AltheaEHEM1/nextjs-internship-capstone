@@ -15,7 +15,6 @@ import {
 import { notifyProjectMembers } from "@/lib/notifications/NotifyProject";
 import { pusherServer } from "@/lib/real-time-board/PusherServer";
 import { taskSchema } from "@/lib/validation/Validations";
-import type { CreateTaskRequest } from "@/types/api/task";
 
 async function _checkUserProjectPermission(userId: string, projectId: string) {
 	const projectData = await db.query.projects.findFirst({
@@ -38,7 +37,7 @@ async function _checkUserProjectPermission(userId: string, projectId: string) {
 
 export async function POST(req: Request) {
 	try {
-		const data: CreateTaskRequest = await req.json();
+		const data = await req.json();
 
 		const validationResult = taskSchema.safeParse(data);
 		if (!validationResult.success) {

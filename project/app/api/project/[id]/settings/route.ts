@@ -6,7 +6,6 @@ import { db } from "@/lib/db/index";
 import { projectStatuses, projects, teamMembers } from "@/lib/db/schema/index";
 import { notifyProjectMembers } from "@/lib/notifications/NotifyProject";
 import { projectSettingsSchema } from "@/lib/validation/Validations";
-import type { UpdateProjectSettingsRequest } from "@/types/api/project";
 
 // PATCH /api/project/[id]/settings
 export async function PATCH(
@@ -15,7 +14,7 @@ export async function PATCH(
 ) {
 	try {
 		const { id } = await params;
-		const data: UpdateProjectSettingsRequest = await req.json();
+		const data = await req.json();
 
 		const validationResult = projectSettingsSchema.safeParse(data);
 		if (!validationResult.success) {
@@ -140,7 +139,11 @@ export async function PATCH(
 		let eventName = "project-edited";
 		if (newStatus === "archived" && oldStatus !== "archived") {
 			eventName = "project-archived";
-		} else if (oldStatus === "archived" && newStatus && newStatus !== "archived") {
+		} else if (
+			oldStatus === "archived" &&
+			newStatus &&
+			newStatus !== "archived"
+		) {
 			eventName = "project-restored";
 		}
 

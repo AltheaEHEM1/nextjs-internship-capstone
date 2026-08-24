@@ -6,7 +6,6 @@ import { db } from "@/lib/db/index";
 import { teamMembers, teams, users } from "@/lib/db/schema/index";
 import { notifyTeamMembers, notifyUser } from "@/lib/notifications/NotifyTeam";
 import { teamMemberSchema } from "@/lib/validation/Validations";
-import type { UpdateTeamMemberRequest } from "@/types/api/team";
 
 // PATCH /api/team/[teamId]/members/[userId] — update a member's role/permission
 export async function PATCH(
@@ -15,7 +14,7 @@ export async function PATCH(
 ) {
 	try {
 		const { teamId, userId } = await params;
-		const data: UpdateTeamMemberRequest = await req.json();
+		const data = await req.json();
 
 		const validationResult = teamMemberSchema.safeParse({
 			teamId,
