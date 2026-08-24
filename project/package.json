@@ -35,6 +35,7 @@
 		"@fullcalendar/interaction": "^6.1.21",
 		"@fullcalendar/react": "^7.0.2",
 		"@fullcalendar/timegrid": "^6.1.21",
+		"@radix-ui/react-select": "^2.3.7",
 		"@radix-ui/react-toast": "^1.2.23",
 		"@react-email/components": "^1.0.12",
 		"@tanstack/react-table": "^8.21.3",

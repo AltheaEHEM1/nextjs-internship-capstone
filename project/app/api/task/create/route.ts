@@ -17,7 +17,7 @@ import { pusherServer } from "@/lib/real-time-board/PusherServer";
 import { taskSchema } from "@/lib/validation/Validations";
 import type { CreateTaskRequest } from "@/types/api/task";
 
-async function checkUserProjectPermission(userId: string, projectId: string) {
+async function _checkUserProjectPermission(userId: string, projectId: string) {
 	const projectData = await db.query.projects.findFirst({
 		where: eq(projects.id, projectId),
 		with: {
@@ -54,15 +54,79 @@ export async function POST(req: Request) {
 
 		const dbUser = await getAuthenticatedDbUser();
 
-		const permission = await checkUserProjectPermission(
-			dbUser.id,
-			data.projectId,
-		);
+		const projectData = await db.query.projects.findFirst({
+			where: eq(projects.id, data.projectId),
+			with: {
+				team: {
+					with: {
+						members: {
+							where: eq(teamMembers.userId, dbUser.id),
+						},
+					},
+				},
+			},
+		});
+
+		if (!projectData) {
+			return NextResponse.json(
+				{ success: false, error: "Project not found" },
+				{ status: 404 },
+			);
+		}
+
+		let permission = "viewer";
+		if (projectData.ownerId === dbUser.id) {
+			permission = "administrator";
+		} else {
+			permission = projectData.team?.members?.[0]?.permission || "viewer";
+		}
+
 		if (permission !== "administrator") {
 			return NextResponse.json(
 				{ success: false, error: "Only administrators can create tasks." },
 				{ status: 403 },
 			);
+		}
+
+		if (data.startDate || data.dueDate) {
+			// use a loose start of day for createdAt, but strict for project.dueDate (which is end of day)
+			const pStart = projectData.createdAt.getTime();
+			const pEnd = projectData.dueDate.getTime();
+
+			if (data.startDate) {
+				const sDate = new Date(data.startDate).getTime();
+				if (sDate < pStart || sDate > pEnd) {
+					return NextResponse.json(
+						{
+							success: false,
+							error: "Task start date must fall within project lifetime.",
+						},
+						{ status: 400 },
+					);
+				}
+			}
+			if (data.dueDate) {
+				const dDate = new Date(data.dueDate).getTime();
+				if (dDate < pStart || dDate > pEnd) {
+					return NextResponse.json(
+						{
+							success: false,
+							error: "Task due date must fall within project lifetime.",
+						},
+						{ status: 400 },
+					);
+				}
+			}
+			if (data.startDate && data.dueDate) {
+				if (
+					new Date(data.startDate).getTime() > new Date(data.dueDate).getTime()
+				) {
+					return NextResponse.json(
+						{ success: false, error: "Start date must be before due date." },
+						{ status: 400 },
+					);
+				}
+			}
 		}
 
 		const existingTask = await db.query.tasks.findFirst({
@@ -89,6 +153,7 @@ export async function POST(req: Request) {
 				assigneeId: data.assigneeId || null,
 				reporterId: dbUser.id,
 				priority: data.priority || "medium",
+				startDate: data.startDate ? new Date(data.startDate) : null,
 				dueDate: data.dueDate ? new Date(data.dueDate) : null,
 			})
 			.returning();

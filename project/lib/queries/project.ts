@@ -43,11 +43,19 @@ export async function getProjectsQuery() {
 				}
 			}
 
+			if (
+				(p.status === "finished" || p.status === "archived") &&
+				currentUserPermission === "member"
+			) {
+				currentUserPermission = "viewer";
+			}
+
 			return {
 				id: p.id,
 				name: p.name,
 				description: p.description,
 				dueDate: p.dueDate,
+				status: p.status,
 				createdAt: p.createdAt,
 				views: p.views,
 				teamName: p.team?.name || null,
@@ -111,6 +119,14 @@ export async function getProjectDetailQuery(id: string) {
 			currentUserPermission = "administrator";
 		} else if (projectDetails.team?.members?.length) {
 			currentUserPermission = projectDetails.team.members[0].permission;
+		}
+
+		if (
+			(projectDetails.status === "finished" ||
+				projectDetails.status === "archived") &&
+			currentUserPermission === "member"
+		) {
+			currentUserPermission = "viewer";
 		}
 
 		return {
@@ -216,6 +232,14 @@ export async function getProjectSettingsQuery(id: string) {
 			});
 		}
 
+		if (
+			(projectData.status === "finished" ||
+				projectData.status === "archived") &&
+			currentUserPermission === "member"
+		) {
+			currentUserPermission = "viewer";
+		}
+
 		const statuses =
 			projectData.statuses?.map((s) => ({
 				id: s.id,
@@ -238,7 +262,9 @@ export async function getProjectSettingsQuery(id: string) {
 				description: projectData.description ?? "",
 				teamName: projectData.team?.name ?? "",
 				teamId: projectData.teamId ?? "",
-				dueDate: projectData.dueDate?.toISOString() ?? "",
+				dueDate: projectData.dueDate?.toISOString().split("T")[0] ?? "",
+				createdAt: projectData.createdAt?.toISOString().split("T")[0] ?? "",
+				status: projectData.status,
 				views: (projectData.views as string[]) ?? [],
 				members,
 				statuses,

@@ -77,10 +77,32 @@ export async function PATCH(
 			);
 		}
 
-		const permission = await checkUserProjectPermission(
-			dbUser.id,
-			data.projectId,
-		);
+		const projectData = await db.query.projects.findFirst({
+			where: eq(projects.id, data.projectId),
+			with: {
+				team: {
+					with: {
+						members: {
+							where: eq(teamMembers.userId, dbUser.id),
+						},
+					},
+				},
+			},
+		});
+
+		if (!projectData) {
+			return NextResponse.json(
+				{ success: false, error: "Project not found" },
+				{ status: 404 },
+			);
+		}
+
+		let permission = "viewer";
+		if (projectData.ownerId === dbUser.id) {
+			permission = "administrator";
+		} else {
+			permission = projectData.team?.members?.[0]?.permission || "viewer";
+		}
 
 		const isOnlyStatusUpdate =
 			data.statusId !== undefined &&
@@ -88,6 +110,7 @@ export async function PATCH(
 			data.description === undefined &&
 			data.assigneeId === undefined &&
 			data.priority === undefined &&
+			data.startDate === undefined &&
 			data.dueDate === undefined &&
 			data.label === undefined;
 
@@ -101,6 +124,52 @@ export async function PATCH(
 			);
 		}
 
+		if (data.startDate || data.dueDate) {
+			const pStart = projectData.createdAt.getTime();
+			const pEnd = projectData.dueDate.getTime();
+			const finalStartDate = data.startDate
+				? new Date(data.startDate).getTime()
+				: oldTask.startDate
+					? oldTask.startDate.getTime()
+					: null;
+			const finalDueDate = data.dueDate
+				? new Date(data.dueDate).getTime()
+				: oldTask.dueDate
+					? oldTask.dueDate.getTime()
+					: null;
+
+			if (finalStartDate) {
+				if (finalStartDate < pStart || finalStartDate > pEnd) {
+					return NextResponse.json(
+						{
+							success: false,
+							error: "Task start date must fall within project lifetime.",
+						},
+						{ status: 400 },
+					);
+				}
+			}
+			if (finalDueDate) {
+				if (finalDueDate < pStart || finalDueDate > pEnd) {
+					return NextResponse.json(
+						{
+							success: false,
+							error: "Task due date must fall within project lifetime.",
+						},
+						{ status: 400 },
+					);
+				}
+			}
+			if (finalStartDate && finalDueDate) {
+				if (finalStartDate > finalDueDate) {
+					return NextResponse.json(
+						{ success: false, error: "Start date must be before due date." },
+						{ status: 400 },
+					);
+				}
+			}
+		}
+
 		const updateData = {
 			...(data.title !== undefined && { title: data.title }),
 			...(data.description !== undefined && { description: data.description }),
@@ -109,6 +178,9 @@ export async function PATCH(
 				assigneeId: data.assigneeId === "" ? null : data.assigneeId,
 			}),
 			...(data.priority !== undefined && { priority: data.priority }),
+			...(data.startDate !== undefined && {
+				startDate: data.startDate ? new Date(data.startDate) : null,
+			}),
 			...(data.dueDate !== undefined && {
 				dueDate: data.dueDate ? new Date(data.dueDate) : null,
 			}),

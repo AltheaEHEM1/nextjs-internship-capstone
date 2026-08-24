@@ -3,6 +3,7 @@ import {
 	ArrowLeft,
 	Check,
 	Edit,
+	RotateCcw,
 	Save,
 	Settings,
 	Trash2,
@@ -24,6 +25,7 @@ import type {
 	ProjectStatus,
 	TeamMember,
 } from "@/stores/project/project-settings/ProjectSettingsStore";
+import { useProjectSettingsStore } from "@/stores/project/project-settings/ProjectSettingsStore";
 import MemberRole from "./MemberRole";
 import {
 	ProjectLabelsWidget,
@@ -38,6 +40,8 @@ interface ProjectSettingsFormProps {
 	initialDescription: string;
 	initialTeam: string;
 	initialTeamId: string;
+	initialDueDate: string;
+	initialStatus: string;
 	availableTeams: { id: string; name: string }[];
 	initialAccess?: AccessRole;
 	initialMembers: TeamMember[];
@@ -77,6 +81,8 @@ export default function ProjectSettingsForm({
 	initialDescription,
 	initialTeam,
 	initialTeamId,
+	initialDueDate,
+	initialStatus,
 	availableTeams,
 	initialAccess = "administrator",
 	initialMembers,
@@ -90,6 +96,8 @@ export default function ProjectSettingsForm({
 		initialDescription,
 		initialTeam,
 		initialTeamId,
+		initialDueDate,
+		initialStatus,
 		availableTeams,
 		initialAccess,
 		initialMembers,
@@ -106,6 +114,8 @@ export default function ProjectSettingsForm({
 		setTempTitle,
 		tempDescription,
 		setTempDescription,
+		tempDueDate,
+		setTempDueDate,
 		handleCancelGeneral,
 		isLabelModalOpen,
 		setIsLabelModalOpen,
@@ -121,9 +131,18 @@ export default function ProjectSettingsForm({
 	const [maxLengthErrors, setMaxLengthErrors] = useState<
 		Record<string, string>
 	>({});
+	const [isArchiveAlertOpen, setIsArchiveAlertOpen] = useState(false);
+	const [isRestoreAlertOpen, setIsRestoreAlertOpen] = useState(false);
 
-	const { handleSaveDone, handleSaveAll, handleDeleteConfirm } =
-		useProjectSettingsFormActions(projectId, onSave, onDelete);
+	const {
+		handleSaveDone,
+		handleSaveAll,
+		handleDeleteConfirm,
+		handleArchiveProject,
+		handleRestoreProject,
+	} = useProjectSettingsFormActions(projectId, onSave, onDelete);
+
+	const projectStatus = useProjectSettingsStore((s) => s.status);
 
 	return (
 		<div className="max-w-5xl mx-auto space-y-8 pb-12">
@@ -256,9 +275,26 @@ export default function ProjectSettingsForm({
 									</p>
 								)}
 							</div>
+							{/* Due Date */}
+							<div>
+								<label
+									htmlFor="project-duedate"
+									className="block text-xs font-semibold text-outer_space-600 dark:text-platinum-400 uppercase tracking-wider mb-2"
+								>
+									End of the Project
+								</label>
+								<input
+									id="project-duedate"
+									type="date"
+									required
+									value={tempDueDate}
+									onChange={(e) => setTempDueDate(e.target.value)}
+									className="w-full rounded-xl border border-french_gray-300 px-4 py-3 text-sm text-outer_space-900 dark:border-payne's_gray-600 dark:text-platinum-100 focus:border-blue_munsell-500 focus:outline-none focus:ring-1 focus:ring-blue_munsell-500 shadow-2xs bg-white dark:bg-outer_space-800"
+								/>
+							</div>
 						</div>
 					) : (
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-1">
 							<div className="p-4 rounded-xl bg-gray-50/50 dark:bg-outer_space-800/30 border border-french_gray-100 dark:border-payne's_gray-800 space-y-1">
 								<span className="block text-[11px] font-semibold text-outer_space-500 dark:text-platinum-400 uppercase tracking-wider">
 									Project Name
@@ -268,6 +304,14 @@ export default function ProjectSettingsForm({
 								</p>
 							</div>
 							<div className="p-4 rounded-xl bg-gray-50/50 dark:bg-outer_space-800/30 border border-french_gray-100 dark:border-payne's_gray-800 space-y-1">
+								<span className="block text-[11px] font-semibold text-outer_space-500 dark:text-platinum-400 uppercase tracking-wider">
+									End of the Project
+								</span>
+								<p className="text-sm text-outer_space-700 dark:text-platinum-300 leading-relaxed">
+									{useProjectSettingsStore.getState().dueDate}
+								</p>
+							</div>
+							<div className="p-4 rounded-xl bg-gray-50/50 dark:bg-outer_space-800/30 border border-french_gray-100 dark:border-payne's_gray-800 space-y-1 md:col-span-3">
 								<span className="block text-[11px] font-semibold text-outer_space-500 dark:text-platinum-400 uppercase tracking-wider">
 									Description
 								</span>
@@ -297,16 +341,61 @@ export default function ProjectSettingsForm({
 					confirmLabel="Confirm Delete"
 					variant="danger"
 				/>
+				<ConfirmDialog
+					opened={isArchiveAlertOpen}
+					onClose={() => setIsArchiveAlertOpen(false)}
+					onConfirm={() => {
+						setIsArchiveAlertOpen(false);
+						handleArchiveProject();
+					}}
+					title="Archive Project"
+					description="Are you sure you want to archive this project? Archived projects will be moved out of your active projects list."
+					confirmLabel="Confirm Archive"
+					variant="default"
+				/>
+				<ConfirmDialog
+					opened={isRestoreAlertOpen}
+					onClose={() => setIsRestoreAlertOpen(false)}
+					onConfirm={() => {
+						setIsRestoreAlertOpen(false);
+						handleRestoreProject();
+					}}
+					title="Restore Project"
+					description="Are you sure you want to restore this project back to active progress?"
+					confirmLabel="Confirm Restore"
+					variant="default"
+				/>
 
 				<div className="flex items-center justify-between pt-4 border-t border-french_gray-200/60 dark:border-payne's_gray-800">
-					<button
-						type="button"
-						onClick={() => setIsDeleteAlertOpen(true)}
-						className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors border border-red-200/60 dark:border-red-900/40"
-					>
-						<Trash2 size={15} />
-						Delete Project
-					</button>
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={() => setIsDeleteAlertOpen(true)}
+							className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors border border-red-200/60 dark:border-red-900/40"
+						>
+							<Trash2 size={15} />
+							Delete Project
+						</button>
+						{useProjectSettingsStore.getState().access === "administrator" &&
+							(projectStatus === "archived" ? (
+								<button
+									type="button"
+									onClick={() => setIsRestoreAlertOpen(true)}
+									className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40 transition-colors border border-emerald-200/60 dark:border-emerald-900/40"
+								>
+									<RotateCcw size={15} />
+									Restore Project
+								</button>
+							) : (
+								<button
+									type="button"
+									onClick={() => setIsArchiveAlertOpen(true)}
+									className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/40 transition-colors border border-amber-200/60 dark:border-amber-900/40"
+								>
+									Archive Project
+								</button>
+							))}
+					</div>
 					<button
 						type="submit"
 						className="inline-flex items-center gap-2 rounded-xl bg-blue_munsell-500 hover:bg-blue_munsell-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition-all shadow-blue_munsell-500/20"

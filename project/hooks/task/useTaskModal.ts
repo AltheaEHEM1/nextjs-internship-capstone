@@ -38,6 +38,8 @@ export function useTaskModal({
 		statuses: { id: string; name: string; color: string }[];
 		labels: { name: string; color: string }[];
 		priorities: [string, ...string[]];
+		createdAt?: string;
+		dueDate?: string;
 	} | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -93,6 +95,7 @@ export function useTaskModal({
 					statusId: status,
 					assigneeId: assignee || undefined,
 					priority: priority as "low" | "medium" | "high" | "urgent",
+					startDate: useTaskModalStore.getState().startDate || undefined,
 					dueDate: dueDate || undefined,
 					projectId: projectId,
 					labelName: labels || undefined,

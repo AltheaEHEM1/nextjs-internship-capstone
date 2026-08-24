@@ -3,10 +3,17 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/dropdown/select";
 import CreateProject1 from "@/components/modals/project/CreateProject1Modal";
 import CreateProject2 from "@/components/modals/project/CreateProject2Modal";
 import { PageHeader } from "@/components/page-header/PageHeader";
+import { CardGridSkeleton } from "@/components/skeletons/CardGridSkeleton";
 import { useProject } from "@/hooks/project/useProject";
 
 function getPlaceholderStats(id: number) {
@@ -46,11 +53,17 @@ export default function ProjectsPage() {
 			description: string | null;
 			memberCount: number;
 			currentUserPermission?: string;
+			status?: string;
 		}[]
 	>([]);
 	const [isLoading, setIsLoading] = useState(true);
 
-	const [projectFilter, setProjectFilter] = useState<"all" | "owner">("all");
+	const [ownerFilter, setOwnerFilter] = useState<"all" | "owner" | "member">(
+		"all",
+	);
+	const [statusFilter, setStatusFilter] = useState<
+		"all" | "in_progress" | "finished" | "archived"
+	>("in_progress");
 
 	const fetchProjects = useCallback(async () => {
 		const req = await fetch("/api/project");
@@ -80,10 +93,16 @@ export default function ProjectsPage() {
 		await fetchProjects();
 	};
 
-	const filteredProjects = projects.filter(
-		(p) =>
-			projectFilter === "all" || p.currentUserPermission === "administrator",
-	);
+	const filteredProjects = projects.filter((p) => {
+		const matchesOwnership =
+			ownerFilter === "all" ||
+			(ownerFilter === "owner" &&
+				(p.currentUserPermission === "owner" ||
+					p.currentUserPermission === "administrator")) ||
+			(ownerFilter === "member" && p.currentUserPermission === "member");
+		const matchesStatus = statusFilter === "all" || p.status === statusFilter;
+		return matchesOwnership && matchesStatus;
+	});
 
 	return (
 		<div className="space-y-6">
@@ -130,24 +149,46 @@ export default function ProjectsPage() {
 				)}
 			</div>
 
-			{/* Search and Filter Bar */}
-			<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-				{/* Filter Button */}
-				<select
-					value={projectFilter}
-					onChange={(e) => setProjectFilter(e.target.value as "all" | "owner")}
-					className="rounded-lg border border-french_gray-200 bg-white px-3 py-2 text-sm text-outer_space-800 focus:border-blue_munsell-400 focus:outline-none dark:border-paynes_gray-600 dark:bg-outer_space-500 dark:text-platinum-100"
+			{/* Filters Section */}
+			<div className="flex flex-wrap gap-3">
+				<Select
+					value={statusFilter}
+					onValueChange={(val) =>
+						setStatusFilter(
+							val as "all" | "in_progress" | "finished" | "archived",
+						)
+					}
 				>
-					<option value="all">All Projects</option>
-					<option value="owner">Owner</option>
-				</select>
+					<SelectTrigger className="w-[180px]">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All</SelectItem>
+						<SelectItem value="in_progress">In Progress</SelectItem>
+						<SelectItem value="finished">Finished</SelectItem>
+						<SelectItem value="archived">Archived</SelectItem>
+					</SelectContent>
+				</Select>
+
+				<Select
+					value={ownerFilter}
+					onValueChange={(val) =>
+						setOwnerFilter(val as "all" | "owner" | "member")
+					}
+				>
+					<SelectTrigger className="w-[180px]">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Projects</SelectItem>
+						<SelectItem value="owner">Owned</SelectItem>
+					</SelectContent>
+				</Select>
 			</div>
 
 			{/* Projects Grid Placeholder */}
 			{isLoading ? (
-				<div className="flex h-48 items-center justify-center text-sm text-gray-500">
-					Loading projects...
-				</div>
+				<CardGridSkeleton count={6} />
 			) : filteredProjects.length === 0 ? (
 				<div className="rounded-2xl border border-dashed border-gray-200 p-12 text-center dark:border-gray-800">
 					<p className="text-sm text-gray-500 dark:text-gray-400">

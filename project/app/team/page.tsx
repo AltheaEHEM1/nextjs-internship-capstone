@@ -9,6 +9,7 @@ import AddMemberModal from "@/components/modals/team/AddMemberModal";
 import AddTeamModal1 from "@/components/modals/team/AddTeamModal1";
 import AddTeamModal2 from "@/components/modals/team/AddTeamModal2";
 import { PageHeader } from "@/components/page-header/PageHeader";
+import { TableListSkeleton } from "@/components/skeletons/TableListSkeleton";
 import { useTeamManagement } from "@/hooks/team/useTeamManagement";
 import type { PersonItem, TeamItem } from "@/stores/team/TeamStore";
 
@@ -180,8 +181,12 @@ export default function TeamPage() {
 	return (
 		<Suspense
 			fallback={
-				<div className="p-8 text-center text-outer_space-500">
-					Loading team...
+				<div className="p-6 md:p-10 space-y-6">
+					<div className="space-y-2 mb-8">
+						<div className="h-8 w-48 bg-muted animate-pulse rounded-md" />
+						<div className="h-4 w-96 bg-muted animate-pulse rounded-md" />
+					</div>
+					<TableListSkeleton rows={8} />
 				</div>
 			}
 		>

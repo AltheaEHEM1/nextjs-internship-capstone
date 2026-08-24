@@ -16,6 +16,7 @@ import { AddTeamMemberModal } from "@/components/modals/team/AddTeamMemberModal"
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import EditRoleModal from "@/components/modals/team/EditRoleModal";
 import { EditTeamModal } from "@/components/modals/team/EditTeamModal";
+import { DetailSettingsSkeleton } from "@/components/skeletons/DetailSettingsSkeleton";
 import { useTeamDetailManagement } from "@/hooks/team/useTeamManagement";
 import { useBreadcrumbStore } from "@/stores/components/BreadCrumbStore";
 
@@ -55,13 +56,7 @@ export default function SpecificTeam() {
 	}, [teamDetail?.name, teamId, setMapping]);
 
 	if (loading) {
-		return (
-			<div className="flex items-center justify-center py-24">
-				<p className="text-sm text-outer_space-500 dark:text-platinum-300">
-					Loading team...
-				</p>
-			</div>
-		);
+		return <DetailSettingsSkeleton />;
 	}
 
 	if (error || !teamDetail) {

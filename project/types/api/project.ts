@@ -24,6 +24,8 @@ export interface UpdateProjectSettingsRequest {
 	name: string;
 	description: string;
 	teamId: string;
+	status?: "in_progress" | "finished" | "archived";
+	dueDate?: string;
 	statuses?: Array<{
 		id?: string;
 		name: string;

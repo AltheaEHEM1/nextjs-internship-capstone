@@ -1,7 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-import Image from "next/image";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function InvitationLoadingState() {
 	return (
@@ -10,33 +9,40 @@ export function InvitationLoadingState() {
 			<div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue_munsell-500/15 blur-3xl pointer-events-none" />
 			<div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
 
-			<div className="relative w-full max-w-md rounded-3xl bg-white/85 dark:bg-outer_space-500/85 backdrop-blur-xl p-8 sm:p-10 shadow-2xl border border-gray-200/70 dark:border-paynes_gray-600/70 text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
-				<div className="relative mx-auto flex h-20 w-20 items-center justify-center">
-					<div className="absolute -inset-2 rounded-2xl bg-gradient-to-tr from-cyan-500/30 to-blue_munsell-500/30 blur-md animate-pulse" />
-					<Image
-						src="/icon.png"
-						alt="Projectnify Logo"
-						width={64}
-						height={64}
-						priority
-						className="relative h-16 w-16 object-contain"
-					/>
-				</div>
-
-				<div className="space-y-2">
-					<h2 className="text-xl font-bold text-gray-900 dark:text-platinum-100 tracking-tight">
-						Verifying Invitation
-					</h2>
-					<p className="text-xs sm:text-sm text-gray-500 dark:text-platinum-300">
-						Please wait while we validate your invitation link...
-					</p>
-				</div>
-
-				<div className="flex items-center justify-center pt-2">
-					<div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue_munsell-50 dark:bg-blue_munsell-900/30 border border-blue_munsell-200 dark:border-blue_munsell-700/50 text-blue_munsell-600 dark:text-blue_munsell-200 text-xs font-medium">
-						<Loader2 className="animate-spin" size={16} />
-						<span>Connecting to Projectnify</span>
+			<div className="relative w-full max-w-lg rounded-3xl bg-white/90 dark:bg-outer_space-500/90 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl border border-gray-200/80 dark:border-paynes_gray-600/80 space-y-6">
+				{/* Top Branding Bar */}
+				<div className="flex items-center justify-between border-b border-gray-100 dark:border-paynes_gray-600/60 pb-4">
+					<div className="flex items-center gap-2.5">
+						<Skeleton className="h-8 w-8 rounded-md" />
+						<Skeleton className="h-6 w-24" />
 					</div>
+					<Skeleton className="h-6 w-20 rounded-full" />
+				</div>
+
+				{/* Header Section */}
+				<div className="space-y-4 pt-2">
+					<div className="flex items-center gap-4">
+						<Skeleton className="h-14 w-14 rounded-2xl" />
+						<div className="space-y-2 flex-1">
+							<Skeleton className="h-4 w-32" />
+							<Skeleton className="h-6 w-48" />
+						</div>
+					</div>
+
+					<div className="rounded-xl bg-gray-50/50 dark:bg-paynes_gray-600/20 p-4 border border-gray-100 dark:border-paynes_gray-600/50">
+						<div className="flex items-start gap-3">
+							<Skeleton className="h-10 w-10 rounded-full shrink-0" />
+							<div className="space-y-2 flex-1 pt-1">
+								<Skeleton className="h-4 w-40" />
+								<Skeleton className="h-3 w-64" />
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div className="border-t border-gray-100 dark:border-paynes_gray-600/60 pt-6 space-y-3">
+					<Skeleton className="h-12 w-full rounded-xl" />
+					<Skeleton className="h-12 w-full rounded-xl" />
 				</div>
 			</div>
 		</div>

@@ -9,6 +9,8 @@ interface TaskModalRightProps {
 		statuses: { id: string; name: string; color: string }[];
 		labels: { name: string; color: string }[];
 		priorities: [string, ...string[]];
+		createdAt?: string;
+		dueDate?: string;
 	} | null;
 	isLoading: boolean;
 	onOpenAddPriority?: () => void;
@@ -41,7 +43,12 @@ export default function TaskModalRight({
 	} = useTaskModalStore();
 	const { user } = useUser();
 
-	const today = new Date().toISOString().split("T")[0];
+	const projectStart = projectData?.createdAt
+		? new Date(projectData.createdAt).toISOString().split("T")[0]
+		: new Date().toISOString().split("T")[0];
+	const projectEnd = projectData?.dueDate
+		? new Date(projectData.dueDate).toISOString().split("T")[0]
+		: undefined;
 
 	// For standardizing field update calls
 	const handleChange = (
@@ -186,7 +193,8 @@ export default function TaskModalRight({
 					<input
 						id="startDate"
 						type="date"
-						min={mode === "create" ? today : undefined}
+						min={projectStart}
+						max={projectEnd}
 						value={startDate}
 						onChange={(e) => {
 							handleChange("startDate", e.target.value, setStartDate);
@@ -211,7 +219,8 @@ export default function TaskModalRight({
 					<input
 						id="dueDate"
 						type="date"
-						min={startDate || (mode === "create" ? today : undefined)}
+						min={startDate || projectStart}
+						max={projectEnd}
 						value={dueDate}
 						onChange={(e) =>
 							handleChange("dueDate", e.target.value, setDueDate)

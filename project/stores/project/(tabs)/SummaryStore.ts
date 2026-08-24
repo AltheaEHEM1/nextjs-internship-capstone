@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { RecentActivity, StatusOverviewItem, TeamWorkloadMember, WorkTypeItem, } from "@/hooks/project/(tabs)/useSummary";
+import type {
+	RecentActivity,
+	StatusOverviewItem,
+	TeamWorkloadMember,
+	WorkTypeItem,
+} from "@/hooks/project/(tabs)/useSummary";
 
 const recentActivities: RecentActivity[] = [];
 

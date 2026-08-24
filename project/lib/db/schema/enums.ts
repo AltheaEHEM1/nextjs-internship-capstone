@@ -16,3 +16,9 @@ export const priorityEnum = pgEnum("priority", [
 	"high",
 	"urgent",
 ]);
+
+export const projectStatusEnum = pgEnum("project_status", [
+	"in_progress",
+	"finished",
+	"archived",
+]);

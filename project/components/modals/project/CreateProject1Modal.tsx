@@ -10,7 +10,6 @@ import {
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/alert/alert";
 import BaseModal from "@/components/layout/BaseModal";
-import { useMinDate } from "@/hooks/project/useMinDate";
 import { projectSchema } from "@/lib/validation/Validations";
 
 export type AccessRole = "administrator" | "member" | "viewer";
@@ -44,7 +43,6 @@ export default function CreateProject1({
 	setDueDate,
 	onNext,
 }: CreateProject1Props) {
-	const minDate = useMinDate();
 	const [teamsList, setTeamsList] = useState<{ id: string; name: string }[]>(
 		[],
 	);
@@ -309,13 +307,13 @@ export default function CreateProject1({
 					</select>
 				</div>
 
-				{/* Due Date Row */}
+				{/* End Date Row */}
 				<div>
 					<label
 						htmlFor="dueDate"
 						className="block text-sm font-medium text-gray-700 dark:text-gray-300"
 					>
-						Due Date <span className="text-red-500">*</span>
+						End of the Project <span className="text-red-500">*</span>
 					</label>
 					<input
 						type="date"
@@ -323,7 +321,6 @@ export default function CreateProject1({
 						name="dueDate"
 						value={dueDate}
 						onChange={(e) => setDueDate(e.target.value)}
-						min={minDate}
 						required
 						className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-[#1e9b65] focus:outline-none focus:ring-1 focus:ring-[#1e9b65] dark:border-gray-600 dark:bg-gray-700 dark:text-white"
 					/>

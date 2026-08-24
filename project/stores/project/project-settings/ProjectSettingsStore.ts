@@ -28,12 +28,16 @@ interface ProjectSettingsState {
 	description: string;
 	team: string; // The team name
 	teamId: string; // The team ID
+	dueDate: string;
+	status: string;
 	availableTeams: { id: string; name: string }[];
 	access: AccessRole;
 	isEditingGeneral: boolean;
 	tempTitle: string;
 	tempDescription: string;
 	tempTeamId: string;
+	tempDueDate: string;
+	tempStatus: string;
 
 	// Data Collections
 	members: TeamMember[];
@@ -57,6 +61,8 @@ interface ProjectSettingsState {
 		description: string;
 		team: string;
 		teamId: string;
+		dueDate?: string;
+		status?: string;
 		availableTeams: { id: string; name: string }[];
 		access: AccessRole;
 		members: TeamMember[];
@@ -73,6 +79,8 @@ interface ProjectSettingsState {
 	setTempTitle: (tempTitle: string) => void;
 	setTempDescription: (tempDescription: string) => void;
 	setTempTeamId: (tempTeamId: string) => void;
+	setTempDueDate: (tempDueDate: string) => void;
+	setTempStatus: (tempStatus: string) => void;
 	setPendingTeamId: (pendingTeamId: string | null) => void;
 	handleSaveGeneral: () => void;
 	handleCancelGeneral: () => void;
@@ -103,12 +111,16 @@ export const useProjectSettingsStore = create<ProjectSettingsState>(
 		description: "",
 		team: "",
 		teamId: "",
+		dueDate: "",
+		status: "in_progress",
 		availableTeams: [],
 		access: "administrator",
 		isEditingGeneral: false,
 		tempTitle: "",
 		tempDescription: "",
 		tempTeamId: "",
+		tempDueDate: "",
+		tempStatus: "in_progress",
 
 		members: [],
 		labels: [],
@@ -129,11 +141,15 @@ export const useProjectSettingsStore = create<ProjectSettingsState>(
 				description: data.description,
 				team: data.team,
 				teamId: data.teamId,
+				dueDate: data.dueDate || "",
+				status: data.status || "in_progress",
 				availableTeams: data.availableTeams,
 				access: data.access,
 				tempTitle: data.title,
 				tempDescription: data.description,
 				tempTeamId: data.teamId,
+				tempDueDate: data.dueDate || "",
+				tempStatus: data.status || "in_progress",
 				members: data.members,
 				labels: data.labels,
 				statuses: data.statuses,
@@ -149,23 +165,29 @@ export const useProjectSettingsStore = create<ProjectSettingsState>(
 		setTempTitle: (tempTitle) => set({ tempTitle }),
 		setTempDescription: (tempDescription) => set({ tempDescription }),
 		setTempTeamId: (tempTeamId) => set({ tempTeamId }),
+		setTempDueDate: (tempDueDate) => set({ tempDueDate }),
+		setTempStatus: (tempStatus) => set({ tempStatus }),
 		setPendingTeamId: (pendingTeamId) => set({ pendingTeamId }),
 
 		handleSaveGeneral: () => {
-			const { tempTitle, tempDescription } = get();
+			const { tempTitle, tempDescription, tempDueDate, tempStatus } = get();
 
 			set({
 				title: tempTitle,
 				description: tempDescription,
+				dueDate: tempDueDate,
+				status: tempStatus,
 				isEditingGeneral: false,
 			});
 		},
 
 		handleCancelGeneral: () => {
-			const { title, description } = get();
+			const { title, description, dueDate, status } = get();
 			set({
 				tempTitle: title,
 				tempDescription: description,
+				tempDueDate: dueDate,
+				tempStatus: status,
 				isEditingGeneral: false,
 			});
 		},

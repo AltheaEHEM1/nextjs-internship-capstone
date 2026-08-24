@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { use, useEffect } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/alert/alert";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
+import { DetailSettingsSkeleton } from "@/components/skeletons/DetailSettingsSkeleton";
 import { usePersonManagement } from "@/hooks/team/useTeamManagement";
 import { useBreadcrumbStore } from "@/stores/components/BreadCrumbStore";
 
@@ -55,11 +56,7 @@ export default function PersonDetailPage({
 					<ArrowLeft size={16} />
 					Back
 				</button>
-				<div className="rounded-xl border border-french_gray-200 bg-white p-8 text-center dark:border-paynes_gray-600 dark:bg-outer_space-500">
-					<p className="text-outer_space-500 dark:text-platinum-300">
-						Loading person details...
-					</p>
-				</div>
+				<DetailSettingsSkeleton />
 			</div>
 		);
 	}

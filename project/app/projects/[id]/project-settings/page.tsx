@@ -45,6 +45,8 @@ export default async function ProjectSettingsPage({
 			initialDescription={data.description}
 			initialTeam={data.teamName}
 			initialTeamId={data.teamId}
+			initialDueDate={data.dueDate ?? ""}
+			initialStatus={data.status ?? "in_progress"}
 			availableTeams={availableTeams}
 			initialMembers={data.members}
 			initialStatuses={data.statuses}

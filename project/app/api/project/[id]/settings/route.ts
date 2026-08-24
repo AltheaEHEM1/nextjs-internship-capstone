@@ -66,12 +66,30 @@ export async function PATCH(
 			);
 		}
 
+		// Only administrator can archive
+		if (
+			data.status === "archived" &&
+			!isOwner &&
+			teamPermission !== "administrator"
+		) {
+			return NextResponse.json(
+				{
+					success: false,
+					error:
+						"Only project owners and team administrators can archive a project.",
+				},
+				{ status: 403 },
+			);
+		}
+
 		await db
 			.update(projects)
 			.set({
 				name: data.name,
 				description: data.description,
 				teamId: data.teamId,
+				...(data.status !== undefined && { status: data.status }),
+				...(data.dueDate !== undefined && { dueDate: new Date(data.dueDate) }),
 			})
 			.where(and(eq(projects.id, id), isNull(projects.deletedAt)));
 

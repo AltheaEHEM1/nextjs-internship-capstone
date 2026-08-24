@@ -1,7 +1,17 @@
 "use client";
 
-import { BarChart3, CalendarClock, CheckCircle2, Clock, Edit3, PieChart, PlusCircle, Users, } from "lucide-react";
+import {
+	BarChart3,
+	CalendarClock,
+	CheckCircle2,
+	Clock,
+	Edit3,
+	PieChart,
+	PlusCircle,
+	Users,
+} from "lucide-react";
 import { use, useCallback, useEffect, useState } from "react";
+import { DetailSettingsSkeleton } from "@/components/skeletons/DetailSettingsSkeleton";
 
 import {
 	type RecentActivity,
@@ -229,13 +239,13 @@ export default function Summary({
 							workTypesData.length > 0
 								? workTypesData
 								: [
-									{
-										label: "No tasks",
-										count: 0,
-										percentage: 0,
-										color: "bg-gray-500",
-									},
-								],
+										{
+											label: "No tasks",
+											count: 0,
+											percentage: 0,
+											color: "bg-gray-500",
+										},
+									],
 						teamWorkload: teamWorkloadData,
 						recentActivities: recentActivitiesData,
 					});
@@ -278,7 +288,8 @@ export default function Summary({
 			label: "Created (7d)",
 			count: projectInfo.createdCount,
 			icon: PlusCircle,
-			colorClass: "text-blue_munsell-600 dark:text-blue_munsell-400 bg-blue_munsell-500/10",
+			colorClass:
+				"text-blue_munsell-600 dark:text-blue_munsell-400 bg-blue_munsell-500/10",
 		},
 		{
 			label: "Due in 7 Days",
@@ -295,7 +306,7 @@ export default function Summary({
 	];
 
 	if (isLoading) {
-		return <SummarySkeleton />;
+		return <DetailSettingsSkeleton />;
 	}
 
 	return (
@@ -468,120 +479,6 @@ export default function Summary({
 								</span>
 								<span>•</span>
 								<span>{act.time}</span>
-							</div>
-						</div>
-					))}
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function SummarySkeleton() {
-	return (
-		<div className="space-y-6 pb-12 animate-pulse">
-			{/* 1. Project Information Banner Skeleton */}
-			<div className="rounded-2xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-				<div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-					<div className="space-y-2 flex-1">
-						<div className="h-3 w-28 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-						<div className="h-6 w-1/3 bg-french_gray-300 dark:bg-payne's_gray-500 rounded" />
-						<div className="h-4 w-2/3 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-					</div>
-					<div className="h-12 w-28 bg-french_gray-200 dark:bg-payne's_gray-400 rounded-xl" />
-				</div>
-			</div>
-
-			{/* 2. Metrics Grid Skeleton */}
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-				{[...Array(4)].map((_, i) => (
-					<div key={i} className="rounded-xl border border-french_gray-200 bg-white p-5 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-						<div className="flex items-center justify-between">
-							<div className="h-4 w-24 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-							<div className="h-8 w-8 bg-french_gray-200 dark:bg-payne's_gray-400 rounded-lg" />
-						</div>
-						<div className="mt-4 h-8 w-12 bg-french_gray-300 dark:bg-payne's_gray-550 rounded" />
-					</div>
-				))}
-			</div>
-
-			{/* 3. Analytics & Breakdown Section Skeleton */}
-			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-				{/* Status Overview Card */}
-				<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-					<div className="mb-6 flex items-center justify-between">
-						<div className="h-5 w-32 bg-french_gray-300 dark:bg-payne's_gray-500 rounded" />
-					</div>
-					<div className="space-y-5">
-						{[...Array(4)].map((_, i) => (
-							<div key={i} className="space-y-2">
-								<div className="flex justify-between">
-									<div className="h-3 w-16 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-									<div className="h-3 w-12 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-								</div>
-								<div className="h-2 w-full bg-french_gray-100 dark:bg-payne's_gray-400 rounded-full" />
-							</div>
-						))}
-					</div>
-				</div>
-
-				{/* Types of Work Card */}
-				<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-					<div className="mb-6 flex items-center justify-between">
-						<div className="h-5 w-32 bg-french_gray-300 dark:bg-payne's_gray-500 rounded" />
-					</div>
-					<div className="space-y-5">
-						{[...Array(3)].map((_, i) => (
-							<div key={i} className="space-y-2">
-								<div className="flex justify-between">
-									<div className="h-3 w-24 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-									<div className="h-3 w-12 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-								</div>
-								<div className="h-2 w-full bg-french_gray-100 dark:bg-payne's_gray-400 rounded-full" />
-							</div>
-						))}
-					</div>
-				</div>
-
-				{/* Team Workload Card */}
-				<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-					<div className="mb-6 flex items-center justify-between">
-						<div className="h-5 w-32 bg-french_gray-300 dark:bg-payne's_gray-500 rounded" />
-					</div>
-					<div className="space-y-4">
-						{[...Array(3)].map((_, i) => (
-							<div key={i} className="flex items-center justify-between rounded-lg bg-platinum-100/50 p-2 dark:bg-outer_space-400/50">
-								<div className="flex items-center gap-3">
-									<div className="h-8 w-8 rounded-full bg-french_gray-200 dark:bg-payne's_gray-400" />
-									<div className="space-y-2">
-										<div className="h-3 w-20 bg-french_gray-300 dark:bg-payne's_gray-500 rounded" />
-										<div className="h-2.5 w-16 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-									</div>
-								</div>
-								<div className="h-6 w-12 bg-french_gray-200 dark:bg-payne's_gray-400 rounded-md" />
-							</div>
-						))}
-					</div>
-				</div>
-			</div>
-
-			{/* 4. Recent Activity Feed Skeleton */}
-			<div className="rounded-xl border border-french_gray-200 bg-white p-6 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
-				<div className="mb-6 flex items-center justify-between">
-					<div className="h-5 w-40 bg-french_gray-300 dark:bg-payne's_gray-500 rounded" />
-					<div className="h-3 w-32 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-				</div>
-				<div className="space-y-4 divide-y divide-french_gray-100 dark:divide-payne's_gray-400">
-					{[...Array(3)].map((_, i) => (
-						<div key={i} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-							<div className="flex items-center gap-3 flex-1">
-								<div className="h-2 w-2 rounded-full bg-french_gray-300 dark:bg-payne's_gray-400" />
-								<div className="h-4 w-2/3 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-							</div>
-							<div className="flex items-center gap-2 pl-5 sm:pl-0">
-								<div className="h-3 w-16 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
-								<span className="text-french_gray-300">•</span>
-								<div className="h-3 w-12 bg-french_gray-200 dark:bg-payne's_gray-400 rounded" />
 							</div>
 						</div>
 					))}

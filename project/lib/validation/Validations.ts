@@ -65,6 +65,8 @@ export const projectSettingsSchema = z.object({
 			}),
 		)
 		.optional(),
+	status: z.enum(["in_progress", "finished", "archived"]).optional(),
+	dueDate: z.string().optional(),
 });
 
 export const taskSchema = z.object({
@@ -77,6 +79,7 @@ export const taskSchema = z.object({
 		.enum(["low", "medium", "high", "urgent"])
 		.optional()
 		.default("low"),
+	startDate: z.string().optional().nullable(),
 	dueDate: z.string().optional().nullable(),
 	assigneeId: z.string().optional().nullable(),
 	projectId: z.string().min(1, "Project ID is required"),

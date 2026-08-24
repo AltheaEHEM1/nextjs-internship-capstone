@@ -10,6 +10,7 @@ export interface CreateTaskRequest {
 	statusId: string;
 	assigneeId?: string;
 	priority?: TaskPriority;
+	startDate?: string;
 	dueDate?: string;
 	projectId: string;
 	labelName?: string;
@@ -22,6 +23,7 @@ export interface UpdateTaskRequest {
 	statusId?: string;
 	assigneeId?: string;
 	priority?: TaskPriority;
+	startDate?: string;
 	dueDate?: string;
 	label?: string;
 	projectId: string;

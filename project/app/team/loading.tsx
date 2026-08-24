@@ -1,4 +1,4 @@
-import { CardGridSkeleton } from "@/components/skeletons/CardGridSkeleton";
+import { TableListSkeleton } from "@/components/skeletons/TableListSkeleton";
 
 export default function Loading() {
 	return (
@@ -7,7 +7,7 @@ export default function Loading() {
 				<div className="h-8 w-48 bg-muted animate-pulse rounded-md" />
 				<div className="h-4 w-96 bg-muted animate-pulse rounded-md" />
 			</div>
-			<CardGridSkeleton count={6} />
+			<TableListSkeleton rows={8} />
 		</div>
 	);
 }
