@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
 import { db } from "@/lib/db/index";
 import { teamMembers, teams } from "@/lib/db/schema/index";
+import { notifyTeamMembers } from "@/lib/notifications/NotifyTeam";
 import { getTeamDetailQuery } from "@/lib/queries/team";
 import type { UpdateTeamRequest } from "@/types/api/team";
 
@@ -111,6 +112,17 @@ export async function PATCH(
 
 		revalidatePath(`/team/team/${teamId}`);
 		revalidatePath("/team");
+
+		await notifyTeamMembers(
+			teamId,
+			"team-updated",
+			{
+				teamId,
+				teamName: data.name,
+				editorName: dbUser.name || "Someone",
+			},
+			dbUser.clerkId,
+		);
 
 		return NextResponse.json({ success: true });
 	} catch (err: unknown) {

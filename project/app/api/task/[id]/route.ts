@@ -258,6 +258,8 @@ export async function PATCH(
 							{
 								taskTitle: data.title || oldTask.title,
 								assignerName: dbUser.name || "Someone",
+								projectId: data.projectId,
+								taskId: id,
 							},
 						);
 					}
@@ -270,6 +272,8 @@ export async function PATCH(
 				{
 					taskTitle: data.title || oldTask?.title || "A task",
 					editorName: dbUser.name || "Someone",
+					projectId: data.projectId,
+					taskId: id,
 				},
 				dbUser.clerkId,
 			);
@@ -341,6 +345,7 @@ export async function DELETE(
 				{
 					taskTitle: taskToDelete.title,
 					deleterName: dbUser.name || "Someone",
+					projectId,
 				},
 				dbUser.clerkId,
 			);

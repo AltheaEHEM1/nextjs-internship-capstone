@@ -198,6 +198,8 @@ export async function POST(req: Request) {
 						{
 							taskTitle: data.title,
 							assignerName: dbUser.name || "Someone",
+							projectId: data.projectId,
+							taskId,
 						},
 					);
 				}
@@ -206,7 +208,12 @@ export async function POST(req: Request) {
 			await notifyProjectMembers(
 				data.projectId,
 				"task-added",
-				{ taskTitle: data.title, creatorName: dbUser.name || "Someone" },
+				{
+					taskTitle: data.title,
+					creatorName: dbUser.name || "Someone",
+					projectId: data.projectId,
+					taskId,
+				},
 				dbUser.clerkId,
 			);
 		}

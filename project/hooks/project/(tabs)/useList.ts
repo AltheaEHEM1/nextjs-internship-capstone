@@ -5,8 +5,9 @@ import {
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useListStore } from "@/stores/project/(tabs)/ListStore";
+import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
 
 export interface Task {
 	id: string;
@@ -22,9 +23,21 @@ export function useList(columns: ColumnDef<Task>[]) {
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const tasks = useListStore((state) => state.tasks);
 	const setTasks = useListStore((state) => state.setTasks);
+	const searchQuery = useProjectBoardStore((state) => state.searchQuery);
+
+	const filteredTasks = useMemo(() => {
+		if (!searchQuery.trim()) return tasks;
+		const q = searchQuery.toLowerCase().trim();
+		return tasks.filter(
+			(t) =>
+				t.title.toLowerCase().includes(q) ||
+				t.status.toLowerCase().includes(q) ||
+				t.assignee.toLowerCase().includes(q),
+		);
+	}, [tasks, searchQuery]);
 
 	const table = useReactTable<Task>({
-		data: tasks,
+		data: filteredTasks,
 		columns,
 		state: { sorting },
 		onSortingChange: setSorting,

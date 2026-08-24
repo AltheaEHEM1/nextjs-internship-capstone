@@ -10,6 +10,7 @@ export interface UseNotificationReturn {
 	settings: NotificationSettings;
 	sections: NotificationSection[];
 	inbox: AppNotification[];
+	unreadCount: number;
 	isLoading: boolean;
 	error: string | null;
 	handleToggle: (key: SettingKey) => void;
@@ -41,10 +42,13 @@ export function useNotification(): UseNotificationReturn {
 		clearInbox,
 	} = useNotificationStore();
 
+	const unreadCount = inbox.filter((n) => !n.read).length;
+
 	return {
 		settings,
 		sections,
 		inbox,
+		unreadCount,
 		isLoading,
 		error,
 		handleToggle: toggleSetting,

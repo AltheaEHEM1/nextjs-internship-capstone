@@ -13,6 +13,7 @@ import {
 import CreateProject1 from "@/components/modals/project/CreateProject1Modal";
 import CreateProject2 from "@/components/modals/project/CreateProject2Modal";
 import { PageHeader } from "@/components/page-header/PageHeader";
+import { SearchBar } from "@/components/search/SearchBar";
 import { CardGridSkeleton } from "@/components/skeletons/CardGridSkeleton";
 import { useProject } from "@/hooks/project/useProject";
 
@@ -64,6 +65,7 @@ export default function ProjectsPage() {
 	const [statusFilter, setStatusFilter] = useState<
 		"all" | "in_progress" | "finished" | "archived"
 	>("in_progress");
+	const [searchQuery, setSearchQuery] = useState("");
 
 	const fetchProjects = useCallback(async () => {
 		const req = await fetch("/api/project");
@@ -101,7 +103,13 @@ export default function ProjectsPage() {
 					p.currentUserPermission === "administrator")) ||
 			(ownerFilter === "member" && p.currentUserPermission === "member");
 		const matchesStatus = statusFilter === "all" || p.status === statusFilter;
-		return matchesOwnership && matchesStatus;
+		const query = searchQuery.trim().toLowerCase();
+		const matchesSearch =
+			!query ||
+			p.name.toLowerCase().includes(query) ||
+			Boolean(p.description?.toLowerCase().includes(query)) ||
+			Boolean(p.teamName?.toLowerCase().includes(query));
+		return matchesOwnership && matchesStatus && matchesSearch;
 	});
 
 	return (
@@ -150,40 +158,50 @@ export default function ProjectsPage() {
 			</div>
 
 			{/* Filters Section */}
-			<div className="flex flex-wrap gap-3">
-				<Select
-					value={statusFilter}
-					onValueChange={(val) =>
-						setStatusFilter(
-							val as "all" | "in_progress" | "finished" | "archived",
-						)
-					}
-				>
-					<SelectTrigger className="w-[180px]">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All</SelectItem>
-						<SelectItem value="in_progress">In Progress</SelectItem>
-						<SelectItem value="finished">Finished</SelectItem>
-						<SelectItem value="archived">Archived</SelectItem>
-					</SelectContent>
-				</Select>
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<div className="flex flex-wrap items-center gap-3">
+					<Select
+						value={statusFilter}
+						onValueChange={(val) =>
+							setStatusFilter(
+								val as "all" | "in_progress" | "finished" | "archived",
+							)
+						}
+					>
+						<SelectTrigger className="w-[180px]">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All</SelectItem>
+							<SelectItem value="in_progress">In Progress</SelectItem>
+							<SelectItem value="finished">Finished</SelectItem>
+							<SelectItem value="archived">Archived</SelectItem>
+						</SelectContent>
+					</Select>
 
-				<Select
-					value={ownerFilter}
-					onValueChange={(val) =>
-						setOwnerFilter(val as "all" | "owner" | "member")
-					}
-				>
-					<SelectTrigger className="w-[180px]">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All Projects</SelectItem>
-						<SelectItem value="owner">Owned</SelectItem>
-					</SelectContent>
-				</Select>
+					<Select
+						value={ownerFilter}
+						onValueChange={(val) =>
+							setOwnerFilter(val as "all" | "owner" | "member")
+						}
+					>
+						<SelectTrigger className="w-[180px]">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All Projects</SelectItem>
+							<SelectItem value="owner">Owned</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+
+				<div className="ml-auto">
+					<SearchBar
+						value={searchQuery}
+						onChange={setSearchQuery}
+						placeholder="Search projects..."
+					/>
+				</div>
 			</div>
 
 			{/* Projects Grid Placeholder */}

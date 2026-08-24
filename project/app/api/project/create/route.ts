@@ -161,7 +161,11 @@ export async function POST(req: Request) {
 			await notifyProjectMembers(
 				newProject[0].id,
 				"project-added",
-				{ projectName: data.name, creatorName: dbUser.name || "Someone" },
+				{
+					projectName: data.name,
+					creatorName: dbUser.name || "Someone",
+					projectId: newProject[0].id,
+				},
 				dbUser.clerkId,
 			);
 		}

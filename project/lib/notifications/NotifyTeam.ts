@@ -30,9 +30,6 @@ export async function notifyTeamMembers(
 
 		for (const member of members) {
 			if (member.user?.clerkId) {
-				if (member.user.clerkId === actorClerkId) {
-					continue;
-				}
 				const channelName = `user-${member.user.clerkId}`;
 				await pusherServer.trigger(channelName, eventName, payload);
 			}

@@ -40,11 +40,6 @@ export async function notifyProjectMembers(
 		// Iterate through all members of the team
 		for (const member of project.team.members) {
 			if (member.user?.clerkId) {
-				// Don't notify the person who made the change
-				if (member.user.clerkId === actorClerkId) {
-					continue;
-				}
-
 				const channelName = `user-${member.user.clerkId}`;
 				await pusherServer.trigger(channelName, eventName, payload);
 			}

@@ -82,10 +82,20 @@ export async function PATCH(
 			revalidatePath(`/team/team/${teamId}`);
 			revalidatePath("/team");
 
+			// Fetch team name and target user name for a rich notification
+			const [teamRecord, targetUser] = await Promise.all([
+				db.query.teams.findFirst({ where: eq(teams.id, teamId) }),
+				db.query.users.findFirst({ where: eq(users.id, userId) }),
+			]);
+
 			await notifyTeamMembers(
 				teamId,
 				"team-member-updated",
-				{ teamId },
+				{
+					teamId,
+					teamName: teamRecord?.name,
+					targetName: targetUser?.name || targetUser?.email,
+				},
 				dbUser.clerkId,
 			);
 		}

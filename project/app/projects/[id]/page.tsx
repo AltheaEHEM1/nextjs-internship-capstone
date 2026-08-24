@@ -5,13 +5,14 @@ import {
 	horizontalListSortingStrategy,
 	SortableContext,
 } from "@dnd-kit/sortable";
-import { use, useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { ColumnContainer } from "@/components/board/ColumnContainer";
 import type { Task } from "@/components/board/TaskCard";
 import { TaskCardDisplay } from "@/components/board/TaskCard";
 import TaskModal from "@/components/modals/task/TaskModal";
+import { KanbanBoardSkeleton } from "@/components/skeletons/KanbanBoardSkeleton";
 import { useProjectBoard } from "@/hooks/project/(tabs)/useProjectBoard";
 import { pusherClient } from "@/lib/real-time-board/PusherClient";
 import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
@@ -23,84 +24,94 @@ export default function BoardPage({
 }) {
 	const { id } = use(params);
 	const [isMounted, setIsMounted] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
 	const setKanbanColumns = useProjectBoardStore(
 		(state) => state.setKanbanColumns,
 	);
 	const setTasks = useProjectBoardStore((state) => state.setTasks);
+	const searchQuery = useProjectBoardStore((state) => state.searchQuery);
 
 	const [statusesMap, setStatusesMap] = useState<Record<string, string>>({});
 	const [currentUserPermission, setCurrentUserPermission] =
 		useState<string>("viewer");
 
-	const fetchProjectData = useCallback(() => {
-		fetch(`/api/project/${id}`)
-			.then((r) => r.json())
-			.then((res) => {
-				if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
-					setKanbanColumns(
-						res.data.statuses.map((s: { name: string }) => s.name),
-					);
-					const sMap: Record<string, string> = {};
-					res.data.statuses.forEach((s: { id: string; name: string }) => {
-						sMap[s.name] = s.id;
-					});
-					setStatusesMap(sMap);
-					setCurrentUserPermission(res.data.currentUserPermission || "viewer");
+	const fetchProjectData = useCallback(async () => {
+		try {
+			const r = await fetch(`/api/project/${id}`);
+			const res = await r.json();
+			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+				setKanbanColumns(
+					res.data.statuses.map((s: { name: string }) => s.name),
+				);
+				const sMap: Record<string, string> = {};
+				res.data.statuses.forEach((s: { id: string; name: string }) => {
+					sMap[s.name] = s.id;
+				});
+				setStatusesMap(sMap);
+				setCurrentUserPermission(res.data.currentUserPermission || "viewer");
 
-					const allTasks = res.data.statuses.flatMap(
-						(s: {
+				const allTasks = res.data.statuses.flatMap(
+					(s: {
+						id: string;
+						name: string;
+						tasks?: {
 							id: string;
-							name: string;
-							tasks?: {
-								id: string;
-								title?: string;
-								description?: string;
-								priority?: string;
-								assigneeId?: string;
-								assignee?: { name?: string };
-								dueDate?: string | null;
-								taskLabels?: { label?: { name: string } }[];
-								createdAt: string;
-								reporter?: { name?: string };
-							}[];
-						}) =>
-							(s.tasks || []).map(
-								(t) =>
-									({
-										id: t.id,
-										title: t.title || "Untitled Task",
-										description: t.description || "",
-										status: s.name,
-										statusId: s.id,
-										priority: (t.priority === "urgent"
-											? "high"
-											: t.priority || "low") as "low" | "medium" | "high",
-										assignee: t.assigneeId || "",
-										assigneeName:
-											(t as { assignee?: { name?: string } }).assignee?.name ||
-											"UN",
-										dueDate: t.dueDate ? new Date(t.dueDate).toISOString() : "",
-										workType: "Task",
-										label:
-											(t as { taskLabels?: { label?: { name: string } }[] })
-												.taskLabels?.[0]?.label?.name || "",
-										startDate: t.createdAt
-											? new Date(t.createdAt).toISOString()
-											: "",
-										reporter:
-											(t as { reporter?: { name?: string } }).reporter?.name ||
-											"System",
-									}) as Task,
-							),
-					);
+							title?: string;
+							description?: string;
+							priority?: string;
+							assigneeId?: string;
+							assignee?: { name?: string };
+							dueDate?: string | null;
+							taskLabels?: { label?: { name: string } }[];
+							createdAt: string;
+							reporter?: { name?: string };
+						}[];
+					}) =>
+						(s.tasks || []).map(
+							(t) =>
+								({
+									id: t.id,
+									title: t.title || "Untitled Task",
+									description: t.description || "",
+									status: s.name,
+									statusId: s.id,
+									priority: (t.priority === "urgent"
+										? "high"
+										: t.priority || "low") as "low" | "medium" | "high",
+									assignee: t.assigneeId || "",
+									assigneeName:
+										(t as { assignee?: { name?: string } }).assignee?.name ||
+										"UN",
+									dueDate: t.dueDate ? new Date(t.dueDate).toISOString() : "",
+									workType: "Task",
+									label:
+										(t as { taskLabels?: { label?: { name: string } }[] })
+											.taskLabels?.[0]?.label?.name || "",
+									startDate: t.createdAt
+										? new Date(t.createdAt).toISOString()
+										: "",
+									reporter:
+										(t as { reporter?: { name?: string } }).reporter?.name ||
+										"System",
+								}) as Task,
+						),
+				);
 
-					setTasks(allTasks);
-				}
-			});
+				setTasks(allTasks);
+			} else {
+				setKanbanColumns([]);
+				setTasks([]);
+			}
+		} catch (error) {
+			console.error("Failed to fetch project board data:", error);
+		} finally {
+			setIsLoading(false);
+		}
 	}, [id, setKanbanColumns, setTasks]);
 
 	useEffect(() => {
 		setIsMounted(true);
+		setIsLoading(true);
 		fetchProjectData();
 	}, [fetchProjectData]);
 
@@ -133,6 +144,19 @@ export default function BoardPage({
 		onDragEnd,
 		closeViewTask,
 	} = useProjectBoard(currentUserPermission);
+
+	const filteredTasks = useMemo(() => {
+		if (!searchQuery.trim()) return tasks;
+		const query = searchQuery.toLowerCase().trim();
+		return tasks.filter(
+			(t) =>
+				t.title.toLowerCase().includes(query) ||
+				t.description.toLowerCase().includes(query) ||
+				Boolean(t.label?.toLowerCase().includes(query)) ||
+				Boolean(t.assigneeName?.toLowerCase().includes(query)) ||
+				Boolean(t.workType?.toLowerCase().includes(query)),
+		);
+	}, [tasks, searchQuery]);
 
 	const handleDragEnd = (event: DragEndEvent) => {
 		onDragEnd(event);
@@ -178,8 +202,8 @@ export default function BoardPage({
 		}, 0);
 	};
 
-	if (!isMounted) {
-		return null;
+	if (!isMounted || isLoading) {
+		return <KanbanBoardSkeleton />;
 	}
 
 	return (
@@ -199,7 +223,9 @@ export default function BoardPage({
 							<ColumnContainer
 								key={columnTitle}
 								columnTitle={columnTitle}
-								tasks={tasks.filter((t: Task) => t.status === columnTitle)}
+								tasks={filteredTasks.filter(
+									(t: Task) => t.status === columnTitle,
+								)}
 								onOpenTask={handleOpenTask}
 							/>
 						))}

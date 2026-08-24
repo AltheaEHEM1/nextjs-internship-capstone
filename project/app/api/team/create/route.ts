@@ -96,6 +96,14 @@ export async function POST(req: Request) {
 			return newTeam;
 		});
 
+		// Notify the creator themselves so the event lands in their inbox
+		if (dbUser.clerkId) {
+			await notifyUser(dbUser.clerkId, "team-created", {
+				teamId: result.id,
+				teamName: result.name,
+			});
+		}
+
 		revalidatePath("/team");
 		return NextResponse.json({ success: true, teamId: result.id });
 	} catch (err: unknown) {

@@ -134,12 +134,23 @@ export async function PATCH(
 			}
 		}
 
+		// Determine if this is an archive or restore action for a better notification message
+		const oldStatus = projectData.status;
+		const newStatus = data.status;
+		let eventName = "project-edited";
+		if (newStatus === "archived" && oldStatus !== "archived") {
+			eventName = "project-archived";
+		} else if (oldStatus === "archived" && newStatus && newStatus !== "archived") {
+			eventName = "project-restored";
+		}
+
 		await notifyProjectMembers(
 			id,
-			"project-edited",
+			eventName,
 			{
 				projectName: data.name,
 				editorName: dbUser.name || "Someone",
+				projectId: id,
 			},
 			dbUser.clerkId,
 		);

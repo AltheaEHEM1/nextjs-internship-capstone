@@ -1,12 +1,8 @@
 "use client";
 
 import { ClerkLoaded, ClerkLoading, UserButton } from "@clerk/nextjs";
-import { Menu, Moon, Search, Sun } from "lucide-react";
+import { Menu, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
-// import { useState } from "react"; // removed, using Zustand store
-import { useCustomSidebarHeaderStore } from "../../stores/components/CustomSidebarHeaderStore";
-
-// removed top-level store hook
 
 import { Breadcrumbs } from "@/components/bread-crumbs/BreadCrumbs";
 import { useTheme } from "@/components/theme-color/ThemeProvider";
@@ -22,8 +18,6 @@ export default function SidebarHeader({
 }: SidebarHeaderProps) {
 	const { theme, setTheme } = useTheme();
 	const _router = useRouter();
-	const { isSearchOpen, setIsSearchOpen, searchQuery, setSearchQuery } =
-		useCustomSidebarHeaderStore();
 
 	const _handleLogout = () => {
 		if (onLogout) {
@@ -50,31 +44,6 @@ export default function SidebarHeader({
 
 			{/* Right Section: Actions & Profile */}
 			<div className="flex items-center gap-x-2 sm:gap-x-3">
-				<div className="relative flex items-center">
-					<div
-						className={`overflow-hidden transition-all duration-300 ease-in-out ${
-							isSearchOpen ? "w-64 opacity-100 mr-2" : "w-0 opacity-0"
-						}`}
-					>
-						<input
-							type="text"
-							placeholder="Search tasks..."
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className="w-full rounded-lg border border-french_gray-300 bg-white px-3.5 py-2 text-sm text-outer_space-700 shadow-2xs focus:border-blue_munsell-500 focus:outline-none dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-200"
-						/>
-					</div>
-
-					<button
-						type="button"
-						onClick={() => setIsSearchOpen(!isSearchOpen)}
-						className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-french_gray-300 bg-white text-outer_space-700 shadow-2xs transition-colors hover:bg-french_gray-50 dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-200 dark:hover:bg-payne's_gray-400"
-						aria-label="Toggle search"
-					>
-						<Search size={18} />
-					</button>
-				</div>
-
 				{/* Theme Toggle Button */}
 				<button
 					type="button"

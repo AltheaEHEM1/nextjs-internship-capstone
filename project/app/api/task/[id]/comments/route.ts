@@ -75,6 +75,8 @@ export async function POST(
 				{
 					taskTitle: task?.title || "A task",
 					commenterName: dbUser.name || "Someone",
+					projectId,
+					taskId,
 				},
 				dbUser.clerkId,
 			);
