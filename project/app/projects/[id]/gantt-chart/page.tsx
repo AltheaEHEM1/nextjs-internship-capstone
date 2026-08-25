@@ -150,6 +150,20 @@ export default function GanttChart({
 		};
 	}, [id, fetchProjectData]);
 
+	const handleZoomIn = () => {
+		const currentIndex = viewModeOptions.findIndex((o) => o.mode === viewMode);
+		if (currentIndex > 0) {
+			setViewMode(viewModeOptions[currentIndex - 1].mode);
+		}
+	};
+
+	const handleZoomOut = () => {
+		const currentIndex = viewModeOptions.findIndex((o) => o.mode === viewMode);
+		if (currentIndex < viewModeOptions.length - 1) {
+			setViewMode(viewModeOptions[currentIndex + 1].mode);
+		}
+	};
+
 	return (
 		<div className="space-y-4 pb-12">
 			{/* Header Info & View Mode Switcher */}
@@ -165,7 +179,18 @@ export default function GanttChart({
 				</div>
 
 				{/* View Mode Buttons */}
-				<div className="flex items-center gap-1.5 rounded-lg border border-french_gray-200 bg-white p-1 shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
+				<div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-1 shadow-xs dark:border-slate-700 dark:bg-slate-800">
+					<button
+						type="button"
+						onClick={handleZoomIn}
+						disabled={viewModeOptions.findIndex((o) => o.mode === viewMode) === 0}
+						className="rounded-md px-3 py-1.5 text-xs font-semibold text-slate-600 transition-all duration-200 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
+					>
+						Zoom In
+					</button>
+					
+					<div className="mx-1 h-4 w-[1px] bg-slate-200 dark:bg-slate-700"></div>
+
 					{viewModeOptions.map((option) => (
 						<button
 							key={option.label}
@@ -174,62 +199,100 @@ export default function GanttChart({
 							className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
 								viewMode === option.mode
 									? "bg-blue_munsell-500 text-white shadow-sm ring-1 ring-blue_munsell-600/50"
-									: "text-outer_space-600 hover:bg-slate-100 hover:text-slate-900 dark:text-platinum-300 dark:hover:bg-payne's_gray-400 dark:hover:text-white"
+									: "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
 							}`}
 						>
 							{option.label}
 						</button>
 					))}
+
+					<div className="mx-1 h-4 w-[1px] bg-slate-200 dark:bg-slate-700"></div>
+
+					<button
+						type="button"
+						onClick={handleZoomOut}
+						disabled={viewModeOptions.findIndex((o) => o.mode === viewMode) === viewModeOptions.length - 1}
+						className="rounded-md px-3 py-1.5 text-xs font-semibold text-slate-600 transition-all duration-200 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
+					>
+						Zoom Out
+					</button>
 				</div>
 			</div>
 
 			{/* Gantt Chart Container */}
-			<div className="overflow-x-auto rounded-2xl border border-slate-700 bg-[#16293e] p-6 shadow-sm ring-1 ring-slate-900/5 transition-all hover:shadow-md dark:border-slate-700 dark:bg-[#16293e] dark:text-platinum-100 dark:ring-white/10">
+			<div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-900/5 transition-all hover:shadow-md dark:border-slate-700 dark:bg-[#16293e] dark:text-platinum-100 dark:ring-white/10">
 				<style jsx global>{`
                     .gantt-container {
                         font-family: inherit !important;
                         border-radius: 12px;
                         overflow: hidden;
-                        border: 1px solid #23395d;
+                        border: 1px solid #e2e8f0;
+                    }
+                    .dark .gantt-container {
+                        border-color: #23395d;
                     }
                     /* Gantt SVG styling overrides for a softer look */
                     .gantt-container svg {
                         border-radius: 8px;
+                        background-color: #ffffff !important;
+                    }
+                    .dark .gantt-container svg {
                         background-color: #16293e !important;
                     }
                     ._313uQ, .gantt-list-table { /* Header or rows */
+                        background-color: #ffffff !important;
+                        color: #16293e !important;
+                    }
+                    .dark ._313uQ, .dark .gantt-list-table {
                         background-color: #16293e !important;
                         color: #f1f5f9 !important;
                     }
                     .gantt-list-table-header {
+                        background-color: #ffffff !important;
+                        border-bottom: 1px solid #e2e8f0 !important;
+                    }
+                    .dark .gantt-list-table-header {
                         background-color: #16293e !important;
                         border-bottom: 1px solid #2a4365 !important;
                     }
                     ._3457N {
+                        fill: #16293e !important;
+                    }
+                    .dark ._3457N {
                         fill: #f1f5f9 !important;
                     }
                     /* Grid lines */
                     .gantt-grid-line {
+                        stroke: #e2e8f0 !important;
+                    }
+                    .dark .gantt-grid-line {
                         stroke: #2a4365 !important;
                     }
                     /* Smooth hover effect on task rows in the list */
                     .gantt-list-table-row:hover {
+                        background-color: #f8fafc !important;
+                        transition: background-color 0.2s ease;
+                    }
+                    .dark .gantt-list-table-row:hover {
                         background-color: #1e3a5f !important;
                         transition: background-color 0.2s ease;
                     }
                     /* Task bar improvements */
                     .gantt-task-bar {
                         transition: filter 0.2s ease;
-                        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+                        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
                     }
                     .gantt-task-bar:hover {
-                        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+                        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
                         cursor: pointer;
                     }
                     /* Task label styles */
                     .gantt-task-bar-label {
-                        fill: #f1f5f9 !important;
+                        fill: #16293e !important;
                         font-weight: 500;
+                    }
+                    .dark .gantt-task-bar-label {
+                        fill: #f1f5f9 !important;
                     }
                 `}</style>
 
