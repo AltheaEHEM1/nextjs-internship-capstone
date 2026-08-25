@@ -42,6 +42,7 @@ export async function sendUserInvitationHandler(
 		email: string;
 		clerkId: string | null;
 	},
+	teamId?: string,
 ) {
 	const validationResult = invitationSchema.safeParse({ email, notes });
 	if (!validationResult.success) {
@@ -93,6 +94,7 @@ export async function sendUserInvitationHandler(
 				invitedById: resolvedDbUser.id,
 				expiresAt,
 				token,
+				...(teamId ? { teamId } : {}),
 			})
 			.where(eq(invitations.id, existingPending.id));
 	} else {
@@ -104,6 +106,7 @@ export async function sendUserInvitationHandler(
 			token,
 			expiresAt,
 			status: "pending",
+			...(teamId ? { teamId } : {}),
 		});
 	}
 

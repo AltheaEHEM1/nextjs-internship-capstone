@@ -50,6 +50,7 @@ export const teamMembers = pgTable(
 
 export const invitations = pgTable("invitations", {
 	id: uuid("id").defaultRandom().primaryKey(),
+	teamId: uuid("team_id").references(() => teams.id, { onDelete: "cascade" }),
 	email: text("email").notNull(),
 	notes: text("notes"),
 	invitedById: uuid("invited_by_id")
@@ -83,6 +84,10 @@ export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
+	team: one(teams, {
+		fields: [invitations.teamId],
+		references: [teams.id],
+	}),
 	invitedBy: one(users, {
 		fields: [invitations.invitedById],
 		references: [users.id],

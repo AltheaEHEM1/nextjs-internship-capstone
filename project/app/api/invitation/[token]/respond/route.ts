@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
 import { db } from "@/lib/db/index";
-import { invitations } from "@/lib/db/schema/index";
+import { invitations, teamMembers } from "@/lib/db/schema/index";
 
 export async function POST(
 	req: Request,
@@ -65,7 +65,25 @@ export async function POST(
 			);
 		}
 
-		await getAuthenticatedDbUser();
+		const dbUser = await getAuthenticatedDbUser();
+
+		if (invite.teamId) {
+			const existingMember = await db.query.teamMembers.findFirst({
+				where: and(
+					eq(teamMembers.teamId, invite.teamId),
+					eq(teamMembers.userId, dbUser.id),
+				),
+			});
+
+			if (!existingMember) {
+				await db.insert(teamMembers).values({
+					teamId: invite.teamId,
+					userId: dbUser.id,
+					role: "Member",
+					permission: "member",
+				});
+			}
+		}
 
 		await db
 			.update(invitations)

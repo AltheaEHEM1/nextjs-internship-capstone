@@ -73,6 +73,7 @@ export async function POST(
 					data.email,
 					undefined,
 					dbUser,
+					teamId,
 				);
 				if (inviteRes.success) {
 					await notifyTeamMembers(teamId, "team-member-invited", {
