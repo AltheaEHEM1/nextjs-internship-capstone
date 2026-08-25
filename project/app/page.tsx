@@ -89,8 +89,7 @@ export default function HomePage() {
 							</div>
 						</div>
 						<p className="text-xs text-slate-600 leading-relaxed">
-							Seamlessly switch between interactive Gantt charts, lists, and
-							drag-and-drop Kanban boards.
+							Seamlessly switch between interactive Gantt charts, lists, and drag-and-drop Kanban boards.
 						</p>
 					</div>
 
@@ -120,8 +119,7 @@ export default function HomePage() {
 							</div>
 						</div>
 						<p className="text-xs text-slate-600 leading-relaxed mt-10">
-							Brainstorm on interactive team whiteboards and sync in real-time
-							across dynamic project timelines.
+							Brainstorm on interactive team whiteboards and sync in real-time across dynamic project timelines.
 						</p>
 					</div>
 
@@ -134,7 +132,7 @@ export default function HomePage() {
 								</div>
 								<div>
 									<h5 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-indigo-600 transition-colors">
-										Advanced Analytics
+										Analytics
 									</h5>
 									<p className="text-[10px] text-slate-500 font-medium">
 										Burndown & Dashboards
@@ -147,8 +145,7 @@ export default function HomePage() {
 							</div>
 						</div>
 						<p className="text-xs text-slate-600 leading-relaxed mt-10">
-							Track sprint velocity with dynamic burndown charts and keep on top
-							of deadlines with comprehensive dashboards.
+							Track sprint velocity with dynamic burndown charts and keep on top of deadlines with comprehensive dashboards.
 						</p>
 					</div>
 				</div>
