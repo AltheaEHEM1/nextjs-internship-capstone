@@ -3,15 +3,12 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import {
-	getInvitationByTokenAction,
-	respondToInvitation,
-} from "@/actions/team/Invitation";
+
 import { useToast } from "@/hooks/toast/use-toast";
 import {
 	type InvitationData,
 	useInvitationStore,
-} from "@/stores/invitation/useInvitationStore";
+} from "@/stores/invitation/InvitationStore";
 
 export function useInvitation(token: string) {
 	const router = useRouter();
@@ -37,11 +34,12 @@ export function useInvitation(token: string) {
 		setErrorMessage(null);
 
 		try {
-			const res = await getInvitationByTokenAction(token);
-			if (res.success && res.invitation) {
-				setInvitationData(res.invitation as unknown as InvitationData);
+			const res = await fetch(`/api/invitation/${token}`);
+			const data = await res.json();
+			if (data.success && data.invitation) {
+				setInvitationData(data.invitation as unknown as InvitationData);
 			} else {
-				setErrorMessage(res.reason || "Invalid or expired invitation link.");
+				setErrorMessage(data.reason || "Invalid or expired invitation link.");
 			}
 		} catch (err: unknown) {
 			const errorMsg =
@@ -79,7 +77,12 @@ export function useInvitation(token: string) {
 		setActionLoading(action);
 
 		try {
-			const res = await respondToInvitation(token, action);
+			const req = await fetch(`/api/invitation/${token}/respond`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ action }),
+			});
+			const res = await req.json();
 			if (res.success) {
 				toast({
 					title:
@@ -90,7 +93,11 @@ export function useInvitation(token: string) {
 							: "You have declined the team invitation.",
 					variant: action === "accept" ? "success" : "destructive",
 				});
-				router.push("/team");
+				if (action === "accept") {
+					router.push("/team");
+				} else {
+					router.push("/");
+				}
 			} else if (res.requiresAuth) {
 				toast({
 					title: "Sign in required",

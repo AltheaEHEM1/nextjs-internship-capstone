@@ -47,7 +47,7 @@ export default function HomePage() {
 					{/* CTA Buttons */}
 					<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
 						<Link
-							href="/sign-up"
+							href="/sign-in"
 							className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white shadow-xl shadow-cyan-500/15 hover:shadow-cyan-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-cyan-400/30 text-center"
 						>
 							Start Managing Projects

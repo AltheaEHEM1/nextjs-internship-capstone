@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { useEffect } from "react";
 import ProjectHeader from "@/components/project-component/ProjectHeader";
 import ProjectNav from "@/components/project-component/ProjectNavigation";
-import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
+import { useBreadcrumbStore } from "@/stores/components/BreadCrumbStore";
 
 interface BaseProjectProps {
 	children: ReactNode;

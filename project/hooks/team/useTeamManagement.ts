@@ -1,26 +1,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { createTeamWithMembersAction } from "@/actions/team/CreateTeam";
-import {
-	deleteTeamAction,
-	getTeamDetailAction,
-	getUserTeamsAction,
-	updateTeamAction,
-} from "@/actions/team/Team";
-import {
-	getAcceptedInvitesAction,
-	getPersonDetailAction,
-	removePersonAction,
-	removeTeamMemberAction,
-	updateTeamMemberAction,
-} from "@/actions/team/TeamMember";
 import { useToast } from "@/hooks/toast/use-toast";
-import { useBreadcrumbStore } from "@/stores/components/breadcrumb-store";
-import { type TeamItem, useTeamStore } from "@/stores/team/useTeamStore";
+import { useBreadcrumbStore } from "@/stores/components/BreadCrumbStore";
+import { type TeamItem, useTeamStore } from "@/stores/team/TeamStore";
 
 export function useTeamManagement(initialTab?: "people" | "teams") {
 	const store = useTeamStore();
 	const setActiveTab = useTeamStore((s) => s.setActiveTab);
+	const [isLoading, setIsLoading] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [loadError, setLoadError] = useState<string | null>(null);
 	const { toast } = useToast();
@@ -36,26 +23,43 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 	useEffect(() => {
 		let cancelled = false;
 
-		async function loadTeams() {
-			const res = await getUserTeamsAction();
-			if (!cancelled && res.success) {
-				useTeamStore.setState({ teams: res.data as TeamItem[] });
-			} else if (!cancelled && !res.success) {
-				setLoadError(res.error ?? "Failed to load teams.");
+		async function loadData() {
+			setIsLoading(true);
+			try {
+				const [teamsReq, peopleReq] = await Promise.all([
+					fetch("/api/team/user-teams"),
+					fetch("/api/team/members/accepted-invites"),
+				]);
+				const [teamsRes, peopleRes] = await Promise.all([
+					teamsReq.json(),
+					peopleReq.json(),
+				]);
+
+				if (!cancelled) {
+					if (teamsRes.success) {
+						useTeamStore.setState({ teams: teamsRes.data as TeamItem[] });
+					} else {
+						setLoadError(teamsRes.error ?? "Failed to load teams.");
+					}
+
+					if (peopleRes.success) {
+						useTeamStore.setState({ people: peopleRes.data as never });
+					} else {
+						setLoadError(peopleRes.error ?? "Failed to load people.");
+					}
+				}
+			} catch {
+				if (!cancelled) {
+					setLoadError("Failed to load team data.");
+				}
+			} finally {
+				if (!cancelled) {
+					setIsLoading(false);
+				}
 			}
 		}
 
-		async function loadPeople() {
-			const res = await getAcceptedInvitesAction();
-			if (!cancelled && res.success) {
-				useTeamStore.setState({ people: res.data as never });
-			} else if (!cancelled && !res.success) {
-				setLoadError(res.error ?? "Failed to load people.");
-			}
-		}
-
-		loadTeams();
-		loadPeople();
+		loadData();
 
 		return () => {
 			cancelled = true;
@@ -90,12 +94,17 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 		setIsSubmitting(true);
 		setLoadError(null);
 		try {
-			const result = await createTeamWithMembersAction({
-				name: store.teamName,
-				icon: store.teamIcon,
-				coverUrl: store.coverUrl || undefined,
-				members: store.membersList,
+			const req = await fetch("/api/team/create", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					name: store.teamName,
+					icon: store.teamIcon,
+					coverUrl: store.coverUrl || undefined,
+					members: store.membersList,
+				}),
 			});
+			const result = await req.json();
 
 			if (!result.success) {
 				setLoadError(result.error ?? "Failed to create team.");
@@ -107,7 +116,8 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 				return;
 			}
 
-			const refreshed = await getUserTeamsAction();
+			const reqRefreshed = await fetch("/api/team/user-teams");
+			const refreshed = await reqRefreshed.json();
 			if (refreshed.success) {
 				useTeamStore.setState({ teams: refreshed.data as TeamItem[] });
 			}
@@ -133,6 +143,7 @@ export function useTeamManagement(initialTab?: "people" | "teams") {
 
 	return {
 		...store,
+		isLoading,
 		isSubmitting,
 		loadError,
 		handleMainAction,
@@ -158,7 +169,8 @@ export function usePersonManagement(personId: string) {
 			if (!personId) return;
 			setIsPersonLoading(true);
 			setPersonError(null);
-			const res = await getPersonDetailAction(personId);
+			const req = await fetch(`/api/team/members/${personId}`);
+			const res = await req.json();
 			if (!isMounted) return;
 
 			if (res.success && res.data) {
@@ -190,7 +202,10 @@ export function usePersonManagement(personId: string) {
 	const handleDeleteConfirm = async () => {
 		if (!store.personDetail) return;
 		store.setIsPersonDeleting(true);
-		const res = await removePersonAction(store.personDetail.id);
+		const req = await fetch(`/api/team/members/${store.personDetail.id}`, {
+			method: "DELETE",
+		});
+		const res = await req.json();
 		if (res.success) {
 			store.removePerson(store.personDetail.id);
 			toast({
@@ -245,7 +260,8 @@ export function useTeamDetailManagement(teamId: string) {
 			loading: false,
 			onConfirm: async () => {
 				store.setTeamConfirmState({ loading: true });
-				const res = await deleteTeamAction(teamId);
+				const req = await fetch(`/api/team/${teamId}`, { method: "DELETE" });
+				const res = await req.json();
 				if (res.success) {
 					toast({
 						title: "Team deleted",
@@ -275,7 +291,10 @@ export function useTeamDetailManagement(teamId: string) {
 			loading: false,
 			onConfirm: async () => {
 				store.setTeamConfirmState({ loading: true });
-				const res = await removeTeamMemberAction(teamId, userId);
+				const req = await fetch(`/api/team/${teamId}/members/${userId}`, {
+					method: "DELETE",
+				});
+				const res = await req.json();
 				if (res.success) {
 					toast({
 						title: "Member removed",
@@ -284,7 +303,8 @@ export function useTeamDetailManagement(teamId: string) {
 					});
 					closeConfirm();
 					// Refresh team detail in store
-					const refreshed = await getTeamDetailAction(teamId);
+					const reqRefreshed = await fetch(`/api/team/${teamId}`);
+					const refreshed = await reqRefreshed.json();
 					if (refreshed.success && refreshed.data) {
 						store.setTeamDetail(refreshed.data as never);
 					}
@@ -322,19 +342,26 @@ export function useTeamDetailManagement(teamId: string) {
 			newPermission !== store.teamEditRoleState.currentPermission
 		) {
 			store.setTeamEditRoleState({ loading: true });
-			const res = await updateTeamMemberAction({
-				teamId,
-				userId: store.teamEditRoleState.userId,
-				role: newRole,
-				permission: newPermission as "administrator" | "member" | "viewer",
-			});
+			const req = await fetch(
+				`/api/team/${teamId}/members/${store.teamEditRoleState.userId}`,
+				{
+					method: "PATCH",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						role: newRole,
+						permission: newPermission as "administrator" | "member" | "viewer",
+					}),
+				},
+			);
+			const res = await req.json();
 			if (res.success) {
 				toast({
 					title: "Role updated",
 					description: "The member's role has been successfully updated.",
 					variant: "success",
 				});
-				const refreshed = await getTeamDetailAction(teamId);
+				const refreshedReq = await fetch(`/api/team/${teamId}`);
+				const refreshed = await refreshedReq.json();
 				if (refreshed.success && refreshed.data) {
 					store.setTeamDetail(refreshed.data as never);
 				}
@@ -357,7 +384,12 @@ export function useTeamDetailManagement(teamId: string) {
 		icon: string;
 		coverUrl: string;
 	}) => {
-		const res = await updateTeamAction(teamId, data);
+		const req = await fetch(`/api/team/${teamId}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(data),
+		});
+		const res = await req.json();
 		if (res.success) {
 			toast({
 				title: "Team updated",
@@ -365,7 +397,8 @@ export function useTeamDetailManagement(teamId: string) {
 				variant: "success",
 			});
 			// Refresh team detail in store
-			const refreshed = await getTeamDetailAction(teamId);
+			const reqRefreshed = await fetch(`/api/team/${teamId}`);
+			const refreshed = await reqRefreshed.json();
 			if (refreshed.success && refreshed.data) {
 				store.setTeamDetail(refreshed.data as never);
 			}
@@ -389,7 +422,8 @@ export function useTeamDetailManagement(teamId: string) {
 		async function loadTeamDetail() {
 			setIsTeamDetailLoading(true);
 			setTeamDetailError(null);
-			const res = await getTeamDetailAction(teamId);
+			const req = await fetch(`/api/team/${teamId}`);
+			const res = await req.json();
 			if (cancelled) return;
 
 			if (res.success && res.data) {

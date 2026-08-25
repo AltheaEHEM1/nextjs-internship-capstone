@@ -1,10 +1,10 @@
 "use client";
 
-import { FolderPlus, Plus, Shield, X } from "lucide-react";
+import { FolderPlus, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getAcceptedInvitesAction } from "@/actions/team/TeamMember";
 import BaseModal from "@/components/layout/BaseModal";
-import { useTeamStore } from "@/stores/team/useTeamStore";
+import { roleEnum } from "@/lib/db/schema/enums";
+import { useTeamStore } from "@/stores/team/TeamStore";
 
 interface AcceptedUser {
 	id: string;
@@ -33,6 +33,7 @@ export default function AddTeamModal2({
 	const [currentAccessibility, setCurrentAccessibility] = useState<
 		"administrator" | "member" | "viewer"
 	>("member");
+	const [maxLengthError, setMaxLengthError] = useState("");
 
 	const addMemberToList = useTeamStore((s) => s.addMemberToList);
 	const removeMemberFromList = useTeamStore((s) => s.removeMemberFromList);
@@ -40,7 +41,8 @@ export default function AddTeamModal2({
 
 	useEffect(() => {
 		if (opened) {
-			getAcceptedInvitesAction()
+			fetch("/api/team/members/accepted-invites")
+				.then((r) => r.json())
 				.then((res: Record<string, unknown> | unknown[]) => {
 					// Handles both raw array returns or standard { success, data } server action wrappers
 					if (Array.isArray(res)) {
@@ -148,16 +150,29 @@ export default function AddTeamModal2({
 								type="text"
 								placeholder="e.g. Frontend Engineer"
 								value={currentRole}
-								onChange={(e) => setCurrentRole(e.target.value)}
-								className="w-full mt-1 rounded-lg border border-french_gray-300 p-2 text-sm"
+								onChange={(e) => {
+									let val = e.target.value.replace(/\s{2,}/g, " ");
+									if (val.length > 20) {
+										val = val.slice(0, 20);
+										setMaxLengthError("Role is too long");
+									} else {
+										setMaxLengthError("");
+									}
+									setCurrentRole(val);
+								}}
+								className={`w-full mt-1 rounded-lg border p-2 text-sm ${maxLengthError ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-french_gray-300"}`}
 							/>
+							{maxLengthError && (
+								<p className="mt-1 text-xs text-red-500 font-medium">
+									{maxLengthError}
+								</p>
+							)}
 						</div>
 						<div>
 							<label
 								htmlFor="permission"
-								className="flex items-center gap-1.5 text-xs font-medium text-outer_space-500"
+								className="text-xs font-medium text-outer_space-500"
 							>
-								<Shield size={14} className="text-blue_munsell-500" />
 								Permission
 							</label>
 							<select
@@ -170,9 +185,11 @@ export default function AddTeamModal2({
 								}
 								className="w-full mt-1 rounded-lg border border-french_gray-300 p-2 text-sm"
 							>
-								<option value="administrator">Administrator</option>
-								<option value="member">Member</option>
-								<option value="viewer">Viewer</option>
+								{roleEnum.enumValues.map((r) => (
+									<option key={r} value={r}>
+										{r.charAt(0).toUpperCase() + r.slice(1)}
+									</option>
+								))}
 							</select>
 						</div>
 					</div>

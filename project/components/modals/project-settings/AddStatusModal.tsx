@@ -1,11 +1,10 @@
 "use client";
 
 import { Layers } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import BaseModal from "@/components/layout/BaseModal";
 import { useToast } from "@/hooks/toast/use-toast";
 import { cn } from "@/lib/utils";
-import { useCustomAddStatusStore } from "@/stores/custom-add-status-store";
 
 interface AddStatusProps {
 	isOpen: boolean;
@@ -47,25 +46,35 @@ const PRESET_COLORS = [
 
 export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 	const { toast } = useToast();
-	const { name, setName, color, setColor, handleSubmit } =
-		useCustomAddStatusStore();
+	const [name, setName] = useState("");
+	const [description, setDescription] = useState("");
+	const [color, setColor] = useState(PRESET_COLORS[0].value);
+	const [maxLengthError, setMaxLengthError] = useState("");
 
 	const onFormSubmit = (e: React.FormEvent) => {
-		handleSubmit(e);
+		e.preventDefault();
+		if (!name.trim()) return;
+		onSave({ name: name.trim(), description, color });
+
 		toast({
 			title: "Status added",
 			description: "New status has been created.",
 			variant: "success",
 		});
+
+		setName("");
+		setDescription("");
+		setColor(PRESET_COLORS[0].value);
+		onClose();
 	};
 
 	useEffect(() => {
 		if (!isOpen) {
-			useCustomAddStatusStore
-				.getState()
-				.initialize("", "", PRESET_COLORS[0].value, onSave, onClose);
+			setName("");
+			setDescription("");
+			setColor(PRESET_COLORS[0].value);
 		}
-	}, [isOpen, onSave, onClose]);
+	}, [isOpen]);
 
 	return (
 		<BaseModal
@@ -101,11 +110,25 @@ export function AddStatusModal({ isOpen, onClose, onSave }: AddStatusProps) {
 						id="statusName"
 						type="text"
 						value={name}
-						onChange={(e) => setName(e.target.value)}
+						onChange={(e) => {
+							let val = e.target.value.replace(/\s{2,}/g, " ");
+							if (val.length > 20) {
+								val = val.slice(0, 20);
+								setMaxLengthError("Status name is too long");
+							} else {
+								setMaxLengthError("");
+							}
+							setName(val);
+						}}
 						placeholder="e.g. In Review, Backlog"
 						required
-						className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500 transition-all shadow-2xs"
+						className={`w-full rounded-xl border bg-slate-50/60 dark:bg-slate-950/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 transition-all shadow-2xs ${maxLengthError ? "border-red-500 focus:ring-red-500/40 focus:border-red-500" : "border-slate-200 dark:border-slate-800 focus:ring-cyan-500/40 focus:border-cyan-500"}`}
 					/>
+					{maxLengthError && (
+						<p className="mt-1 text-xs text-red-500 font-medium">
+							{maxLengthError}
+						</p>
+					)}
 				</div>
 				<div className="space-y-2">
 					<label

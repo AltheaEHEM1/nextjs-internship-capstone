@@ -2,11 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-	deleteProjectAction,
-	updateProjectSettingsAction,
-} from "@/actions/project/Project";
-import { getTeamDetailAction } from "@/actions/team/Team";
+
 import { useToast } from "@/hooks/toast/use-toast";
 import type {
 	AccessRole,
@@ -39,11 +35,17 @@ export function useProjectSettingsFormActions(
 	const router = useRouter();
 
 	const handleSaveDone = async () => {
-		const result = await updateProjectSettingsAction(projectId, {
-			name: store.tempTitle,
-			description: store.tempDescription,
-			teamId: store.teamId,
+		const req = await fetch(`/api/project/${projectId}/settings`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				name: store.tempTitle,
+				description: store.tempDescription,
+				teamId: store.teamId,
+				dueDate: store.tempDueDate,
+			}),
 		});
+		const result = await req.json();
 
 		if (result.success) {
 			toast({
@@ -65,19 +67,27 @@ export function useProjectSettingsFormActions(
 
 		let finalTitle = store.title;
 		let finalDescription = store.description;
+		let finalDueDate = store.dueDate;
 
 		if (store.isEditingGeneral) {
 			finalTitle = store.tempTitle;
 			finalDescription = store.tempDescription;
+			finalDueDate = store.tempDueDate;
 			store.handleSaveGeneral();
 		}
 
-		const result = await updateProjectSettingsAction(projectId, {
-			name: finalTitle,
-			description: finalDescription,
-			teamId: store.teamId,
-			statuses: store.statuses,
+		const req = await fetch(`/api/project/${projectId}/settings`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				name: finalTitle,
+				description: finalDescription,
+				teamId: store.teamId,
+				dueDate: finalDueDate,
+				statuses: store.statuses,
+			}),
 		});
+		const result = await req.json();
 
 		if (result.success) {
 			toast({
@@ -104,7 +114,8 @@ export function useProjectSettingsFormActions(
 	};
 
 	const handleDeleteConfirm = async () => {
-		const result = await deleteProjectAction(projectId);
+		const req = await fetch(`/api/project/${projectId}`, { method: "DELETE" });
+		const result = await req.json();
 		if (result.success) {
 			toast({
 				title: "Project deleted",
@@ -123,10 +134,71 @@ export function useProjectSettingsFormActions(
 		}
 	};
 
+	const handleArchiveProject = async () => {
+		const req = await fetch(`/api/project/${projectId}/settings`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				name: store.title,
+				description: store.description,
+				teamId: store.teamId,
+				status: "archived",
+			}),
+		});
+		const result = await req.json();
+		if (result.success) {
+			toast({
+				title: "Project archived",
+				description: "Project has been successfully archived.",
+				variant: "success",
+			});
+			router.push("/projects");
+		} else {
+			toast({
+				title: "Error",
+				description: result.error || "Failed to archive project.",
+				variant: "destructive",
+			});
+		}
+	};
+
+	const handleRestoreProject = async () => {
+		const req = await fetch(`/api/project/${projectId}/settings`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				name: store.title,
+				description: store.description,
+				teamId: store.teamId,
+				status: "in_progress",
+			}),
+		});
+		const result = await req.json();
+		if (result.success) {
+			store.setTempStatus("in_progress");
+			store.handleSaveGeneral();
+			useProjectSettingsStore.setState({ status: "in_progress" });
+			toast({
+				title: "Project restored",
+				description: "Project has been restored to active status.",
+				variant: "success",
+			});
+			router.refresh();
+		} else {
+			toast({
+				title: "Error",
+				description: result.error || "Failed to restore project.",
+				variant: "destructive",
+			});
+		}
+	};
+
 	return {
 		handleSaveDone,
 		handleSaveAll,
 		handleDeleteConfirm,
+		handleArchiveProject,
+		handleRestoreProject,
 	};
 }
 
@@ -150,7 +222,8 @@ export function useMemberRoleState() {
 			setTeamId(newTeamId);
 			setTeam(selected.name);
 
-			const res = await getTeamDetailAction(newTeamId);
+			const req = await fetch(`/api/team/${newTeamId}`);
+			const res = await req.json();
 			if (res.success && res.data?.members) {
 				const newMembers: TeamMember[] = res.data.members.map(
 					(m: {
@@ -243,6 +316,8 @@ export function useInitializeProjectSettings(initialData: {
 	initialDescription: string;
 	initialTeam: string;
 	initialTeamId: string;
+	initialDueDate: string;
+	initialStatus: string;
 	availableTeams: { id: string; name: string }[];
 	initialAccess: AccessRole;
 	initialMembers: TeamMember[];
@@ -256,6 +331,8 @@ export function useInitializeProjectSettings(initialData: {
 			description: initialData.initialDescription,
 			team: initialData.initialTeam,
 			teamId: initialData.initialTeamId,
+			dueDate: initialData.initialDueDate,
+			status: initialData.initialStatus,
 			availableTeams: initialData.availableTeams,
 			access: initialData.initialAccess,
 			members: initialData.initialMembers,

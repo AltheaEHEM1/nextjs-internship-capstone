@@ -2,9 +2,9 @@
 
 import { UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { sendUserInvitationAction } from "@/actions/team/Invitation";
 import BaseModal from "@/components/layout/BaseModal";
 import { useToast } from "@/hooks/toast/use-toast";
+import { invitationSchema } from "@/lib/validation/Validations";
 
 interface AddMemberProps {
 	opened: boolean;
@@ -17,10 +17,42 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
 
+	const [errors, setErrors] = useState<Record<string, string>>({});
+	const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+	const handleBlur = (field: string) => {
+		setTouched((prev) => ({ ...prev, [field]: true }));
+	};
+
+	useEffect(() => {
+		const newErrors: Record<string, string> = {};
+
+		if (addPeopleContact.trim()) {
+			const emails = addPeopleContact
+				.split(/[, ]+/)
+				.filter((e) => e.trim() !== "");
+			const invalidEmails = emails.filter(
+				(e) => !invitationSchema.shape.email.safeParse(e).success,
+			);
+			if (invalidEmails.length > 0) {
+				newErrors.email = "One or more email addresses are invalid.";
+			}
+		}
+
+		if (notes.trim()) {
+			const notesRes = invitationSchema.shape.notes.safeParse(notes);
+			if (!notesRes.success) newErrors.notes = notesRes.error.issues[0].message;
+		}
+
+		setErrors(newErrors);
+	}, [addPeopleContact, notes]);
+
 	useEffect(() => {
 		if (!opened) {
 			setAddPeopleContact("");
 			setNotes("");
+			setErrors({});
+			setTouched({});
 		}
 	}, [opened]);
 
@@ -52,9 +84,14 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 		try {
 			// Pass both email and the optional notes string to the action
 			const results = await Promise.all(
-				emails.map((email: string) =>
-					sendUserInvitationAction(email, notes.trim() || undefined),
-				),
+				emails.map(async (email: string) => {
+					const req = await fetch("/api/invitation/send", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ email, notes: notes.trim() || undefined }),
+					});
+					return await req.json();
+				}),
 			);
 
 			const failed = results.filter((r) => !r.success);
@@ -128,8 +165,12 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 					<button
 						type="button"
 						onClick={handleSendInvites}
-						disabled={loading}
-						className="rounded-lg bg-blue_munsell-500 px-4 py-2 text-sm font-medium text-white shadow hover:opacity-95 transition"
+						disabled={
+							loading ||
+							!addPeopleContact.trim() ||
+							Object.keys(errors).some((key) => errors[key])
+						}
+						className="rounded-lg bg-blue_munsell-500 px-4 py-2 text-sm font-medium text-white shadow hover:opacity-95 transition disabled:opacity-50"
 					>
 						{loading ? "Sending..." : "Send Invites"}
 					</button>
@@ -147,11 +188,20 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 					<input
 						id="invite-email-input"
 						type="text"
-						placeholder="colleague@example.com"
+						placeholder="colleague@example.com, another@example.com"
 						value={addPeopleContact}
-						onChange={(e) => setAddPeopleContact(e.target.value)}
-						className="w-full mt-1 rounded-lg border border-french_gray-300 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue_munsell-500"
+						onChange={(e) => {
+							setAddPeopleContact(e.target.value);
+							setTouched((prev) => ({ ...prev, email: true }));
+						}}
+						onBlur={() => handleBlur("email")}
+						className={`w-full mt-1 rounded-lg border p-2 text-sm focus:outline-none focus:ring-1 ${touched.email && errors.email ? "border-red-500 focus:ring-red-500" : "border-french_gray-300 focus:ring-blue_munsell-500"}`}
 					/>
+					{touched.email && errors.email && (
+						<p className="mt-1.5 text-xs text-red-500 font-medium">
+							{errors.email}
+						</p>
+					)}
 				</div>
 
 				<div>
@@ -172,9 +222,18 @@ export default function AddMemberModal({ opened, onClose }: AddMemberProps) {
 						rows={3}
 						placeholder="Add a personal message to your invitation..."
 						value={notes}
-						onChange={(e) => setNotes(e.target.value)}
-						className="w-full mt-1 rounded-lg border border-french_gray-300 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue_munsell-500 resize-none"
+						onChange={(e) => {
+							setNotes(e.target.value.replace(/\s{2,}/g, " "));
+							setTouched((prev) => ({ ...prev, notes: true }));
+						}}
+						onBlur={() => handleBlur("notes")}
+						className={`w-full mt-1 rounded-lg border p-2 text-sm focus:outline-none focus:ring-1 resize-none ${touched.notes && errors.notes ? "border-red-500 focus:ring-red-500" : "border-french_gray-300 focus:ring-blue_munsell-500"}`}
 					/>
+					{touched.notes && errors.notes && (
+						<p className="mt-1.5 text-xs text-red-500 font-medium">
+							{errors.notes}
+						</p>
+					)}
 				</div>
 			</div>
 		</BaseModal>

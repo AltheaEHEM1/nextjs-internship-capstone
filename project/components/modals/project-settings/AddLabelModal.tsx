@@ -1,12 +1,12 @@
 "use client";
 
 import { Tag } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import BaseModal from "@/components/layout/BaseModal";
 import { useToast } from "@/hooks/toast/use-toast";
 import { cn } from "@/lib/utils";
-import { useCustomLabelStore } from "../../../stores/custom-label-store";
+import { useCustomLabelStore } from "../../../stores/project/CustomLabelStore";
 
 interface AddLabelProps {
 	isOpen: boolean;
@@ -46,6 +46,7 @@ const LABEL_COLORS = [
 
 export function AddLabelModal({ isOpen, onClose, onSave }: AddLabelProps) {
 	const { toast } = useToast();
+	const [maxLengthError, setMaxLengthError] = useState("");
 	const { name, setName, selectedColor, setSelectedColor, handleSubmit } =
 		useCustomLabelStore(
 			useShallow((state) => ({
@@ -109,11 +110,25 @@ export function AddLabelModal({ isOpen, onClose, onSave }: AddLabelProps) {
 						id="label-name"
 						type="text"
 						value={name}
-						onChange={(e) => setName(e.target.value)}
+						onChange={(e) => {
+							let val = e.target.value.replace(/\s{2,}/g, " ");
+							if (val.length > 20) {
+								val = val.slice(0, 20);
+								setMaxLengthError("Label name is too long");
+							} else {
+								setMaxLengthError("");
+							}
+							setName(val);
+						}}
 						placeholder="e.g. Frontend, Bug, Feature"
 						required
-						className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500 transition-all shadow-2xs"
+						className={`w-full rounded-xl border bg-slate-50/60 dark:bg-slate-950/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 transition-all shadow-2xs ${maxLengthError ? "border-red-500 focus:ring-red-500/40 focus:border-red-500" : "border-slate-200 dark:border-slate-800 focus:ring-cyan-500/40 focus:border-cyan-500"}`}
 					/>
+					{maxLengthError && (
+						<p className="mt-1 text-xs text-red-500 font-medium">
+							{maxLengthError}
+						</p>
+					)}
 				</div>
 
 				<div className="space-y-2">

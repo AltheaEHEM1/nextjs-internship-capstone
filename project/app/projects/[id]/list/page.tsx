@@ -10,25 +10,26 @@ import {
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { use, useCallback, useEffect, useMemo } from "react";
-import { getProjectDetailAction } from "@/actions/project/Project";
+
 import { type Task, useList } from "@/hooks/project/(tabs)/useList";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/real-time-board/PusherClient";
 
 const STATUS_COLORS: Record<Task["status"], string> = {
-	Todo: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
+	Todo: "bg-gray-50 text-gray-600 border border-gray-200 shadow-xs dark:bg-gray-800/80 dark:text-gray-300 dark:border-gray-700",
 	"In Progress":
-		"bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+		"bg-blue-50 text-blue-700 border border-blue-200 shadow-xs dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50",
 	"In Review":
-		"bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-	Done: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+		"bg-amber-50 text-amber-700 border border-amber-200 shadow-xs dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800/50",
+	Done: "bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800/50",
 };
 
 const PRIORITY_COLORS: Record<Task["priority"], string> = {
-	Low: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+	Low: "bg-slate-50 text-slate-600 border border-slate-200 shadow-xs dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700",
 	Medium:
-		"bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
-	High: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
-	Critical: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+		"bg-yellow-50 text-yellow-700 border border-yellow-200 shadow-xs dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800/50",
+	High: "bg-orange-50 text-orange-700 border border-orange-200 shadow-xs dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800/50",
+	Critical:
+		"bg-red-50 text-red-700 border border-red-200 shadow-xs dark:bg-red-900/30 dark:text-red-300 dark:border-red-800/50",
 };
 
 export default function List({ params }: { params: Promise<{ id: string }> }) {
@@ -39,7 +40,7 @@ export default function List({ params }: { params: Promise<{ id: string }> }) {
 				accessorKey: "title",
 				header: "Title",
 				cell: ({ getValue }) => (
-					<span className="font-medium text-outer_space-700 dark:text-platinum-200">
+					<span className="font-semibold text-slate-800 dark:text-platinum-100 group-hover:text-blue_munsell-600 dark:group-hover:text-blue_munsell-400 transition-colors">
 						{getValue<string>()}
 					</span>
 				),
@@ -90,15 +91,6 @@ export default function List({ params }: { params: Promise<{ id: string }> }) {
 					</span>
 				),
 			},
-			{
-				accessorKey: "estimate",
-				header: "Estimate",
-				cell: ({ getValue }) => (
-					<span className="font-mono text-xs text-outer_space-400 dark:text-platinum-400">
-						{getValue<string>()}
-					</span>
-				),
-			},
 		],
 		[],
 	);
@@ -106,34 +98,47 @@ export default function List({ params }: { params: Promise<{ id: string }> }) {
 	const { table, setTasks } = useList(columns);
 
 	const fetchProjectData = useCallback(() => {
-		getProjectDetailAction(id).then((res) => {
-			if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
-				const allTasks = res.data.statuses.flatMap((s) =>
-					(s.tasks || []).map(
-						(t) =>
-							({
-								id: t.id,
-								title: t.title || "Untitled Task",
-								status: s.name as Task["status"],
-								priority: (t.priority === "urgent"
-									? "High"
-									: t.priority
-										? t.priority.charAt(0).toUpperCase() + t.priority.slice(1)
-										: "Low") as Task["priority"],
-								assignee:
-									(t as { assignee?: { name?: string } }).assignee?.name ||
-									"Unassigned",
-								dueDate: t.dueDate
-									? new Date(t.dueDate).toLocaleDateString()
-									: "",
-								estimate: t.size ? String(t.size) : "",
-							}) as Task,
-					),
-				);
+		fetch(`/api/project/${id}`)
+			.then((r) => r.json())
+			.then((res) => {
+				if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+					const allTasks = res.data.statuses.flatMap(
+						(s: {
+							name: string;
+							tasks?: {
+								id: string;
+								title?: string;
+								priority?: string;
+								assignee?: { name?: string };
+								dueDate?: string | null;
+								size?: number;
+							}[];
+						}) =>
+							(s.tasks || []).map(
+								(t) =>
+									({
+										id: t.id,
+										title: t.title || "Untitled Task",
+										status: s.name as Task["status"],
+										priority: (t.priority === "urgent"
+											? "High"
+											: t.priority
+												? t.priority.charAt(0).toUpperCase() +
+													t.priority.slice(1)
+												: "Low") as Task["priority"],
+										assignee:
+											(t as { assignee?: { name?: string } }).assignee?.name ||
+											"Unassigned",
+										dueDate: t.dueDate
+											? new Date(t.dueDate).toLocaleDateString()
+											: "",
+									}) as Task,
+							),
+					);
 
-				setTasks(allTasks);
-			}
-		});
+					setTasks(allTasks);
+				}
+			});
 	}, [id, setTasks]);
 
 	useEffect(() => {
@@ -168,15 +173,15 @@ export default function List({ params }: { params: Promise<{ id: string }> }) {
 				</div>
 			</div>
 
-			<div className="overflow-x-auto rounded-xl border border-french_gray-200 bg-white shadow-xs dark:border-payne's_gray-600 dark:bg-outer_space-500">
+			<div className="overflow-x-auto w-full rounded-2xl border border-french_gray-200 bg-white shadow-sm dark:border-payne's_gray-600 dark:bg-outer_space-500 transition-all hover:shadow-md">
 				<table className="w-full text-left text-sm whitespace-nowrap">
-					<thead className="border-b border-french_gray-200 bg-platinum-100/60 dark:border-payne's_gray-600 dark:bg-outer_space-400/50">
+					<thead className="border-b border-french_gray-200 bg-slate-50/80 dark:border-payne's_gray-600 dark:bg-outer_space-400/50 backdrop-blur-sm">
 						{table.getHeaderGroups().map((headerGroup: HeaderGroup<Task>) => (
 							<tr key={headerGroup.id}>
 								{headerGroup.headers.map((header: Header<Task, unknown>) => (
 									<th
 										key={header.id}
-										className="px-4 py-3.5 text-xs uppercase tracking-wider text-outer_space-500 dark:text-platinum-300"
+										className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-platinum-300"
 									>
 										{header.isPlaceholder ? null : (
 											<div
@@ -220,10 +225,10 @@ export default function List({ params }: { params: Promise<{ id: string }> }) {
 						{table.getRowModel().rows.map((row: Row<Task>) => (
 							<tr
 								key={row.id}
-								className="transition-colors hover:bg-platinum-50/50 dark:hover:bg-outer_space-400/30"
+								className="group transition-all duration-200 hover:bg-slate-50 dark:hover:bg-outer_space-400/30 hover:cursor-pointer"
 							>
 								{row.getVisibleCells().map((cell: Cell<Task, unknown>) => (
-									<td key={cell.id} className="px-4 py-3.5">
+									<td key={cell.id} className="px-6 py-4 align-middle">
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}
 									</td>
 								))}

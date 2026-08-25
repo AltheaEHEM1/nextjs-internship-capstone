@@ -14,10 +14,7 @@ import TaskModalLeft from "@/components/modals/task/TaskModalLeft";
 import TaskModalRight from "@/components/modals/task/TaskModalRight";
 import ConfirmDialog from "@/components/modals/team/ConfirmDialog";
 import { useTaskModal } from "@/hooks/task/useTaskModal";
-import {
-	type TaskData,
-	useTaskModalStore,
-} from "@/stores/task/task-modal-store";
+import { type TaskData, useTaskModalStore } from "@/stores/task/TaskModalStore";
 
 interface TaskModalProps {
 	mode: "create" | "view";
@@ -52,6 +49,11 @@ export default function TaskModal({
 		setNewComment,
 		handleAddComment,
 		taskId,
+		isCheckingName,
+		isNameUnique,
+		taskName,
+		status,
+		errors,
 	} = useTaskModalStore();
 	const {
 		projectData,
@@ -78,6 +80,12 @@ export default function TaskModal({
 				.setCurrentUserPermission(currentUserPermission);
 		}
 	}, [currentUserPermission]);
+
+	useEffect(() => {
+		if (!opened) {
+			useTaskModalStore.getState().reset();
+		}
+	}, [opened]);
 
 	const modalTitle =
 		mode === "create" ? (
@@ -117,7 +125,14 @@ export default function TaskModal({
 						<button
 							type="submit"
 							form="task-modal-form"
-							disabled={isSubmitting}
+							disabled={
+								isSubmitting ||
+								isNameUnique === false ||
+								isCheckingName ||
+								!taskName.trim() ||
+								!status ||
+								Object.keys(errors).some((key) => errors[key])
+							}
 							className="rounded-xl bg-cyan-500 hover:bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-cyan-500/20 transition-all disabled:opacity-50"
 						>
 							{isSubmitting ? "Creating..." : "Create Task"}
@@ -215,7 +230,9 @@ export default function TaskModal({
 									type="text"
 									placeholder="Write a comment..."
 									value={newComment}
-									onChange={(e) => setNewComment(e.target.value)}
+									onChange={(e) =>
+										setNewComment(e.target.value.replace(/\s{2,}/g, " "))
+									}
 									onKeyDown={(e) => {
 										if (e.key === "Enter" && taskId) {
 											e.preventDefault();

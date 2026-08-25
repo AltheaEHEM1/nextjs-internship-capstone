@@ -13,7 +13,14 @@ export type SettingKey =
 	| "emailDigest"
 	| "browserPush";
 
-export interface NotificationToggle {
+export type NotificationType =
+	| "task"
+	| "project"
+	| "team"
+	| "comment"
+	| "system";
+
+interface NotificationToggle {
 	key: SettingKey;
 	title: string;
 	description: string;
@@ -33,6 +40,10 @@ export interface AppNotification {
 	description: string;
 	date: string;
 	read: boolean;
+	/** Notification category — used to pick the icon on the notification page */
+	type: NotificationType;
+	/** Optional URL to navigate to when the notification is clicked */
+	href?: string;
 }
 
 interface NotificationState {
@@ -55,6 +66,10 @@ interface NotificationState {
 	markAllAsRead: () => void;
 	clearInbox: () => void;
 }
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const MAX_INBOX_SIZE = 50;
 
 // ─── Static Data ──────────────────────────────────────────────────────────────
 
@@ -134,7 +149,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
 
 export const useNotificationStore = create<NotificationState>()(
 	persist(
-		(set, get) => ({
+		(set, _get) => ({
 			settings: DEFAULT_SETTINGS,
 			sections: DEFAULT_SECTIONS,
 			inbox: [],
@@ -166,8 +181,6 @@ export const useNotificationStore = create<NotificationState>()(
 			saveSettings: async () => {
 				set({ isLoading: true, error: null });
 				try {
-					const { settings } = get();
-					console.log("Saving notification settings:", settings);
 					set({ isLoading: false });
 				} catch (err) {
 					set({
@@ -179,17 +192,17 @@ export const useNotificationStore = create<NotificationState>()(
 			},
 
 			addNotification: (notification) => {
-				set((state) => ({
-					inbox: [
-						{
-							...notification,
-							id: Date.now().toString(),
-							date: new Date().toISOString(),
-							read: false,
-						},
-						...state.inbox,
-					],
-				}));
+				set((state) => {
+					const newItem: AppNotification = {
+						...notification,
+						id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+						date: new Date().toISOString(),
+						read: false,
+					};
+					// Prepend and cap at MAX_INBOX_SIZE to prevent unbounded growth
+					const updated = [newItem, ...state.inbox].slice(0, MAX_INBOX_SIZE);
+					return { inbox: updated };
+				});
 			},
 
 			markAsRead: (id: string) => {

@@ -9,7 +9,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { priorityEnum, sizeEnum } from "./enums";
+import { priorityEnum, projectStatusEnum, sizeEnum } from "./enums";
 import { teams, users } from "./index";
 
 export const projects = pgTable(
@@ -24,6 +24,7 @@ export const projects = pgTable(
 		teamId: uuid("team_id")
 			.references(() => teams.id, { onDelete: "cascade" })
 			.notNull(),
+		status: projectStatusEnum("status").default("in_progress").notNull(),
 		dueDate: timestamp("due_date").notNull(),
 		views: jsonb("views")
 			.default([
@@ -34,6 +35,7 @@ export const projects = pgTable(
 				"Whiteboard",
 				"Gantt Chart",
 				"Timeline",
+				"Burndown Chart",
 			])
 			.notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -110,6 +112,7 @@ export const tasks = pgTable(
 		priority: priorityEnum("priority").default("medium").notNull(),
 		size: sizeEnum("size").default("M").notNull(),
 		position: integer("position").default(0).notNull(),
+		startDate: timestamp("start_date"),
 		dueDate: timestamp("due_date"),
 		reporterId: uuid("reporter_id").references(() => users.id, {
 			onDelete: "set null",

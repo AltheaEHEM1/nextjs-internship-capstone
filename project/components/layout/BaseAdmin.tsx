@@ -1,5 +1,6 @@
 "use client";
 import type React from "react";
+import { Suspense } from "react";
 import { useBaseAdmin } from "../../hooks/layout/useBaseAdmin";
 import Sidebar from "../sidebar/Sidebar";
 import Header from "../sidebar/SidebarHeader";
@@ -12,7 +13,9 @@ export default function BaseAdmin({
 
 	return (
 		<div className="flex h-screen overflow-hidden">
-			<Sidebar opened={sidebarOpen} close={close} />
+			<Suspense fallback={null}>
+				<Sidebar opened={sidebarOpen} close={close} />
+			</Suspense>
 
 			<div className="flex min-h-0 min-w-0 flex-1 flex-col">
 				<Header onMenuClick={open} />

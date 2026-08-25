@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import React, { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { useCustomSidebarStore } from "../../stores/components/custom-sidebar-store";
+import { useCustomSidebarStore } from "../../stores/components/CustomSidebarStore";
 import { SidebarLink } from "./SidebarLink";
 import { NAV_CONFIG } from "./SidebarNavigationConfig";
 

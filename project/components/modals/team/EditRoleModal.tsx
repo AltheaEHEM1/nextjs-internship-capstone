@@ -25,6 +25,7 @@ export default function EditRoleModal({
 }: EditRoleModalProps) {
 	const [role, setRole] = useState(currentRole);
 	const [permission, setPermission] = useState(currentPermission);
+	const [maxLengthError, setMaxLengthError] = useState("");
 
 	useEffect(() => {
 		if (opened) {
@@ -63,11 +64,25 @@ export default function EditRoleModal({
 						id="role"
 						type="text"
 						value={role}
-						onChange={(e) => setRole(e.target.value)}
+						onChange={(e) => {
+							let val = e.target.value.replace(/\s{2,}/g, " ");
+							if (val.length > 20) {
+								val = val.slice(0, 20);
+								setMaxLengthError("Role is too long");
+							} else {
+								setMaxLengthError("");
+							}
+							setRole(val);
+						}}
 						disabled={loading}
 						placeholder="e.g. Developer, Designer..."
-						className="mt-1 w-full rounded-xl border border-french_gray-200 p-2.5 text-sm outline-hidden focus:border-blue_munsell-400 dark:border-paynes_gray-600 dark:bg-outer_space-400 dark:text-platinum-100"
+						className={`mt-1 w-full rounded-xl border p-2.5 text-sm outline-hidden dark:bg-outer_space-400 dark:text-platinum-100 ${maxLengthError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-french_gray-200 focus:border-blue_munsell-400 dark:border-paynes_gray-600"}`}
 					/>
+					{maxLengthError && (
+						<p className="mt-1 text-xs text-red-500 font-medium">
+							{maxLengthError}
+						</p>
+					)}
 				</div>
 				<div>
 					<label

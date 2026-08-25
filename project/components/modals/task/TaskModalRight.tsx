@@ -1,7 +1,7 @@
 import { useUser } from "@clerk/nextjs";
 import { Flag, Tag } from "lucide-react";
 import Image from "next/image";
-import { useTaskModalStore } from "@/stores/task/task-modal-store";
+import { useTaskModalStore } from "@/stores/task/TaskModalStore";
 
 interface TaskModalRightProps {
 	projectData: {
@@ -9,6 +9,8 @@ interface TaskModalRightProps {
 		statuses: { id: string; name: string; color: string }[];
 		labels: { name: string; color: string }[];
 		priorities: [string, ...string[]];
+		createdAt?: string;
+		dueDate?: string;
 	} | null;
 	isLoading: boolean;
 	onOpenAddPriority?: () => void;
@@ -41,7 +43,12 @@ export default function TaskModalRight({
 	} = useTaskModalStore();
 	const { user } = useUser();
 
-	const today = new Date().toISOString().split("T")[0];
+	const projectStart = projectData?.createdAt
+		? new Date(projectData.createdAt).toISOString().split("T")[0]
+		: new Date().toISOString().split("T")[0];
+	const projectEnd = projectData?.dueDate
+		? new Date(projectData.dueDate).toISOString().split("T")[0]
+		: undefined;
 
 	// For standardizing field update calls
 	const handleChange = (
@@ -186,7 +193,8 @@ export default function TaskModalRight({
 					<input
 						id="startDate"
 						type="date"
-						min={mode === "create" ? today : undefined}
+						min={projectStart}
+						max={projectEnd}
 						value={startDate}
 						onChange={(e) => {
 							handleChange("startDate", e.target.value, setStartDate);
@@ -211,7 +219,8 @@ export default function TaskModalRight({
 					<input
 						id="dueDate"
 						type="date"
-						min={startDate || (mode === "create" ? today : undefined)}
+						min={startDate || projectStart}
+						max={projectEnd}
 						value={dueDate}
 						onChange={(e) =>
 							handleChange("dueDate", e.target.value, setDueDate)
@@ -267,7 +276,9 @@ export default function TaskModalRight({
 						<input
 							type="text"
 							value={labels}
-							onChange={(e) => setLabels(e.target.value)}
+							onChange={(e) =>
+								setLabels(e.target.value.replace(/\s{2,}/g, " "))
+							}
 							onBlur={() => handleChange("label", labels, setLabels)}
 							className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50"
 							disabled={

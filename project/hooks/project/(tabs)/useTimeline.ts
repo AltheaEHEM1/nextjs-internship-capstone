@@ -1,9 +1,4 @@
-import {
-	type TimelineItem,
-	useTimelineStore,
-} from "@/stores/project/(tabs)/TimelineStore";
-
-export type { TimelineItem };
+import { useTimelineStore } from "@/stores/project/(tabs)/TimelineStore";
 
 export function useTimeline() {
 	const items = useTimelineStore((state) => state.items);
