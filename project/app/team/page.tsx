@@ -16,13 +16,13 @@ import AddMemberModal from "@/components/modals/team/AddMemberModal";
 import AddTeamModal1 from "@/components/modals/team/AddTeamModal1";
 import AddTeamModal2 from "@/components/modals/team/AddTeamModal2";
 import { PageHeader } from "@/components/page-header/PageHeader";
-import { SearchBar } from "@/components/search/SearchBar";
 import {
 	TeamCardSkeleton,
 	TeamMemberSkeleton,
 	TeamPageSkeleton,
 } from "@/components/skeletons/TeamSkeleton";
 import { useTeamManagement } from "@/hooks/team/useTeamManagement";
+import { useGlobalSearchStore } from "@/stores/global/GlobalSearchStore";
 import type { PersonItem, TeamItem } from "@/stores/team/TeamStore";
 
 export function TeamPageContent({
@@ -47,9 +47,8 @@ export function TeamPageContent({
 	} = useTeamManagement(initialTab);
 
 	const [roleFilter, setRoleFilter] = useState<string>("all");
-	const [peopleSearchQuery, setPeopleSearchQuery] = useState("");
 	const [teamFilter, setTeamFilter] = useState<"all" | "owner">("all");
-	const [teamSearchQuery, setTeamSearchQuery] = useState("");
+	const searchQuery = useGlobalSearchStore((state) => state.searchQuery);
 
 	const filteredPeople = people
 		.filter((p, index, self) => index === self.findIndex((t) => t.id === p.id))
@@ -57,7 +56,7 @@ export function TeamPageContent({
 			const matchesRole =
 				roleFilter === "all" ||
 				(p.role && p.role.toLowerCase() === roleFilter.toLowerCase());
-			const query = peopleSearchQuery.trim().toLowerCase();
+			const query = searchQuery.trim().toLowerCase();
 			const matchesSearch =
 				!query ||
 				p.name.toLowerCase().includes(query) ||
@@ -72,7 +71,7 @@ export function TeamPageContent({
 		.filter((t) => {
 			const matchesFilter =
 				teamFilter === "all" || t.permission === "administrator";
-			const query = teamSearchQuery.trim().toLowerCase();
+			const query = searchQuery.trim().toLowerCase();
 			const matchesSearch = !query || t.name.toLowerCase().includes(query);
 			return matchesFilter && matchesSearch;
 		});
@@ -110,14 +109,6 @@ export function TeamPageContent({
 									<SelectItem value="viewer">Viewer</SelectItem>
 								</SelectContent>
 							</Select>
-						</div>
-
-						<div className="ml-auto w-full sm:w-auto mt-2 sm:mt-0">
-							<SearchBar
-								value={peopleSearchQuery}
-								onChange={setPeopleSearchQuery}
-								placeholder="Search members..."
-							/>
 						</div>
 					</div>
 
@@ -192,14 +183,6 @@ export function TeamPageContent({
 									<SelectItem value="owner">Owned Teams</SelectItem>
 								</SelectContent>
 							</Select>
-						</div>
-
-						<div className="ml-auto w-full sm:w-auto mt-2 sm:mt-0">
-							<SearchBar
-								value={teamSearchQuery}
-								onChange={setTeamSearchQuery}
-								placeholder="Search teams..."
-							/>
 						</div>
 					</div>
 

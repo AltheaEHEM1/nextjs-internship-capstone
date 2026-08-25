@@ -15,6 +15,7 @@ import TaskModal from "@/components/modals/task/TaskModal";
 import { KanbanBoardSkeleton } from "@/components/skeletons/KanbanBoardSkeleton";
 import { useProjectBoard } from "@/hooks/project/(tabs)/useProjectBoard";
 import { pusherClient } from "@/lib/real-time-board/PusherClient";
+import { useGlobalSearchStore } from "@/stores/global/GlobalSearchStore";
 import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
 
 export default function BoardPage({
@@ -29,7 +30,7 @@ export default function BoardPage({
 		(state) => state.setKanbanColumns,
 	);
 	const setTasks = useProjectBoardStore((state) => state.setTasks);
-	const searchQuery = useProjectBoardStore((state) => state.searchQuery);
+	const searchQuery = useGlobalSearchStore((state) => state.searchQuery);
 
 	const [statusesMap, setStatusesMap] = useState<Record<string, string>>({});
 	const [currentUserPermission, setCurrentUserPermission] =

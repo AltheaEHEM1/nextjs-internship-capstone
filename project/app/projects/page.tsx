@@ -13,9 +13,9 @@ import {
 import CreateProject1 from "@/components/modals/project/CreateProject1Modal";
 import CreateProject2 from "@/components/modals/project/CreateProject2Modal";
 import { PageHeader } from "@/components/page-header/PageHeader";
-import { SearchBar } from "@/components/search/SearchBar";
 import { CardGridSkeleton } from "@/components/skeletons/CardGridSkeleton";
 import { useProject } from "@/hooks/project/useProject";
+import { useGlobalSearchStore } from "@/stores/global/GlobalSearchStore";
 
 function getPlaceholderStats(id: number) {
 	const daysLeft = ((id * 7 + 13) % 30) + 1;
@@ -65,7 +65,7 @@ export default function ProjectsPage() {
 	const [statusFilter, setStatusFilter] = useState<
 		"all" | "in_progress" | "finished" | "archived"
 	>("in_progress");
-	const [searchQuery, setSearchQuery] = useState("");
+	const searchQuery = useGlobalSearchStore((state) => state.searchQuery);
 
 	const fetchProjects = useCallback(async () => {
 		const req = await fetch("/api/project");
@@ -193,14 +193,6 @@ export default function ProjectsPage() {
 							<SelectItem value="owner">Owned</SelectItem>
 						</SelectContent>
 					</Select>
-				</div>
-
-				<div className="ml-auto w-full sm:w-auto mt-2 sm:mt-0">
-					<SearchBar
-						value={searchQuery}
-						onChange={setSearchQuery}
-						placeholder="Search projects..."
-					/>
 				</div>
 			</div>
 

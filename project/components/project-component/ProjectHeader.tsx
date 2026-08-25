@@ -4,8 +4,6 @@ import { CheckSquare, FolderKanban, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import TaskModal from "@/components/modals/task/TaskModal";
-import { SearchBar } from "@/components/search/SearchBar";
-import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
 import { useCustomProjectHeaderStore } from "../../stores/project/CustomProjectHeaderStore";
 
 export interface ProjectHeaderProps {
@@ -27,8 +25,6 @@ export default function ProjectHeader({
 	const router = useRouter();
 	const { isCreateTaskOpen, setIsCreateTaskOpen, handleSettings, setNavigate } =
 		useCustomProjectHeaderStore();
-	const searchQuery = useProjectBoardStore((state) => state.searchQuery);
-	const setSearchQuery = useProjectBoardStore((state) => state.setSearchQuery);
 
 	// Inject Next.js router into the store for navigation
 	useEffect(() => {
@@ -70,15 +66,6 @@ export default function ProjectHeader({
 							</div>
 						</div>
 					)}
-
-					{/* Search Bar directly after Create Task button */}
-					<SearchBar
-						value={searchQuery}
-						onChange={setSearchQuery}
-						placeholder="Search tasks..."
-					/>
-
-					{/* Settings Button */}
 					{currentUserPermission === "administrator" && (
 						<div className="relative group">
 							<button

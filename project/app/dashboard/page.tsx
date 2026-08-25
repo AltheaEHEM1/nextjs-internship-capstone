@@ -13,7 +13,6 @@ import {
 	Medal,
 	PieChart as PieChartIcon,
 	Plus,
-	RefreshCw,
 	Sparkles,
 	TrendingUp,
 	Trophy,
@@ -115,7 +114,6 @@ function CustomPieTooltip({
 export default function DashboardPage() {
 	const [data, setData] = useState<DashboardMetricData | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
-	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	const {
@@ -137,8 +135,7 @@ export default function DashboardPage() {
 		handleCreateFinal,
 	} = useProject();
 
-	const fetchDashboardData = useCallback(async (showRefreshing = false) => {
-		if (showRefreshing) setIsRefreshing(true);
+	const fetchDashboardData = useCallback(async () => {
 		try {
 			const res = await fetch("/api/dashboard");
 			const json = await res.json();
@@ -154,7 +151,6 @@ export default function DashboardPage() {
 			);
 		} finally {
 			setIsLoading(false);
-			if (showRefreshing) setIsRefreshing(false);
 		}
 	}, []);
 
@@ -174,7 +170,7 @@ export default function DashboardPage() {
 				};
 			},
 		);
-		await fetchDashboardData(true);
+		await fetchDashboardData();
 	};
 
 	if (isLoading) {
@@ -236,22 +232,6 @@ export default function DashboardPage() {
 					title="Dashboard & Analytics"
 					description="Real-time workspace overview, team performance, and project metrics"
 				/>
-				<div className="flex items-center gap-3">
-					<button
-						type="button"
-						onClick={() => fetchDashboardData(true)}
-						disabled={isRefreshing}
-						className="inline-flex items-center gap-2 rounded-xl border border-french_gray-300 bg-white px-3.5 py-2 text-sm font-medium text-outer_space-600 shadow-sm transition-all hover:bg-platinum-600 hover:text-outer_space-800 disabled:opacity-50 dark:border-payne's_gray-400 dark:bg-outer_space-400 dark:text-platinum-300 dark:hover:bg-outer_space-300 dark:hover:text-platinum-100"
-					>
-						<RefreshCw
-							size={16}
-							className={
-								isRefreshing ? "animate-spin text-blue_munsell-500" : ""
-							}
-						/>
-						<span>{isRefreshing ? "Updating..." : "Refresh"}</span>
-					</button>
-				</div>
 			</div>
 
 			{error && (
@@ -262,7 +242,7 @@ export default function DashboardPage() {
 			)}
 
 			{/* ─── 1. TOP SUMMARY METRIC CARDS ───────────────────────────────────── */}
-			<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+			<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
 				{/* Total Projects Card */}
 				<div className="group relative overflow-hidden rounded-2xl border border-french_gray-300/70 bg-gradient-to-br from-white via-white to-blue_munsell-50/30 p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-payne's_gray-400/50 dark:bg-gradient-to-br dark:from-outer_space-500 dark:via-outer_space-500 dark:to-blue_munsell-950/20">
 					<div className="flex items-center justify-between">

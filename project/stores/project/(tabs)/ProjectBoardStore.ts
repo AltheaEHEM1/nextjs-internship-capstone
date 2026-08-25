@@ -15,8 +15,6 @@ type ProjectBoardState = {
 	setActiveTask: (task: Task | null) => void;
 	tasks: Task[];
 	setTasks: (tasks: Task[]) => void;
-	searchQuery: string;
-	setSearchQuery: (query: string) => void;
 };
 
 export const useProjectBoardStore = create<ProjectBoardState>()(
@@ -33,7 +31,5 @@ export const useProjectBoardStore = create<ProjectBoardState>()(
 		setActiveTask: (task) => set({ activeTask: task }),
 		tasks: [],
 		setTasks: (tasks) => set({ tasks }),
-		searchQuery: "",
-		setSearchQuery: (query) => set({ searchQuery: query }),
 	})),
 );

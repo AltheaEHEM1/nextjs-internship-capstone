@@ -23,7 +23,7 @@ export default function WhiteBoard() {
 			</div>
 
 			{/* Whiteboard Container */}
-			<div className="relative z-10 h-[700px] w-full overflow-hidden rounded-xl border border-french_gray-200 shadow-xs dark:border-payne's_gray-600">
+			<div className="relative z-10 h-[700px] w-full overflow-hidden rounded-2xl border border-french_gray-200 bg-white shadow-sm ring-1 ring-slate-900/5 transition-all hover:shadow-md dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:ring-white/10">
 				<Tldraw persistenceKey={persistenceKey} />
 			</div>
 		</div>

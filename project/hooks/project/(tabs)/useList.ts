@@ -6,8 +6,8 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { useGlobalSearchStore } from "@/stores/global/GlobalSearchStore";
 import { useListStore } from "@/stores/project/(tabs)/ListStore";
-import { useProjectBoardStore } from "@/stores/project/(tabs)/ProjectBoardStore";
 
 export interface Task {
 	id: string;
@@ -16,14 +16,13 @@ export interface Task {
 	priority: "Low" | "Medium" | "High" | "Critical";
 	assignee: string;
 	dueDate: string;
-	estimate: string;
 }
 
 export function useList(columns: ColumnDef<Task>[]) {
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const tasks = useListStore((state) => state.tasks);
 	const setTasks = useListStore((state) => state.setTasks);
-	const searchQuery = useProjectBoardStore((state) => state.searchQuery);
+	const searchQuery = useGlobalSearchStore((state) => state.searchQuery);
 
 	const filteredTasks = useMemo(() => {
 		if (!searchQuery.trim()) return tasks;
