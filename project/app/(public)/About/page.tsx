@@ -64,7 +64,7 @@ export function About() {
 	const ActiveIcon = activeFeature.icon;
 
 	return (
-		<section className="relative px-4 sm:px-8 lg:px-12 py-12 sm:py-20 bg-slate-50 text-slate-900 font-sans overflow-hidden border-t border-slate-200/80">
+		<section className="flex-1 flex flex-col justify-center relative px-4 sm:px-8 lg:px-12 py-12 sm:py-20 bg-slate-50 text-slate-900 font-sans overflow-hidden border-t border-slate-200/80">
 			{/* Animated Light Background Elements */}
 			<div className="absolute inset-0 pointer-events-none">
 				{/* Subtle SVG Grid Overlay */}

@@ -87,7 +87,7 @@ export function Pricing() {
 			ref={containerRef}
 			onMouseMove={handleMouseMove}
 			role="presentation"
-			className="relative px-4 py-12 sm:py-24 sm:px-8 lg:px-12 overflow-hidden bg-slate-950 font-sans text-slate-100 selection:bg-teal-500 selection:text-white border-t border-slate-800/80"
+			className="flex-1 flex flex-col justify-center relative px-4 py-12 sm:py-24 sm:px-8 lg:px-12 overflow-hidden bg-slate-950 font-sans text-slate-100 selection:bg-teal-500 selection:text-white border-t border-slate-800/80"
 		>
 			{/* Interactive Cursor Spotlight Glow */}
 			<div
