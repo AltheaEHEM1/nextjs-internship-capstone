@@ -72,6 +72,17 @@ export default function GanttChart({
 			.then((r) => r.json())
 			.then((res) => {
 				if (res.success && res.data?.statuses && res.data.statuses.length > 0) {
+					// Define the color palette from the image
+					const colors = [
+						{ bg: "#e9c46a", progress: "#f4a261" }, // Yellow/Orange
+						{ bg: "#a7c957", progress: "#6a994e" }, // Green
+						{ bg: "#f4a261", progress: "#e76f51" }, // Orange
+						{ bg: "#48cae4", progress: "#00b4d8" }, // Light Blue
+						{ bg: "#ff8fab", progress: "#fb6f92" }, // Pink
+					];
+
+					let taskIndex = 0;
+
 					const allTasks = res.data.statuses.flatMap(
 						(s: {
 							name: string;
@@ -89,6 +100,10 @@ export default function GanttChart({
 										? new Date(t.createdAt)
 										: new Date(t.dueDate || "");
 									const end = t.dueDate ? new Date(t.dueDate) : start;
+									
+									const color = colors[taskIndex % colors.length];
+									taskIndex++;
+
 									return {
 										id: t.id,
 										name: t.title || "Untitled Task",
@@ -103,10 +118,10 @@ export default function GanttChart({
 													: 0,
 										isDisabled: false,
 										styles: {
-											progressColor: "#0ea5e9", // blue_munsell-500
-											progressSelectedColor: "#0284c7", // sky-600
-											backgroundColor: "#e0f2fe", // sky-100
-											backgroundSelectedColor: "#bae6fd", // sky-200
+											progressColor: color.progress,
+											progressSelectedColor: color.progress,
+											backgroundColor: color.bg,
+											backgroundSelectedColor: color.bg,
 										},
 									} as unknown as import("gantt-task-react").Task;
 								}),
@@ -169,47 +184,52 @@ export default function GanttChart({
 			</div>
 
 			{/* Gantt Chart Container */}
-			<div className="overflow-x-auto rounded-2xl border border-french_gray-200 bg-white p-6 shadow-sm ring-1 ring-slate-900/5 transition-all hover:shadow-md dark:border-payne's_gray-600 dark:bg-outer_space-500 dark:text-platinum-100 dark:ring-white/10">
+			<div className="overflow-x-auto rounded-2xl border border-slate-700 bg-[#16293e] p-6 shadow-sm ring-1 ring-slate-900/5 transition-all hover:shadow-md dark:border-slate-700 dark:bg-[#16293e] dark:text-platinum-100 dark:ring-white/10">
 				<style jsx global>{`
                     .gantt-container {
                         font-family: inherit !important;
                         border-radius: 12px;
                         overflow: hidden;
-                        border: 1px solid #e2e8f0;
-                    }
-                    .dark .gantt-container {
-                        border-color: #334155;
+                        border: 1px solid #23395d;
                     }
                     /* Gantt SVG styling overrides for a softer look */
                     .gantt-container svg {
                         border-radius: 8px;
+                        background-color: #16293e !important;
                     }
                     ._313uQ, .gantt-list-table { /* Header or rows */
-                        background-color: #f8fafc !important;
-                    }
-                    .dark ._313uQ, .dark .gantt-list-table {
-                        background-color: #1e293b !important;
+                        background-color: #16293e !important;
                         color: #f1f5f9 !important;
                     }
-                    .dark ._3457N {
+                    .gantt-list-table-header {
+                        background-color: #16293e !important;
+                        border-bottom: 1px solid #2a4365 !important;
+                    }
+                    ._3457N {
                         fill: #f1f5f9 !important;
+                    }
+                    /* Grid lines */
+                    .gantt-grid-line {
+                        stroke: #2a4365 !important;
                     }
                     /* Smooth hover effect on task rows in the list */
                     .gantt-list-table-row:hover {
-                        background-color: #f1f5f9 !important;
+                        background-color: #1e3a5f !important;
                         transition: background-color 0.2s ease;
-                    }
-                    .dark .gantt-list-table-row:hover {
-                        background-color: #334155 !important;
                     }
                     /* Task bar improvements */
                     .gantt-task-bar {
                         transition: filter 0.2s ease;
-                        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+                        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
                     }
                     .gantt-task-bar:hover {
-                        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+                        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
                         cursor: pointer;
+                    }
+                    /* Task label styles */
+                    .gantt-task-bar-label {
+                        fill: #f1f5f9 !important;
+                        font-weight: 500;
                     }
                 `}</style>
 
