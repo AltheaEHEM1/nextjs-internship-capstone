@@ -132,6 +132,7 @@ export default function ProjectSettingsForm({
 		Record<string, string>
 	>({});
 	const [isArchiveAlertOpen, setIsArchiveAlertOpen] = useState(false);
+	const [isFinishAlertOpen, setIsFinishAlertOpen] = useState(false);
 	const [isRestoreAlertOpen, setIsRestoreAlertOpen] = useState(false);
 
 	const {
@@ -140,6 +141,7 @@ export default function ProjectSettingsForm({
 		handleDeleteConfirm,
 		handleArchiveProject,
 		handleRestoreProject,
+		handleFinishProject,
 	} = useProjectSettingsFormActions(projectId, onSave, onDelete);
 
 	const projectStatus = useProjectSettingsStore((s) => s.status);
@@ -354,6 +356,18 @@ export default function ProjectSettingsForm({
 					variant="default"
 				/>
 				<ConfirmDialog
+					opened={isFinishAlertOpen}
+					onClose={() => setIsFinishAlertOpen(false)}
+					onConfirm={() => {
+						setIsFinishAlertOpen(false);
+						handleFinishProject();
+					}}
+					title="Finish Project"
+					description="Are you sure you want to mark this project as finished?"
+					confirmLabel="Confirm Finish"
+					variant="default"
+				/>
+				<ConfirmDialog
 					opened={isRestoreAlertOpen}
 					onClose={() => setIsRestoreAlertOpen(false)}
 					onConfirm={() => {
@@ -387,13 +401,23 @@ export default function ProjectSettingsForm({
 									Restore Project
 								</button>
 							) : (
-								<button
-									type="button"
-									onClick={() => setIsArchiveAlertOpen(true)}
-									className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/40 transition-colors border border-amber-200/60 dark:border-amber-900/40"
-								>
-									Archive Project
-								</button>
+								<>
+									<button
+										type="button"
+										onClick={() => setIsFinishAlertOpen(true)}
+										className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40 transition-colors border border-blue-200/60 dark:border-blue-900/40"
+									>
+										<Check size={15} />
+										Finish Project
+									</button>
+									<button
+										type="button"
+										onClick={() => setIsArchiveAlertOpen(true)}
+										className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/40 transition-colors border border-amber-200/60 dark:border-amber-900/40"
+									>
+										Archive Project
+									</button>
+								</>
 							))}
 					</div>
 					<button

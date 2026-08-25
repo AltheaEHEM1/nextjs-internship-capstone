@@ -163,6 +163,37 @@ export function useProjectSettingsFormActions(
 		}
 	};
 
+	const handleFinishProject = async () => {
+		const req = await fetch(`/api/project/${projectId}/settings`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				name: store.title,
+				description: store.description,
+				teamId: store.teamId,
+				status: "finished",
+			}),
+		});
+		const result = await req.json();
+		if (result.success) {
+			store.setTempStatus("finished");
+			store.handleSaveGeneral();
+			useProjectSettingsStore.setState({ status: "finished" });
+			toast({
+				title: "Project finished",
+				description: "Project has been marked as finished.",
+				variant: "success",
+			});
+			router.push("/dashboard");
+		} else {
+			toast({
+				title: "Error",
+				description: result.error || "Failed to finish project.",
+				variant: "destructive",
+			});
+		}
+	};
+
 	const handleRestoreProject = async () => {
 		const req = await fetch(`/api/project/${projectId}/settings`, {
 			method: "PATCH",
@@ -200,6 +231,7 @@ export function useProjectSettingsFormActions(
 		handleDeleteConfirm,
 		handleArchiveProject,
 		handleRestoreProject,
+		handleFinishProject,
 	};
 }
 
