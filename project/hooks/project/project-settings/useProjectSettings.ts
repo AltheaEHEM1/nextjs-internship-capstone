@@ -85,6 +85,7 @@ export function useProjectSettingsFormActions(
 				teamId: store.teamId,
 				dueDate: finalDueDate,
 				statuses: store.statuses,
+				labels: store.labels,
 			}),
 		});
 		const result = await req.json();

@@ -145,7 +145,8 @@ export default function HomePage() {
 							</div>
 						</div>
 						<p className="text-xs text-slate-600 leading-relaxed mt-10">
-							Keep track of every objective efficiently and never miss deadlines.
+							Keep track of every objective efficiently and never miss
+							deadlines.
 						</p>
 					</div>
 				</div>

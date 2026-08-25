@@ -418,9 +418,10 @@ export default function DashboardPage() {
 									>
 										<div className="flex items-center gap-2.5 min-w-0">
 											<span
-												className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] ${rankColors[idx] ||
+												className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] ${
+													rankColors[idx] ||
 													"bg-gray-100 text-gray-700 dark:bg-outer_space-400 dark:text-platinum-200"
-													}`}
+												}`}
 											>
 												#{idx + 1}
 											</span>
@@ -585,10 +586,11 @@ export default function DashboardPage() {
 												{p.teamName || "Personal"}
 											</span>
 											<span
-												className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${isFinished
+												className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+													isFinished
 														? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
 														: "bg-blue_munsell-100 text-blue_munsell-600 dark:bg-blue_munsell-950/60 dark:text-blue_munsell-300"
-													}`}
+												}`}
 											>
 												{isFinished ? "Finished" : "In Progress"}
 											</span>
@@ -619,8 +621,9 @@ export default function DashboardPage() {
 										</div>
 										<div className="h-1.5 w-full overflow-hidden rounded-full bg-french_gray-200 dark:bg-payne's_gray-400">
 											<div
-												className={`h-full rounded-full transition-all duration-500 ${isFinished ? "bg-emerald-500" : "bg-blue_munsell-500"
-													}`}
+												className={`h-full rounded-full transition-all duration-500 ${
+													isFinished ? "bg-emerald-500" : "bg-blue_munsell-500"
+												}`}
 												style={{ width: `${p.progressPercent}%` }}
 											/>
 										</div>

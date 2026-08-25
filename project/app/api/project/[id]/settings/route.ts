@@ -3,7 +3,12 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
 import { db } from "@/lib/db/index";
-import { projectStatuses, projects, teamMembers } from "@/lib/db/schema/index";
+import {
+	labels,
+	projectStatuses,
+	projects,
+	teamMembers,
+} from "@/lib/db/schema/index";
 import { notifyProjectMembers } from "@/lib/notifications/NotifyProject";
 import { projectSettingsSchema } from "@/lib/validation/Validations";
 
@@ -99,7 +104,7 @@ export async function PATCH(
 			});
 			const existingIds = new Set(existingStatuses.map((s) => s.id));
 			const incomingIds = new Set(
-				data.statuses.map((s) => s.id).filter(Boolean),
+				data.statuses.map((s: { id?: string }) => s.id).filter(Boolean),
 			);
 
 			const toDelete = [...existingIds].filter((eid) => !incomingIds.has(eid));
@@ -128,6 +133,41 @@ export async function PATCH(
 						description: s.description,
 						color: s.color,
 						position: i,
+					});
+				}
+			}
+		}
+
+		// Sync labels
+		if (data.labels) {
+			const existingLabels = await db.query.labels.findMany({
+				where: eq(labels.projectId, id),
+			});
+			const incomingNames = new Set(
+				data.labels.map((l: { name: string }) => l.name).filter(Boolean),
+			);
+
+			const toDelete = existingLabels
+				.filter((l) => !incomingNames.has(l.name))
+				.map((l) => l.id);
+			if (toDelete.length > 0) {
+				await db.delete(labels).where(inArray(labels.id, toDelete));
+			}
+
+			for (const l of data.labels) {
+				const existing = existingLabels.find((el) => el.name === l.name);
+				if (existing) {
+					if (existing.color !== l.color) {
+						await db
+							.update(labels)
+							.set({ color: l.color })
+							.where(eq(labels.id, existing.id));
+					}
+				} else {
+					await db.insert(labels).values({
+						projectId: id,
+						name: l.name,
+						color: l.color,
 					});
 				}
 			}
