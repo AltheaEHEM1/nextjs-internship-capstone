@@ -327,7 +327,7 @@ export default function DashboardPage() {
 								{endedProjects}
 							</span>
 							<span className="text-xs text-payne's_gray-400 dark:text-french_gray-500">
-								finished / archived
+								finished
 							</span>
 						</div>
 					</div>

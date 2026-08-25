@@ -114,7 +114,7 @@ export async function getDashboardDataQuery(): Promise<{
 			(p) => p.status === "in_progress",
 		).length;
 		const endedProjects = userProjects.filter(
-			(p) => p.status === "finished" || p.status === "archived",
+			(p) => p.status === "finished",
 		).length;
 		const completionRate =
 			totalProjects > 0 ? Math.round((endedProjects / totalProjects) * 100) : 0;
