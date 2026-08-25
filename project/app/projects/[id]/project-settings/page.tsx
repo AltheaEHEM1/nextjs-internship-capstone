@@ -49,6 +49,7 @@ export default async function ProjectSettingsPage({
 			initialStatus={data.status ?? "in_progress"}
 			availableTeams={availableTeams}
 			initialMembers={data.members}
+			initialLabels={data.labels}
 			initialStatuses={data.statuses}
 		/>
 	);
