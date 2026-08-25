@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, sql, inArray } from "drizzle-orm";
 import { getAuthenticatedDbUser } from "@/lib/auth/GetUser";
 import { db } from "@/lib/db/index";
 import {
@@ -219,7 +219,7 @@ export async function getPersonDetailQuery(personId: string) {
 						.from(projects)
 						.where(
 							and(
-								sql`${projects.teamId} = ANY(${userTeamIds})`,
+								inArray(projects.teamId, userTeamIds),
 								isNull(projects.deletedAt),
 							),
 						)
