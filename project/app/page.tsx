@@ -40,8 +40,8 @@ export default function HomePage() {
 					{/* Subtitle */}
 					<p className="text-sm sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
 						Organize tasks, collaborate with your team, track progress, and
-						deliver projects on time with our intuitive drag-and-drop
-						Kanban-style platform.
+						deliver projects on time using our comprehensive suite of dynamic
+						workspaces and real-time collaboration tools.
 					</p>
 
 					{/* CTA Buttons */}
@@ -58,7 +58,7 @@ export default function HomePage() {
 
 				{/* BOTTOM COLUMN: CARDS */}
 				<div className="w-full max-w-6xl relative z-20 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 lg:pt-8">
-					{/* Card 1: Kanban Feature */}
+					{/* Card 1: Multiple Views */}
 					<div className="w-full bg-white/80 p-5 sm:p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-emerald-300 group">
 						<div className="flex items-center justify-between mb-4 gap-2">
 							<div className="flex items-center gap-3">
@@ -67,33 +67,34 @@ export default function HomePage() {
 								</div>
 								<div>
 									<h3 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-emerald-600 transition-colors">
-										Drag & Drop Boards
+										Multiple Project Views
 									</h3>
 									<p className="text-[11px] text-slate-500 font-medium">
-										Workflow Engine
+										Kanban, Gantt & Calendar
 									</p>
 								</div>
 							</div>
 							<span className="text-[10px] font-bold text-emerald-700 bg-emerald-500/10 px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-500/20 shrink-0 hidden lg:block">
-								Active
+								Flexible
 							</span>
 						</div>
 
 						<div className="space-y-1.5 mb-4">
 							<div className="flex justify-between text-xs text-slate-500 font-medium">
-								<span>Sprint Progress</span>
-								<span className="text-slate-900 font-bold">85%</span>
+								<span>View Switching</span>
+								<span className="text-slate-900 font-bold">Instant</span>
 							</div>
 							<div className="h-2 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
-								<div className="h-full w-[85%] bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full"></div>
+								<div className="h-full w-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full"></div>
 							</div>
 						</div>
 						<p className="text-xs text-slate-600 leading-relaxed">
-							Seamless workflow organization and rapid card reordering.
+							Seamlessly switch between interactive Gantt charts, lists, and
+							drag-and-drop Kanban boards.
 						</p>
 					</div>
 
-					{/* Card 2: Team Collaboration */}
+					{/* Card 2: Interactive Collaboration */}
 					<div className="w-full bg-white/80 p-5 sm:p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-cyan-300 group">
 						<div className="flex items-center justify-between mb-4 gap-2">
 							<div className="flex items-center gap-3">
@@ -102,10 +103,10 @@ export default function HomePage() {
 								</div>
 								<div>
 									<h4 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-cyan-600 transition-colors">
-										Team Sync
+										Live Collaboration
 									</h4>
 									<p className="text-[11px] text-slate-500 font-medium">
-										Real-time collaboration
+										Whiteboards & Timeline
 									</p>
 								</div>
 							</div>
@@ -119,11 +120,12 @@ export default function HomePage() {
 							</div>
 						</div>
 						<p className="text-xs text-slate-600 leading-relaxed mt-10">
-							Work together effortlessly with live updates and team channels.
+							Brainstorm on interactive team whiteboards and sync in real-time
+							across dynamic project timelines.
 						</p>
 					</div>
 
-					{/* Card 3: Goal Tracking */}
+					{/* Card 3: Advanced Analytics */}
 					<div className="w-full bg-white/80 p-5 sm:p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-300 group">
 						<div className="flex items-center justify-between mb-4 gap-2">
 							<div className="flex items-center gap-3">
@@ -132,21 +134,21 @@ export default function HomePage() {
 								</div>
 								<div>
 									<h5 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-indigo-600 transition-colors">
-										Goal Tracking
+										Advanced Analytics
 									</h5>
 									<p className="text-[10px] text-slate-500 font-medium">
-										Milestones
+										Burndown & Dashboards
 									</p>
 								</div>
 							</div>
 							<div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20 shrink-0 hidden lg:flex">
 								<Flame size={13} className="text-amber-600" />
-								<span>Streak</span>
+								<span>Insights</span>
 							</div>
 						</div>
 						<p className="text-xs text-slate-600 leading-relaxed mt-10">
-							Keep track of every objective efficiently and never miss
-							deadlines.
+							Track sprint velocity with dynamic burndown charts and keep on top
+							of deadlines with comprehensive dashboards.
 						</p>
 					</div>
 				</div>

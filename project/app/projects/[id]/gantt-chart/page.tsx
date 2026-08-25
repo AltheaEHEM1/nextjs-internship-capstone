@@ -175,13 +175,15 @@ export default function GanttChart({
 		const handleWheel = (e: WheelEvent) => {
 			// Zoom on any vertical scroll over the chart
 			e.preventDefault();
-			
+
 			const now = Date.now();
 			// Throttle zoom events so one scroll tick doesn't zoom all the way
 			if (now - lastZoomTime < 300) return;
 
-			const currentIndex = viewModeOptions.findIndex((o) => o.mode === viewMode);
-			
+			const currentIndex = viewModeOptions.findIndex(
+				(o) => o.mode === viewMode,
+			);
+
 			if (e.deltaY < 0 && currentIndex > 0) {
 				lastZoomTime = now;
 				setViewMode(viewModeOptions[currentIndex - 1].mode);
@@ -192,8 +194,14 @@ export default function GanttChart({
 		};
 
 		// Use capture: true to catch the event before inner components can stop its propagation
-		container.addEventListener("wheel", handleWheel, { passive: false, capture: true });
-		return () => container.removeEventListener("wheel", handleWheel, { capture: true } as any);
+		container.addEventListener("wheel", handleWheel, {
+			passive: false,
+			capture: true,
+		});
+		return () =>
+			container.removeEventListener("wheel", handleWheel, {
+				capture: true,
+			} as any);
 	}, [viewMode, viewModeOptions, setViewMode]);
 
 	return (
@@ -215,7 +223,9 @@ export default function GanttChart({
 					<button
 						type="button"
 						onClick={handleZoomIn}
-						disabled={viewModeOptions.findIndex((o) => o.mode === viewMode) === 0}
+						disabled={
+							viewModeOptions.findIndex((o) => o.mode === viewMode) === 0
+						}
 						className="rounded-md px-3 py-1.5 text-xs font-semibold text-slate-600 transition-all duration-200 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
 					>
 						Zoom In
@@ -228,10 +238,11 @@ export default function GanttChart({
 							key={option.label}
 							type="button"
 							onClick={() => setViewMode(option.mode)}
-							className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${viewMode === option.mode
+							className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
+								viewMode === option.mode
 									? "bg-blue_munsell-500 text-white shadow-sm ring-1 ring-blue_munsell-600/50"
 									: "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
-								}`}
+							}`}
 						>
 							{option.label}
 						</button>
@@ -242,7 +253,10 @@ export default function GanttChart({
 					<button
 						type="button"
 						onClick={handleZoomOut}
-						disabled={viewModeOptions.findIndex((o) => o.mode === viewMode) === viewModeOptions.length - 1}
+						disabled={
+							viewModeOptions.findIndex((o) => o.mode === viewMode) ===
+							viewModeOptions.length - 1
+						}
 						className="rounded-md px-3 py-1.5 text-xs font-semibold text-slate-600 transition-all duration-200 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
 					>
 						Zoom Out
@@ -251,7 +265,7 @@ export default function GanttChart({
 			</div>
 
 			{/* Gantt Chart Container */}
-			<div 
+			<div
 				ref={containerRef}
 				className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-900/5 transition-all hover:shadow-md dark:border-slate-700 dark:bg-[#16293e] dark:text-platinum-100 dark:ring-white/10"
 			>

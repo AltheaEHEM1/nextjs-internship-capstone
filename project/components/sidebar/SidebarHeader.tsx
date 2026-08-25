@@ -42,8 +42,6 @@ export default function SidebarHeader({ onMenuClick }: SidebarHeaderProps) {
 					placeholder="Search anywhere..."
 				/>
 
-
-
 				<ClerkLoading>
 					<div className="h-7 w-7 rounded-full bg-slate-200 animate-pulse" />
 				</ClerkLoading>

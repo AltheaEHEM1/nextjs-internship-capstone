@@ -58,7 +58,7 @@ export function About() {
 		},
 	];
 
-	const { activeTab, setActiveTab } = useAboutTab(features.length);
+	const { activeTab, setActiveTab } = useAboutTab();
 
 	const activeFeature = features[activeTab];
 	const ActiveIcon = activeFeature.icon;

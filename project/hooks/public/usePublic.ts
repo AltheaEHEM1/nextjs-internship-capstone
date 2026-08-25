@@ -1,17 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { usePublicStore } from "@/stores/public/PublicStore";
 
-export function useAboutTab(featuresLength: number) {
+export function useAboutTab() {
 	const activeTab = usePublicStore((state) => state.aboutActiveTab);
 	const setActiveTab = usePublicStore((state) => state.setAboutActiveTab);
-
-	// Auto-rotate tabs every 6 seconds
-	useEffect(() => {
-		const timer = setInterval(() => {
-			setActiveTab((prev) => (prev + 1) % featuresLength);
-		}, 6000);
-		return () => clearInterval(timer);
-	}, [featuresLength, setActiveTab]);
 
 	return {
 		activeTab,

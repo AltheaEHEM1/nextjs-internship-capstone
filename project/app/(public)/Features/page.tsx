@@ -62,43 +62,32 @@ export function Features() {
 							</div>
 
 							<h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-								Core Workflow Engine
+								Multi-View Project Management
 							</h3>
 							<p className="text-slate-400 text-xs sm:text-sm max-w-xl mb-6 sm:mb-8">
-								The primary operations layer handling state persistence, project
-								lifecycles, kanban views, and assignment indexing.
+								Seamlessly manage projects across multiple dynamic views
+								including Kanban, Gantt, Calendar, and List layouts.
 							</p>
-
-							{/* Metrics */}
-							<div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 max-w-md">
-								<div className="bg-slate-950/60 border border-slate-800 p-3 sm:p-4 rounded-xl">
-									<span className="text-xs text-slate-500 block">
-										Data Latency
-									</span>
-									<span className="text-lg sm:text-xl font-bold text-white">
-										&lt; 45ms
-									</span>
-								</div>
-								<div className="bg-slate-950/60 border border-slate-800 p-3 sm:p-4 rounded-xl">
-									<span className="text-xs text-slate-500 block">
-										State Sync
-									</span>
-									<span className="text-lg sm:text-xl font-bold text-white">
-										Realtime
-									</span>
-								</div>
-							</div>
 						</div>
 
-						{/* Checklist */}
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6 border-t border-slate-800/80">
+						{/* All Features List */}
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6 border-t border-slate-800/80 mt-auto">
 							{[
-								"User auth & protected routes",
-								"Project CRUD engine",
-								"Interactive Kanban board",
-								"Priority scoring & due dates",
-								"Activity audit history",
-								"Multi-attribute global fuzzy search",
+								"Secure Authentication (Clerk)",
+								"Team & Project Invitations",
+								"Role-based Access Control",
+								"Drag-and-drop Kanban Boards",
+								"Task List View",
+								"Gantt Charts",
+								"Timelines",
+								"Project Calendars",
+								"Live Whiteboarding (tldraw)",
+								"Real-time Updates (Pusher)",
+								"Email & In-App Notifications",
+								"Burndown Charts & Analytics",
+								"Rich-text Task Editor",
+								"Global Project Dashboards",
+								"Responsive Mobile-Friendly UI",
 							].map((feat) => (
 								<div
 									key={feat}
@@ -128,20 +117,20 @@ export function Features() {
 							</div>
 
 							<h3 className="text-lg sm:text-xl font-bold text-white mb-2">
-								Team & Workspace Controls
+								Live Team Collaboration
 							</h3>
 							<p className="text-slate-400 text-xs sm:text-sm mb-6">
-								Manage enterprise permissions, team roles, and multi-tenant
-								notification pipelines.
+								Brainstorm ideas and sync work instantly with real-time
+								whiteboards and live event notifications.
 							</p>
 						</div>
 
 						<div className="space-y-2 pt-6 border-t border-slate-800/80">
 							{[
-								"Team onboarding & invites",
-								"RBAC (Admin, Member, Viewer)",
-								"Automated workflow triggers",
-								"Real-time notifications",
+								"Interactive whiteboarding (tldraw)",
+								"Live push notifications (Pusher)",
+								"Email team invitations",
+								"Real-time dashboard updates",
 							].map((f) => (
 								<div
 									key={f}
@@ -166,25 +155,25 @@ export function Features() {
 										Module 03
 									</span>
 									<h3 className="text-base sm:text-lg font-bold text-white">
-										UX Layer
+										Data Visualization
 									</h3>
 								</div>
 							</div>
 							<span className="text-xs text-slate-400 font-mono shrink-0">
-								FCP Speed: 0.2s
+								Render: 60fps
 							</span>
 						</div>
 
 						<p className="text-slate-400 text-xs sm:text-sm mb-6">
-							Designed to reduce friction with instantaneous transitions,
-							persistent themes, and modal workflows.
+							Gain deep insights into project health with high-performance
+							interactive charting and analytics.
 						</p>
 
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
-							<div>• Responsive layout system</div>
-							<div>• Dark/Light system sync</div>
-							<div>• Side-drawer management</div>
-							<div>• Structural deep links</div>
+							<div>• Burndown chart tracking</div>
+							<div>• Analytics dashboard</div>
+							<div>• Custom timeline scaling</div>
+							<div>• Sprint progress analysis</div>
 						</div>
 					</div>
 
@@ -200,33 +189,33 @@ export function Features() {
 										Module 04
 									</span>
 									<h3 className="text-base sm:text-lg font-bold text-white">
-										Advanced Engine Roadmap
+										Modern Architecture
 									</h3>
 								</div>
 							</div>
 							<span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-400 shrink-0">
-								Target: Q4 2026
+								Next.js 15
 							</span>
 						</div>
 
 						<p className="text-slate-400 text-xs sm:text-sm mb-6">
-							Future architectural enhancements focusing on WebSockets, hotkey
-							execution, and optimistic UI.
+							Built on cutting-edge technologies to ensure robust, scalable, and
+							secure operations.
 						</p>
 
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-400">
 							<div className="flex items-center gap-2">
-								<Clock className="w-3.5 h-3.5 shrink-0" /> WebSocket multi-sync
+								<Clock className="w-3.5 h-3.5 shrink-0" /> Drizzle ORM +
+								Postgres
 							</div>
 							<div className="flex items-center gap-2">
-								<Clock className="w-3.5 h-3.5 shrink-0" /> Optimistic UI
-								rendering
+								<Clock className="w-3.5 h-3.5 shrink-0" /> Clerk Authentication
 							</div>
 							<div className="flex items-center gap-2">
-								<Clock className="w-3.5 h-3.5 shrink-0" /> Power-user hotkeys
+								<Clock className="w-3.5 h-3.5 shrink-0" /> Tailwind + Shadcn UI
 							</div>
 							<div className="flex items-center gap-2">
-								<Clock className="w-3.5 h-3.5 shrink-0" /> E2E test suite
+								<Clock className="w-3.5 h-3.5 shrink-0" /> Next.js App Router
 							</div>
 						</div>
 					</div>
