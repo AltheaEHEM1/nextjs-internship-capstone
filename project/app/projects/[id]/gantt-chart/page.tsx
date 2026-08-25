@@ -1,7 +1,7 @@
 "use client";
 
 import { Gantt } from "gantt-task-react";
-import { use, useCallback, useEffect } from "react";
+import { use, useCallback, useEffect, useRef } from "react";
 
 import { pusherClient } from "@/lib/real-time-board/PusherClient";
 import "gantt-task-react/dist/index.css";
@@ -18,7 +18,7 @@ const CustomTooltip = ({
 }) => {
 	return (
 		<div
-			className="z-50 flex min-w-[220px] flex-col gap-2 rounded-xl bg-white p-4 shadow-xl ring-1 ring-slate-900/5 dark:bg-slate-800 dark:ring-white/10"
+			className="pointer-events-none z-50 flex min-w-[220px] flex-col gap-2 rounded-xl bg-white p-4 shadow-xl ring-1 ring-slate-900/5 dark:bg-slate-800 dark:ring-white/10"
 			style={{ fontSize, fontFamily }}
 		>
 			<h4 className="font-semibold text-slate-800 dark:text-platinum-100">
@@ -67,6 +67,8 @@ export default function GanttChart({
 		handleProgressChange,
 	} = useGanttChart();
 
+	const containerRef = useRef<HTMLDivElement>(null);
+
 	const fetchProjectData = useCallback(() => {
 		fetch(`/api/project/${id}`)
 			.then((r) => r.json())
@@ -100,7 +102,7 @@ export default function GanttChart({
 										? new Date(t.createdAt)
 										: new Date(t.dueDate || "");
 									const end = t.dueDate ? new Date(t.dueDate) : start;
-									
+
 									const color = colors[taskIndex % colors.length];
 									taskIndex++;
 
@@ -164,6 +166,36 @@ export default function GanttChart({
 		}
 	};
 
+	useEffect(() => {
+		const container = containerRef.current;
+		if (!container) return;
+
+		let lastZoomTime = 0;
+
+		const handleWheel = (e: WheelEvent) => {
+			// Zoom on any vertical scroll over the chart
+			e.preventDefault();
+			
+			const now = Date.now();
+			// Throttle zoom events so one scroll tick doesn't zoom all the way
+			if (now - lastZoomTime < 300) return;
+
+			const currentIndex = viewModeOptions.findIndex((o) => o.mode === viewMode);
+			
+			if (e.deltaY < 0 && currentIndex > 0) {
+				lastZoomTime = now;
+				setViewMode(viewModeOptions[currentIndex - 1].mode);
+			} else if (e.deltaY > 0 && currentIndex < viewModeOptions.length - 1) {
+				lastZoomTime = now;
+				setViewMode(viewModeOptions[currentIndex + 1].mode);
+			}
+		};
+
+		// Use capture: true to catch the event before inner components can stop its propagation
+		container.addEventListener("wheel", handleWheel, { passive: false, capture: true });
+		return () => container.removeEventListener("wheel", handleWheel, { capture: true } as any);
+	}, [viewMode, viewModeOptions, setViewMode]);
+
 	return (
 		<div className="space-y-4 pb-12">
 			{/* Header Info & View Mode Switcher */}
@@ -188,7 +220,7 @@ export default function GanttChart({
 					>
 						Zoom In
 					</button>
-					
+
 					<div className="mx-1 h-4 w-[1px] bg-slate-200 dark:bg-slate-700"></div>
 
 					{viewModeOptions.map((option) => (
@@ -196,11 +228,10 @@ export default function GanttChart({
 							key={option.label}
 							type="button"
 							onClick={() => setViewMode(option.mode)}
-							className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
-								viewMode === option.mode
+							className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${viewMode === option.mode
 									? "bg-blue_munsell-500 text-white shadow-sm ring-1 ring-blue_munsell-600/50"
 									: "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
-							}`}
+								}`}
 						>
 							{option.label}
 						</button>
@@ -220,7 +251,10 @@ export default function GanttChart({
 			</div>
 
 			{/* Gantt Chart Container */}
-			<div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-900/5 transition-all hover:shadow-md dark:border-slate-700 dark:bg-[#16293e] dark:text-platinum-100 dark:ring-white/10">
+			<div 
+				ref={containerRef}
+				className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-900/5 transition-all hover:shadow-md dark:border-slate-700 dark:bg-[#16293e] dark:text-platinum-100 dark:ring-white/10"
+			>
 				<style jsx global>{`
                     .gantt-container {
                         font-family: inherit !important;
@@ -234,10 +268,10 @@ export default function GanttChart({
                     /* Gantt SVG styling overrides for a softer look */
                     .gantt-container svg {
                         border-radius: 8px;
-                        background-color: #ffffff !important;
+                        background-color: #16293e !important;
                     }
                     .dark .gantt-container svg {
-                        background-color: #16293e !important;
+                        background-color: #ffffff !important;
                     }
                     ._313uQ, .gantt-list-table { /* Header or rows */
                         background-color: #ffffff !important;
@@ -256,17 +290,17 @@ export default function GanttChart({
                         border-bottom: 1px solid #2a4365 !important;
                     }
                     ._3457N {
-                        fill: #16293e !important;
+                        fill: #f1f5f9 !important;
                     }
                     .dark ._3457N {
-                        fill: #f1f5f9 !important;
+                        fill: #16293e !important;
                     }
                     /* Grid lines */
                     .gantt-grid-line {
-                        stroke: #e2e8f0 !important;
+                        stroke: #2a4365 !important;
                     }
                     .dark .gantt-grid-line {
-                        stroke: #2a4365 !important;
+                        stroke: #e2e8f0 !important;
                     }
                     /* Smooth hover effect on task rows in the list */
                     .gantt-list-table-row:hover {
@@ -288,11 +322,11 @@ export default function GanttChart({
                     }
                     /* Task label styles */
                     .gantt-task-bar-label {
-                        fill: #16293e !important;
+                        fill: #f1f5f9 !important;
                         font-weight: 500;
                     }
                     .dark .gantt-task-bar-label {
-                        fill: #f1f5f9 !important;
+                        fill: #16293e !important;
                     }
                 `}</style>
 
