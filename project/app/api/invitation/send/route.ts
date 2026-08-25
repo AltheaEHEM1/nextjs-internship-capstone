@@ -112,12 +112,10 @@ export async function sendUserInvitationHandler(
 
 	const teamName = "Projectnify";
 	const rawAppUrl =
-		process.env.NODE_ENV === "development"
-			? "http://localhost:3000"
-			: process.env.NEXT_PUBLIC_APP_URL ||
-			  (process.env.VERCEL_URL
-					? `https://${process.env.VERCEL_URL}`
-					: "http://localhost:3000");
+		process.env.NEXT_PUBLIC_APP_URL ||
+		(process.env.VERCEL_URL
+			? `https://${process.env.VERCEL_URL}`
+			: "http://localhost:3000");
 	const appUrl = rawAppUrl.replace(/\/$/, "");
 	const inviteUrl = `${appUrl}/invitation/${token}`;
 

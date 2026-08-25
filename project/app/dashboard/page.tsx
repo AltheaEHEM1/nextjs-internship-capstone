@@ -418,10 +418,9 @@ export default function DashboardPage() {
 									>
 										<div className="flex items-center gap-2.5 min-w-0">
 											<span
-												className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] ${
-													rankColors[idx] ||
+												className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] ${rankColors[idx] ||
 													"bg-gray-100 text-gray-700 dark:bg-outer_space-400 dark:text-platinum-200"
-												}`}
+													}`}
 											>
 												#{idx + 1}
 											</span>
@@ -571,43 +570,42 @@ export default function DashboardPage() {
 						</button>
 					</div>
 				) : (
-					<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+					<div className="flex flex-col gap-3">
 						{recentProjects.map((p) => {
 							const isFinished = p.status === "finished";
 							return (
 								<Link
 									key={p.id}
 									href={`/projects/${p.id}`}
-									className="group flex flex-col justify-between rounded-xl border border-french_gray-200 bg-french_gray-50/60 p-4 transition-all hover:-translate-y-0.5 hover:border-blue_munsell-300 hover:bg-white hover:shadow-md dark:border-payne's_gray-400/40 dark:bg-outer_space-400/40 dark:hover:border-blue_munsell-500/40 dark:hover:bg-outer_space-400"
+									className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-french_gray-200 bg-french_gray-50/60 p-4 transition-all hover:border-blue_munsell-300 hover:bg-white hover:shadow-md dark:border-payne's_gray-400/40 dark:bg-outer_space-400/40 dark:hover:border-blue_munsell-500/40 dark:hover:bg-outer_space-400"
 								>
-									<div>
-										<div className="flex items-center justify-between gap-2 mb-2">
+									<div className="flex-1 min-w-0">
+										<div className="flex items-center gap-2 mb-1.5">
 											<span className="truncate rounded-md bg-white px-2 py-0.5 text-[10px] font-semibold text-payne's_gray-500 border border-french_gray-200 dark:bg-outer_space-500/70 dark:text-french_gray-300 dark:border-transparent">
 												{p.teamName || "Personal"}
 											</span>
 											<span
-												className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-													isFinished
+												className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${isFinished
 														? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
 														: "bg-blue_munsell-100 text-blue_munsell-600 dark:bg-blue_munsell-950/60 dark:text-blue_munsell-300"
-												}`}
+													}`}
 											>
 												{isFinished ? "Finished" : "In Progress"}
 											</span>
 										</div>
 
-										<h4 className="text-sm font-bold text-outer_space-600 group-hover:text-blue_munsell-500 transition-colors line-clamp-2 dark:text-platinum-200 dark:group-hover:text-blue_munsell-400">
+										<h4 className="text-sm font-bold text-outer_space-600 group-hover:text-blue_munsell-500 transition-colors truncate dark:text-platinum-200 dark:group-hover:text-blue_munsell-400">
 											{p.name}
 										</h4>
 										{p.description && (
-											<p className="mt-1 line-clamp-2 text-xs text-payne's_gray-400 dark:text-french_gray-400">
+											<p className="mt-0.5 truncate text-xs text-payne's_gray-400 dark:text-french_gray-400">
 												{p.description}
 											</p>
 										)}
 									</div>
 
-									<div className="mt-4 pt-3 border-t border-french_gray-200/80 dark:border-payne's_gray-400/30">
-										<div className="flex items-center justify-between text-[11px] text-payne's_gray-400 dark:text-french_gray-400 mb-2">
+									<div className="flex shrink-0 flex-col sm:items-end gap-2 sm:w-48">
+										<div className="flex items-center justify-between sm:justify-end gap-4 text-[11px] text-payne's_gray-400 dark:text-french_gray-400 w-full">
 											<span className="flex items-center gap-1">
 												<Calendar size={11} />
 												{new Date(p.dueDate).toLocaleDateString(undefined, {
@@ -621,9 +619,8 @@ export default function DashboardPage() {
 										</div>
 										<div className="h-1.5 w-full overflow-hidden rounded-full bg-french_gray-200 dark:bg-payne's_gray-400">
 											<div
-												className={`h-full rounded-full transition-all duration-500 ${
-													isFinished ? "bg-emerald-500" : "bg-blue_munsell-500"
-												}`}
+												className={`h-full rounded-full transition-all duration-500 ${isFinished ? "bg-emerald-500" : "bg-blue_munsell-500"
+													}`}
 												style={{ width: `${p.progressPercent}%` }}
 											/>
 										</div>
