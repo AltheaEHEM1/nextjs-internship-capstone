@@ -17,8 +17,8 @@ test.describe('Authentication Flow', () => {
 
   test('should successfully log in and redirect to dashboard', async ({ page }) => {
     // Replace with valid test credentials or mock the authentication response
-    await loginPage.login('test@example.com', 'ValidPassword123!');
-    
+    await loginPage.login('memoriesofme031@gmail.com', 'Testing123!--!');
+
     // Assert redirect happened
     await expect(page).toHaveURL(/.*dashboard/);
     await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
