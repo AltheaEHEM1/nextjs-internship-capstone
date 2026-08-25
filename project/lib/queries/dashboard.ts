@@ -13,6 +13,7 @@ export interface DashboardMetricData {
 	totalProjects: number;
 	pendingProjects: number;
 	endedProjects: number;
+	archivedProjects: number;
 	completionRate: number;
 	topTeams: {
 		id: string;
@@ -430,6 +431,7 @@ export async function getDashboardDataQuery(): Promise<{
 				totalProjects,
 				pendingProjects,
 				endedProjects,
+				archivedProjects: archivedCount,
 				completionRate,
 				topTeams,
 				topMembers,

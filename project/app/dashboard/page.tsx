@@ -2,6 +2,7 @@
 
 import {
 	AlertCircle,
+	Archive,
 	ArrowRight,
 	BarChart3,
 	Calendar,
@@ -181,8 +182,8 @@ export default function DashboardPage() {
 					description="Real-time workspace overview, team performance, and project metrics"
 				/>
 				{/* Top metrics skeleton */}
-				<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-					{[1, 2, 3].map((i) => (
+				<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+					{[1, 2, 3, 4].map((i) => (
 						<div
 							key={i}
 							className="h-32 animate-pulse rounded-2xl border border-french_gray-200 bg-white/70 p-6 dark:border-payne's_gray-500/30 dark:bg-outer_space-500/50"
@@ -216,6 +217,7 @@ export default function DashboardPage() {
 	const totalProjects = data?.totalProjects ?? 0;
 	const pendingProjects = data?.pendingProjects ?? 0;
 	const endedProjects = data?.endedProjects ?? 0;
+	const archivedProjects = data?.archivedProjects ?? 0;
 	const completionRate = data?.completionRate ?? 0;
 	const topTeams = data?.topTeams ?? [];
 	const topMembers = data?.topMembers ?? [];
@@ -242,7 +244,7 @@ export default function DashboardPage() {
 			)}
 
 			{/* ─── 1. TOP SUMMARY METRIC CARDS ───────────────────────────────────── */}
-			<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+			<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
 				{/* Total Projects Card */}
 				<div className="group relative overflow-hidden rounded-2xl border border-french_gray-300/70 bg-gradient-to-br from-white via-white to-blue_munsell-50/30 p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-payne's_gray-400/50 dark:bg-gradient-to-br dark:from-outer_space-500 dark:via-outer_space-500 dark:to-blue_munsell-950/20">
 					<div className="flex items-center justify-between">
@@ -332,6 +334,35 @@ export default function DashboardPage() {
 					<div className="mt-3 flex items-center gap-1.5 text-xs text-emerald-600/90 dark:text-emerald-400/90">
 						<Sparkles size={13} />
 						<span>Successfully delivered milestones</span>
+					</div>
+				</div>
+
+				{/* Archived Projects Card */}
+				<div className="group relative overflow-hidden rounded-2xl border border-french_gray-300/70 bg-gradient-to-br from-white via-white to-slate-50/30 p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-payne's_gray-400/50 dark:bg-gradient-to-br dark:from-outer_space-500 dark:via-outer_space-500 dark:to-slate-900/20">
+					<div className="flex items-center justify-between">
+						<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-600 shadow-inner dark:bg-slate-800/40 dark:text-slate-400">
+							<Archive size={24} />
+						</div>
+						<span className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
+							History
+						</span>
+					</div>
+					<div className="mt-4">
+						<h4 className="text-sm font-medium text-payne's_gray-500 dark:text-french_gray-400">
+							Archived Projects
+						</h4>
+						<div className="mt-1 flex items-baseline gap-2">
+							<span className="text-3xl font-extrabold tracking-tight text-outer_space-600 dark:text-platinum-200">
+								{archivedProjects}
+							</span>
+							<span className="text-xs text-payne's_gray-400 dark:text-french_gray-500">
+								moved to vault
+							</span>
+						</div>
+					</div>
+					<div className="mt-3 flex items-center gap-1.5 text-xs text-slate-600/90 dark:text-slate-400/90">
+						<Layers size={13} />
+						<span>Kept for reference</span>
 					</div>
 				</div>
 			</div>
