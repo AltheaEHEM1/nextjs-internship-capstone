@@ -41,12 +41,12 @@ Each intern will work through all tasks below for their individual implementatio
 ### Phase 1: Foundation & Setup (Weeks 1-2)
 
 - [ ] 1.0 Project Setup & Foundation
-  - [ ] 1.1 Initialize Next.js 16 project with TypeScript and Tailwind CSS
-  - [ ] 1.2 Configure ESLint, Prettier, and development tools
-  - [ ] 1.3 Set up project structure and folder organization
-  - [ ] 1.4 Install and configure Shadcn/UI components
-  - [ ] 1.5 Set up environment variables and configuration files
-  - [ ] 1.6 Create basic layout and navigation structure
+  - [ check ] 1.1 Initialize Next.js 16 project with TypeScript and Tailwind CSS
+  - [ check ] 1.2 Configure ESLint, Prettier, and development tools
+  - [ check ] 1.3 Set up project structure and folder organization
+  - [ check ] 1.4 Install and configure Shadcn/UI components
+  - [ check ] 1.5 Set up environment variables and configuration files
+  - [ check ] 1.6 Create basic layout and navigation structure
 
 ### Phase 2: Authentication (Weeks 2-3)
 

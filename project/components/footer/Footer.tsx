@@ -1,117 +1,143 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
+import { useCurrentYear } from "../../hooks/footer/useCurrentYear";
 
 export function Footer() {
-  return (
-    <footer className="bg-outer_space-500 py-12 text-platinum-500 dark:bg-outer_space-600">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-          <div>
-            <h3 className="mb-4 text-2xl font-bold text-blue_munsell-400">
-              TaskFlow
-            </h3>
-            <p className="text-french_gray-400">
-              The modern project management platform that helps teams
-              collaborate and deliver results.
-            </p>
-          </div>
+	const year = useCurrentYear();
 
-          <div>
-            <h4 className="mb-4 font-semibold">Product</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="#"
-                  className="text-french_gray-400 transition-colors hover:text-platinum-500"
-                >
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-french_gray-400 transition-colors hover:text-platinum-500"
-                >
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-french_gray-400 transition-colors hover:text-platinum-500"
-                >
-                  Security
-                </Link>
-              </li>
-            </ul>
-          </div>
+	return (
+		<footer className="border-t border-slate-800/60 bg-slate-950 py-8 text-slate-300">
+			<div className="container mx-auto px-4 sm:px-6 lg:px-8">
+				<div className="grid grid-cols-1 items-center gap-6 md:grid-cols-5">
+					{/* Brand Column */}
+					<div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left md:col-span-2 md:items-center">
+						<Link href="/" className="flex flex-shrink-0 items-center">
+							<Image
+								src="/icon.png"
+								alt="Projectnify"
+								width={104}
+								height={104}
+								className="h-12 w-auto object-contain sm:h-16"
+								priority
+							/>
+						</Link>
+						<div className="flex flex-col justify-center">
+							<span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-xl font-extrabold tracking-tight text-transparent dark:from-cyan-400 dark:via-blue-400 dark:to-indigo-400">
+								Projectnify
+							</span>
+							<p className="mt-1 text-xs text-slate-400 max-w-xs">
+								Modern project management for high-performing teams.
+							</p>
+						</div>
+					</div>
 
-          <div>
-            <h4 className="mb-4 font-semibold">Company</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="#"
-                  className="text-french_gray-400 transition-colors hover:text-platinum-500"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-french_gray-400 transition-colors hover:text-platinum-500"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-french_gray-400 transition-colors hover:text-platinum-500"
-                >
-                  Careers
-                </Link>
-              </li>
-            </ul>
-          </div>
+					{/* Quick Links Group */}
+					<div className="grid grid-cols-3 gap-3 sm:gap-6 text-left sm:text-left md:text-right text-xs sm:text-sm md:col-span-3">
+						<div>
+							<h4 className="mb-2 font-semibold text-white">Product</h4>
+							<ul className="space-y-1.5">
+								<li>
+									<Link
+										href="/Features"
+										className="text-slate-400 transition-colors hover:text-cyan-400"
+									>
+										Features
+									</Link>
+								</li>
+								<li>
+									<Link
+										href="/Pricing"
+										className="text-slate-400 transition-colors hover:text-cyan-400"
+									>
+										Pricing
+									</Link>
+								</li>
+								<li>
+									<Link
+										href="#"
+										className="text-slate-400 transition-colors hover:text-cyan-400"
+									>
+										Security
+									</Link>
+								</li>
+							</ul>
+						</div>
+						<div>
+							<h4 className="mb-2 font-semibold text-white">Company</h4>
+							<ul className="space-y-1.5">
+								<li>
+									<Link
+										href="/About"
+										className="text-slate-400 transition-colors hover:text-cyan-400"
+									>
+										About
+									</Link>
+								</li>
+								<li>
+									<Link
+										href="#"
+										className="text-slate-400 transition-colors hover:text-cyan-400"
+									>
+										Blog
+									</Link>
+								</li>
+								<li>
+									<Link
+										href="#"
+										className="text-slate-400 transition-colors hover:text-cyan-400"
+									>
+										Careers
+									</Link>
+								</li>
+							</ul>
+						</div>
+						<div>
+							<h4 className="mb-2 font-semibold text-white">Support</h4>
+							<ul className="space-y-1.5">
+								<li>
+									<Link
+										href="#"
+										className="text-slate-400 transition-colors hover:text-cyan-400"
+									>
+										Help
+									</Link>
+								</li>
+								<li>
+									<Link
+										href="#"
+										className="text-slate-400 transition-colors hover:text-cyan-400"
+									>
+										Contact
+									</Link>
+								</li>
+								<li>
+									<Link
+										href="#"
+										className="text-slate-400 transition-colors hover:text-cyan-400"
+									>
+										API
+									</Link>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
 
-          <div>
-            <h4 className="mb-4 font-semibold">Support</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="#"
-                  className="text-french_gray-400 transition-colors hover:text-platinum-500"
-                >
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-french_gray-400 transition-colors hover:text-platinum-500"
-                >
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-french_gray-400 transition-colors hover:text-platinum-500"
-                >
-                  API Docs
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-8 border-t border-payne's_gray-400 pt-8 text-center">
-          <p className="text-french_gray-400">
-            © 2024 TaskFlow. All rights reserved.
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
+				{/* Bottom Bar */}
+				<div className="mt-8 flex flex-col items-center justify-between border-t border-slate-900 pt-4 text-xs text-slate-500 gap-2 sm:flex-row sm:mt-6 sm:gap-0">
+					<p>© {year} Projectnify. All rights reserved.</p>
+					<div className="flex space-x-4">
+						<Link href="#" className="transition-colors hover:text-cyan-400">
+							Privacy
+						</Link>
+						<Link href="#" className="transition-colors hover:text-cyan-400">
+							Terms
+						</Link>
+					</div>
+				</div>
+			</div>
+		</footer>
+	);
 }
