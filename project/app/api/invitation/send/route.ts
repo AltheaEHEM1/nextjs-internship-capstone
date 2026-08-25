@@ -14,12 +14,12 @@ import { invitationSchema } from "@/lib/validation/Validations";
 let transporter: Transporter;
 try {
 	transporter = nodemailer.createTransport({
-		host: "smtp.gmail.com",
-		port: 465,
-		secure: true,
+		host: process.env.SMTP_HOST || "smtp.example.com",
+		port: Number(process.env.SMTP_PORT) || 587,
+		secure: process.env.SMTP_SECURE === "true", // use true for 465, false for other ports (like 587)
 		auth: {
-			user: process.env.GMAIL_USER,
-			pass: process.env.GMAIL_APP_PASSWORD,
+			user: process.env.SMTP_USER,
+			pass: process.env.SMTP_PASS,
 		},
 		connectionTimeout: 15000,
 		greetingTimeout: 15000,
@@ -36,7 +36,12 @@ try {
 export async function sendUserInvitationHandler(
 	email: string,
 	notes?: string,
-	dbUser?: { id: string; name: string | null; clerkId: string | null },
+	dbUser?: {
+		id: string;
+		name: string | null;
+		email: string;
+		clerkId: string | null;
+	},
 ) {
 	const validationResult = invitationSchema.safeParse({ email, notes });
 	if (!validationResult.success) {
@@ -47,11 +52,11 @@ export async function sendUserInvitationHandler(
 		};
 	}
 
-	if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+	if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
 		return {
 			success: false,
 			error:
-				"Email service is not configured. Missing GMAIL_USER or GMAIL_APP_PASSWORD in server environment.",
+				"Email service is not configured. Missing SMTP_USER or SMTP_PASS in server environment.",
 		};
 	}
 
@@ -111,10 +116,16 @@ export async function sendUserInvitationHandler(
 	const appUrl = rawAppUrl.replace(/\/$/, "");
 	const inviteUrl = `${appUrl}/invitation/${token}`;
 
+	const inviterName =
+		clerkUserInstance?.firstName || resolvedDbUser.name || "A teammate";
+	const inviterEmail =
+		clerkUserInstance?.emailAddresses?.[0]?.emailAddress ||
+		resolvedDbUser.email;
+
 	const emailHtml = await render(
 		React.createElement(InviteEmail, {
-			inviterName:
-				clerkUserInstance?.firstName || resolvedDbUser.name || "A teammate",
+			inviterName,
+			inviterEmail,
 			acceptLink: inviteUrl,
 			teamName,
 			notes: sanitizedNotes,
@@ -122,16 +133,17 @@ export async function sendUserInvitationHandler(
 	);
 
 	const info = await transporter.sendMail({
-		from: `"Projectnify" <${process.env.GMAIL_USER}>`,
+		from: `"${inviterName} via ${teamName}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+		replyTo: inviterEmail,
 		to: normalizedEmail,
-		subject: `You have been invited to join ${teamName}`,
+		subject: `${inviterName} invited you to join ${teamName}`,
 		html: emailHtml,
 	});
 
 	return {
 		success: true,
 		messageId: info.messageId,
-		isResend: Boolean(existingPending),
+		isReinvitation: Boolean(existingPending),
 	};
 }
 

@@ -3,6 +3,7 @@ import type * as React from "react";
 interface InviteEmailProps {
 	teamName?: string;
 	inviterName: string;
+	inviterEmail?: string;
 	acceptLink: string;
 	notes?: string | null;
 }
@@ -10,6 +11,7 @@ interface InviteEmailProps {
 export const InviteEmail: React.FC<InviteEmailProps> = ({
 	teamName = "Projectnify",
 	inviterName,
+	inviterEmail,
 	acceptLink,
 	notes,
 }) => (
@@ -50,12 +52,32 @@ export const InviteEmail: React.FC<InviteEmailProps> = ({
 					fontSize: "16px",
 					lineHeight: "24px",
 					color: "#4b5563",
-					margin: "0 0 20px 0",
+					margin: "0 0 4px 0",
 				}}
 			>
 				<strong>{inviterName}</strong> has invited you to collaborate on their
 				team. Click the button below to accept and get started.
 			</p>
+
+			{/* Inviter Email */}
+			{inviterEmail && (
+				<p
+					style={{
+						fontSize: "14px",
+						lineHeight: "20px",
+						color: "#6b7280",
+						margin: "0 0 20px 0",
+					}}
+				>
+					Sent by{" "}
+					<a
+						href={`mailto:${inviterEmail}`}
+						style={{ color: "#2563eb", textDecoration: "none" }}
+					>
+						{inviterEmail}
+					</a>
+				</p>
+			)}
 
 			{/* Optional Notes Box */}
 			{notes && (
